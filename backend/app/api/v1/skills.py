@@ -62,7 +62,7 @@ async def list_skills(
 async def update_skill_config(
     name: Annotated[str, Path(description="Skill name identifier")],
     payload: SkillUpdatePayload,
-    _current_user: Annotated[User, Depends(get_current_owner)],
+    current_user: Annotated[User, Depends(get_current_owner)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
     """
@@ -75,6 +75,22 @@ async def update_skill_config(
         autonomy_policy=payload.autonomy_policy,
         enabled=payload.enabled,
         timeout_seconds=payload.timeout_seconds,
+    )
+
+    req_id = request_id_ctx.get()
+    await service.audit_service.record_command(
+        request_id=req_id,
+        skill_name=name,
+        permission_tier="CONFIRM",
+        provenance="direct",
+        arguments={
+            "action": "update_skill_config",
+            "autonomy_policy": payload.autonomy_policy,
+            "enabled": payload.enabled,
+            "timeout_seconds": payload.timeout_seconds,
+        },
+        status="success",
+        user_id=str(current_user.id),
     )
     await db.commit()
 

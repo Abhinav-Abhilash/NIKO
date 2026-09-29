@@ -116,6 +116,7 @@ class SkillService:
         timeout_seconds: int | None = None,
     ) -> SkillConfig:
         """Update owner-configurable autonomy policy, active status, or timeout for a skill."""
+        await self.initialize_builtin_skills()
         config = await self.get_skill_config(name)
         if not config:
             raise NotFoundError(f"Skill '{name}' was not found in configuration.")
