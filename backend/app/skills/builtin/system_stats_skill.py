@@ -46,10 +46,11 @@ class SystemStatsSkill(BaseSkill):
             battery_stat = psutil.sensors_battery()
             battery_data: dict[str, Any] | None = None
             if battery_stat:
+                power_unlimited = getattr(psutil, "POWER_TIME_UNLIMITED", -1)
                 battery_data = {
                     "percent": battery_stat.percent,
                     "power_plugged": battery_stat.power_plugged,
-                    "secsleft": battery_stat.secsleft if battery_stat.secsleft != psutil.BATTERY_TIME_UNLIMITED else None,
+                    "secsleft": battery_stat.secsleft if battery_stat.secsleft != power_unlimited else None,
                 }
 
             metrics: dict[str, Any] = {
