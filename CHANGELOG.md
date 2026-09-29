@@ -6,6 +6,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] - Milestone 3: Skill Framework, System Telemetry & Live Metrics
+
+### Added
+- **Extensible Skill Framework**:
+  - Base abstractions (`BaseSkill`, `SkillManifest`, `SkillResult`, `SkillContext`, `SkillExecutor`).
+  - `SkillRegistry` providing capability discovery, duplicate guard, and LLM tool definition export (`get_tool_definitions`).
+  - High-level `SkillService` orchestrating execution, persistent SQLite settings, human approval triggers, and audit logging.
+  - REST endpoints: `GET /api/v1/skills`, `PATCH /api/v1/skills/{name}`, `POST /api/v1/skills/{name}/execute`.
+- **Per-Skill Autonomy & Provenance Guard**:
+  - Permission tiers (`SAFE`, `CONFIRM`, `BLOCKED`) act as initial defaults, fully customizable via database settings (`ask`, `auto`, `auto+log`).
+  - `SkillGuard` provenance tracking distinguishing direct owner prompts from downstream actions following untrusted external data.
+  - Untrusted content isolation via `<untrusted_external_content>` tags.
+  - Non-blocking undo window support (`requires_toast_undo=True`) for low-friction monitoring.
+- **Isolated Local PC Executor (`LocalExecutor`)**:
+  - Per-skill execution timeout barriers (`timeout_seconds`) with clean error recovery and millisecond execution timing.
+  - Async subprocess execution with process group kill on timeout.
+  - Thread-pool delegation for synchronous blocking OS/psutil operations (`run_in_thread`).
+  - Full interface abstraction behind `SkillExecutor` for future remote agent execution.
+- **Built-in System Skills**:
+  - `DateTimeSkill`: host date, time, day of week, timezone, and custom strftime formatting.
+  - `SystemStatsSkill`: CPU (cores and per-core utilization), RAM (total, used, percent), Disk partitions, and battery diagnostics.
+- **Live Telemetry & Historical Metrics Aggregator**:
+  - `MetricsService` polling host performance and streaming `sys:metrics` on the EventBus.
+  - Subscriber-aware telemetry: pauses polling completely when zero subscribers are active on the bus.
+  - Adaptive cadence: 2-second streaming during active interaction, dropping to 15-second background sampling when browser tab is hidden.
+  - 1-minute aggregation persisting average telemetry to SQLite with automatic 30-day retention pruning.
+  - REST endpoints: `GET /api/v1/metrics/current`, `GET /api/v1/metrics/history`, `POST /api/v1/metrics/visibility`.
+- **Testing & Verification**:
+  - 29 new tests covering manifest validation, registry schema export, provenance guard rules, executor timeouts, metrics throttling, and API routes.
+  - Total test suite expanded to 78 passing unit and integration tests.
+
+---
+
 ## [0.2.0] - Milestone 2: Core Orchestration Engine, Auth & Real-Time Bus
 
 ### Added
