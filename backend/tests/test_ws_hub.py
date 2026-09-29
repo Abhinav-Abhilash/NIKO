@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
 
 from backend.app.config import get_settings
 from backend.app.core.security import create_jwt_token

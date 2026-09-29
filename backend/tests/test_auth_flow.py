@@ -45,27 +45,21 @@ async def test_auth_login_me_refresh_and_logout(
     assert me_res.json()["username"] == "niko_admin"
 
     # 4. Refresh token rotation
-    refresh_res = await async_client.post(
-        "/api/v1/auth/refresh",
-        cookies={"niko_refresh_token": refresh_token},
-    )
+    async_client.cookies.set("niko_refresh_token", refresh_token)
+    refresh_res = await async_client.post("/api/v1/auth/refresh")
     assert refresh_res.status_code == 200
     new_refresh_token = refresh_res.cookies["niko_refresh_token"]
     assert new_refresh_token != refresh_token  # Token rotated
 
     # 5. Reuse detection: presenting the old revoked refresh token MUST fail and trigger family revocation
-    reuse_res = await async_client.post(
-        "/api/v1/auth/refresh",
-        cookies={"niko_refresh_token": refresh_token},
-    )
+    async_client.cookies.set("niko_refresh_token", refresh_token)
+    reuse_res = await async_client.post("/api/v1/auth/refresh")
     assert reuse_res.status_code == 401
     assert "reused" in reuse_res.json()["error"]["message"]
 
     # 6. Logout
-    logout_res = await async_client.post(
-        "/api/v1/auth/logout",
-        cookies={"niko_refresh_token": new_refresh_token},
-    )
+    async_client.cookies.set("niko_refresh_token", new_refresh_token)
+    logout_res = await async_client.post("/api/v1/auth/logout")
     assert logout_res.status_code == 200
 
 
