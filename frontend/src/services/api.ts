@@ -3,20 +3,7 @@ import type { AuditLogEntry, ModelRoleMapping, SkillItem } from '../types';
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7421/api/v1';
 
 export class ApiService {
-  private static token: string | null = localStorage.getItem('niko_token');
-
-  public static setToken(token: string | null): void {
-    this.token = token;
-    if (token) {
-      localStorage.setItem('niko_token', token);
-    } else {
-      localStorage.removeItem('niko_token');
-    }
-  }
-
-  public static getToken(): string | null {
-    return this.token || localStorage.getItem('niko_token');
-  }
+  private static isRefreshing = false;
 
   private static async request<T>(
     endpoint: string,
@@ -27,19 +14,25 @@ export class ApiService {
       ...(options.headers as Record<string, string> || {}),
     };
 
-    const token = this.getToken();
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
+    // Always include credentials so httpOnly cookies (niko_access_token) are automatically passed
     const response = await fetch(`${API_BASE}${endpoint}`, {
       ...options,
       headers,
+      credentials: 'include',
     });
 
-    if (response.status === 401) {
-      // Trigger token refresh or prompt unlock
-      console.warn('Unauthorized API request to', endpoint);
+    if (response.status === 401 && endpoint !== '/auth/login' && endpoint !== '/auth/refresh' && endpoint !== '/auth/setup') {
+      if (!this.isRefreshing) {
+        this.isRefreshing = true;
+        try {
+          await this.refreshToken();
+          this.isRefreshing = false;
+          // Retry original request once
+          return await this.request<T>(endpoint, options);
+        } catch {
+          this.isRefreshing = false;
+        }
+      }
     }
 
     if (!response.ok) {
@@ -57,12 +50,52 @@ export class ApiService {
     return response.json();
   }
 
+  // -------------------------------------------------------------------
+  // Authentication & First-Boot Setup (httpOnly Cookies)
+  // -------------------------------------------------------------------
+
+  public static async login(username: string, password: string): Promise<{ user_id: string; username: string; role: string }> {
+    return this.request('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+  }
+
+  public static async setup(username: string, password: string, setupToken: string): Promise<{ message: string; user_id: string; username: string; role: string }> {
+    return this.request('/auth/setup', {
+      method: 'POST',
+      body: JSON.stringify({ username, password, setup_token: setupToken }),
+    });
+  }
+
+  public static async refreshToken(): Promise<{ user_id: string }> {
+    return this.request('/auth/refresh', {
+      method: 'POST',
+    });
+  }
+
+  public static async logout(): Promise<{ message: string }> {
+    return this.request('/auth/logout', {
+      method: 'POST',
+    });
+  }
+
+  public static async getMe(): Promise<{ id: string; username: string; role: string }> {
+    return this.request('/auth/me');
+  }
+
+  // -------------------------------------------------------------------
   // Health & System
+  // -------------------------------------------------------------------
+
   public static async getHealth(): Promise<{ status: string; uptime_seconds: number }> {
     return this.request<{ status: string; uptime_seconds: number }>('/health');
   }
 
+  // -------------------------------------------------------------------
   // Models & Roles
+  // -------------------------------------------------------------------
+
   public static async getModelRoles(): Promise<Record<string, ModelRoleMapping>> {
     try {
       return await this.request<Record<string, ModelRoleMapping>>('/settings/model-roles');
@@ -78,7 +111,10 @@ export class ApiService {
     });
   }
 
+  // -------------------------------------------------------------------
   // Skills
+  // -------------------------------------------------------------------
+
   public static async getSkills(): Promise<SkillItem[]> {
     try {
       const data = await this.request<{ skills: SkillItem[] }>('/skills');
@@ -95,7 +131,10 @@ export class ApiService {
     });
   }
 
+  // -------------------------------------------------------------------
   // Human-in-the-Loop Approvals
+  // -------------------------------------------------------------------
+
   public static async respondToApproval(
     approvalId: string,
     decision: 'approved' | 'rejected'
@@ -106,7 +145,10 @@ export class ApiService {
     });
   }
 
+  // -------------------------------------------------------------------
   // Audit Logs
+  // -------------------------------------------------------------------
+
   public static async getAuditLogs(): Promise<AuditLogEntry[]> {
     try {
       const data = await this.request<{ logs: AuditLogEntry[] }>('/audit/logs');

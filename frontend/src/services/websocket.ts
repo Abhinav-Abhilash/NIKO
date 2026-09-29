@@ -1,5 +1,3 @@
-import { ApiService } from './api';
-
 export type WebSocketEventListener = (payload: any) => void;
 
 export class WebSocketClient {
@@ -25,11 +23,8 @@ export class WebSocketClient {
     }
 
     this.isIntentionalClose = false;
-    const token = ApiService.getToken();
-    const connectUrl = token ? `${this.url}?token=${encodeURIComponent(token)}` : this.url;
-
     try {
-      this.ws = new WebSocket(connectUrl);
+      this.ws = new WebSocket(this.url);
 
       this.ws.onopen = () => {
         this.isConnected = true;
