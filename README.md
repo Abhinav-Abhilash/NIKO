@@ -17,9 +17,15 @@ NIKO is a private, single-owner AI assistant running entirely on your local mach
   - **Single-Use Cryptographic Approvals**: High-impact actions are mathematically bound to their exact arguments via SHA-256 hashes (`args_hash`) with a 30-second TTL, preventing parameter tampering or decision reuse.
   - **Audit Logging**: Comprehensive structured command logs tracking provenance, permission tiers, and execution outcomes.
   - **Hardened Session Management**: Username-keyed exponential backoff rate limiting, JWT access cookies, and refresh token rotation with token family reuse revocation.
-- **Configurable Autonomy**: Every skill defaults to `ask`, `auto`, or `auto+log` and respects a strict provenance rule (actions triggered by untrusted external data require confirmation or offer an undo window).
+- **Configurable Autonomy & Skill Framework (Milestone 3)**:
+  - **Dynamic Skill Registry**: Extensible tool execution framework with automatic LLM tool definition generation for Gemini/Groq/OpenRouter function calling.
+  - **Customizable Autonomy**: Permission tiers (`SAFE`, `CONFIRM`, `BLOCKED`) act as initial defaults, while per-skill autonomy (`ask`, `auto`, `auto+log`) is stored in SQLite and fully editable in settings without permanent lockouts.
+  - **Provenance Tracking & Isolation Guard**: Identifies direct owner requests vs actions proposed downstream of untrusted external content, wrapping untrusted text in `<untrusted_external_content>` containment tags.
+  - **Isolated Local PC Executor**: Subprocess execution with process-level termination on timeout, per-skill execution deadlines (`timeout_seconds`), and clean thread delegation (`run_in_thread`).
+  - **Built-in System Skills**: Host date/time manipulation (`datetime`) and CPU/RAM/Disk/Battery telemetry (`system_stats`).
+  - **Live Metrics Streaming & 30-Day Aggregator**: Subscriber-aware live telemetry streaming over EventBus (`sys:metrics`) at 2s intervals, dynamically throttling to 15s when browser tab is hidden, aggregating 1-minute averages to SQLite, and automatically pruning records older than 30 days.
 - **Hardened SQLite Storage**: Configured with `WAL` journal mode, `PRAGMA foreign_keys = ON`, busy timeouts, and Alembic batch migrations.
-- **Automated Retention**: 7-day WebP screenshot retention, downsampled system metrics, and log rotation to keep your PC storage lean.
+- **Automated Retention**: 7-day WebP screenshot retention, 30-day downsampled system metrics, and log rotation to keep your PC storage lean.
 
 ---
 
@@ -80,7 +86,7 @@ curl http://127.0.0.1:8000/health
 
 ## Testing & Quality Assurance
 
-Run the complete test suite (38+ tests):
+Run the complete test suite (78+ tests):
 ```powershell
 uv run pytest -v
 ```
