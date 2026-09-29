@@ -1,7 +1,7 @@
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Path
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.exceptions import NotFoundError
@@ -10,7 +10,7 @@ from backend.app.db.models import User
 from backend.app.db.session import get_db
 from backend.app.dependencies import get_current_owner
 from backend.app.services.skill_service import SkillService
-from backend.app.skills.base import AutonomyPolicy, ProvenanceType, SkillContext
+from backend.app.skills.base import AutonomyPolicy, SkillContext
 
 router = APIRouter(prefix="/skills", tags=["Skills & Capabilities"])
 
@@ -35,11 +35,9 @@ class SkillUpdatePayload(BaseModel):
 
 
 class SkillExecutePayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     arguments: dict[str, Any] = Field(default_factory=dict, description="Skill execution input parameters")
-    provenance: ProvenanceType = Field(
-        default="direct",
-        description="Execution origin: 'direct' (owner instruction) or 'external_untrusted' (web/file content)",
-    )
     elevated_mode: bool = Field(default=False, description="Whether elevated execution mode is enabled")
 
 
@@ -107,10 +105,11 @@ async def execute_skill(
         raise NotFoundError(f"Skill '{name}' is not registered.")
 
     req_id = request_id_ctx.get()
+    # Provenance is derived strictly server-side: direct API calls by the authenticated owner are 'direct'
     context = SkillContext(
         request_id=req_id,
         user_id=str(current_user.id),
-        provenance=payload.provenance,
+        provenance="direct",
     )
 
     result = await service.execute_skill(
