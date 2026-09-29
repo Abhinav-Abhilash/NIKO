@@ -126,3 +126,18 @@ async def execute_skill(
         error=result.error,
         execution_time_ms=result.execution_time_ms,
     )
+
+
+class UndoCancelResponse(BaseModel):
+    undo_id: str
+    cancelled: bool
+
+
+@router.post("/undo/{undo_id}/cancel", response_model=UndoCancelResponse)
+async def cancel_pending_undo(
+    undo_id: Annotated[str, Path(description="The unique undo operation identifier")],
+    _current_user: Annotated[User, Depends(get_current_owner)],
+) -> UndoCancelResponse:
+    """Cancel a skill execution during its active 5-second undo delay window."""
+    cancelled = SkillService.cancel_undo(undo_id)
+    return UndoCancelResponse(undo_id=undo_id, cancelled=cancelled)

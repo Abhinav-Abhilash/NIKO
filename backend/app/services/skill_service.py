@@ -1,9 +1,11 @@
+import asyncio
 import json
-from typing import Any
+from typing import Any, ClassVar
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.app.core.events import get_event_bus
 from backend.app.core.exceptions import NotFoundError, ValidationFailedError
 from backend.app.core.logging import get_logger
 from backend.app.db.models import SkillConfig, ToolCall
@@ -26,17 +28,30 @@ class SkillService:
     approval requests, execution, and audit logging.
     """
 
+    _active_undo_cancels: ClassVar[dict[str, asyncio.Event]] = {}
+
+    @classmethod
+    def cancel_undo(cls, undo_id: str) -> bool:
+        """Trigger cancellation of a pending undo window. Returns True if cancelled."""
+        event = cls._active_undo_cancels.get(undo_id)
+        if event:
+            event.set()
+            return True
+        return False
+
     def __init__(
         self,
         db: AsyncSession,
         registry: SkillRegistry | None = None,
         executor: SkillExecutor | None = None,
+        undo_window_seconds: float = 5.0,
     ) -> None:
         self.db = db
         self.registry = registry or get_skill_registry()
         self.executor = executor or LocalExecutor()
         self.audit_service = AuditService(db)
         self.approval_service = ApprovalService(db)
+        self.undo_window_seconds = undo_window_seconds
 
     async def initialize_builtin_skills(self) -> None:
         """Register built-in skills and sync default configurations into SQLite."""
@@ -208,7 +223,58 @@ class SkillService:
             )
             return SkillResult(success=False, error=decision.reason)
 
-        # 3. Execute via LocalExecutor under timeout barrier
+        # 3. If undo window is required (e.g. actions proposed downstream of untrusted content),
+        # delay execution until the window closes without a cancel.
+        if decision.requires_toast_undo:
+            undo_id = f"undo_{context.request_id}"
+            cancel_event = asyncio.Event()
+            self._active_undo_cancels[undo_id] = cancel_event
+
+            event_bus = get_event_bus()
+            await event_bus.publish(
+                topic="sys",
+                event_type="toast_undo",
+                payload={
+                    "undo_id": undo_id,
+                    "skill_name": name,
+                    "window_seconds": self.undo_window_seconds,
+                    "reason": decision.reason,
+                },
+            )
+
+            logger.info(
+                "Skill execution delayed for undo window",
+                skill=name,
+                undo_id=undo_id,
+                window_seconds=self.undo_window_seconds,
+            )
+            try:
+                try:
+                    await asyncio.wait_for(cancel_event.wait(), timeout=self.undo_window_seconds)
+                    was_cancelled = True
+                except TimeoutError:
+                    was_cancelled = False
+            finally:
+                self._active_undo_cancels.pop(undo_id, None)
+
+            if was_cancelled:
+                logger.info("Skill execution cancelled by user during undo window", skill=name, undo_id=undo_id)
+                await self.audit_service.record_command(
+                    request_id=context.request_id,
+                    skill_name=name,
+                    permission_tier=decision.effective_tier,
+                    provenance=context.provenance,
+                    arguments=arguments,
+                    status="cancelled_by_user",
+                    user_id=context.user_id,
+                )
+                return SkillResult(
+                    success=False,
+                    error="CANCELLED_BY_USER",
+                    data={"undo_id": undo_id, "reason": "Execution cancelled during undo window."},
+                )
+
+        # 4. Execute via LocalExecutor under timeout barrier
         result = await self.executor.execute(skill, arguments, context)
 
         # 4. Audit execution outcome
