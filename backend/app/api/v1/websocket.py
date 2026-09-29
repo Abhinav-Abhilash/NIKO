@@ -11,6 +11,7 @@ from backend.app.core.events import get_event_bus
 from backend.app.core.exceptions import AuthenticationError
 from backend.app.core.logging import get_logger
 from backend.app.core.security import decode_jwt_token
+from backend.app.llm.exceptions import AllProvidersExhaustedError
 
 logger = get_logger("websocket")
 router = APIRouter(tags=["WebSocket Hub"])
@@ -210,9 +211,63 @@ async def websocket_hub(
                 await db.commit()
         except asyncio.CancelledError:
             logger.info("Chat streaming task cancelled", request_id=req_id)
+            from backend.app.llm.deferred_queue import deferred_queue
+            await deferred_queue.cancel(req_id)
             with contextlib.suppress(Exception):
                 await websocket.send_json({"type": "chat:cancelled", "request_id": req_id})
             await event_bus.publish("chat", "cancelled", {"request_id": req_id, "origin_ws_id": id(websocket)})
+        except AllProvidersExhaustedError:
+            from backend.app.llm.deferred_queue import DeferredChatRequest, deferred_queue
+            target_role = role or "chat"
+            shortest = deferred_queue.get_shortest_reset_for_role(target_role)
+            banner_msg = f"all providers cooling down, shortest reset in {max(1, int(round(shortest)))}s"
+            banner_payload = {
+                "type": "chat:cooldown_banner",
+                "request_id": req_id,
+                "conversation_id": conv_id,
+                "role": str(target_role),
+                "shortest_reset_seconds": shortest,
+                "message": banner_msg,
+            }
+            logger.warning("All providers cooling down for role", role=target_role, message=banner_msg)
+            with contextlib.suppress(Exception):
+                await websocket.send_json(banner_payload)
+
+            loop = asyncio.get_running_loop()
+            future: asyncio.Future = loop.create_future()
+
+            deferred_req = DeferredChatRequest(
+                request_id=req_id,
+                user_id=user_id,
+                user_message=content,
+                conversation_id=conv_id,
+                role=target_role,
+                source=source,
+                is_external=is_external,
+                elevated_mode=elevated_mode,
+                future=future,
+            )
+            await deferred_queue.enqueue(deferred_req)
+
+            try:
+                res = await future
+                with contextlib.suppress(Exception):
+                    if res.get("content"):
+                        await websocket.send_json({
+                            "type": "chat:chunk",
+                            "request_id": req_id,
+                            "conversation_id": conv_id,
+                            "chunk": res.get("content", ""),
+                        })
+                    await websocket.send_json({
+                        "type": "chat:done",
+                        "request_id": req_id,
+                        "conversation_id": conv_id,
+                        "response": res,
+                    })
+            except asyncio.CancelledError:
+                await deferred_queue.cancel(req_id)
+                raise
         except Exception as e:
             logger.error("Error in chat streaming", error=str(e), request_id=req_id)
             with contextlib.suppress(Exception):

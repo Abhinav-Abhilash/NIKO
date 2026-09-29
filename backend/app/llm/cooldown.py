@@ -69,7 +69,7 @@ class PredictiveCooldownTracker:
 
     def __init__(self, predictive_threshold_ratio: float = 0.90):
         self.predictive_threshold_ratio = predictive_threshold_ratio
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._windows: dict[tuple[str, str], QuotaWindow] = {}
 
     def _get_window(self, provider: str, model: str) -> QuotaWindow:
@@ -260,6 +260,25 @@ class PredictiveCooldownTracker:
                 )
         return results
 
+    def get_shortest_cooldown_for_targets(
+        self, targets: list[Any], now: float | None = None
+    ) -> float:
+        """Calculate the shortest remaining cooldown in seconds across a list of targets."""
+        if now is None:
+            now = time.time()
+        remaining_times: list[float] = []
+        for t in targets:
+            provider = getattr(t, "provider", None) if not isinstance(t, dict) else t.get("provider")
+            model = getattr(t, "model", None) if not isinstance(t, dict) else t.get("model")
+            if provider and model:
+                is_cooled, _, remaining = self.is_cooled_down(str(provider), str(model), now=now)
+                if is_cooled and remaining > 0:
+                    remaining_times.append(remaining)
+        if remaining_times:
+            return min(remaining_times)
+        return 0.0
+
 
 # Global singleton tracker
 cooldown_tracker = PredictiveCooldownTracker()
+

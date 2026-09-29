@@ -69,7 +69,11 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
 
     asyncio.create_task(_startup_discovery())
 
+    from backend.app.llm.deferred_queue import deferred_queue
+    deferred_queue.start_worker()
+
     yield
+    deferred_queue.stop_worker()
     await metrics_service.stop_collector()
     logger.info("NIKO backend shutting down")
 

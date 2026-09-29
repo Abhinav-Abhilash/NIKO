@@ -13,8 +13,8 @@ Current Milestone: **Milestone 4 - Multi-Provider LLM & Chat**
 - [x] a. Key redaction in structlog & uvicorn logs
 - [x] b. ChatService (history, sliding context, tool dispatch via SkillService/Guard, provenance tagging, untrusted content wrapping, non-refusing system prompt)
 - [x] c. WebSocket chat streaming (`chat:chunk`, `chat:tool_call`, cancellation)
-- [ ] d. Quota-exhaustion deferred queue + cooldown banner + automatic retry
+- [x] d. Quota-exhaustion deferred queue + cooldown banner + automatic retry
 - [ ] e. Tests, CHANGELOG, README, and ADR for model roles and fallback
 - [ ] f. Final CI verification & push
 
-Next Step: **Task d - Quota-Exhaustion Deferred Queue & Cooldown Banner**
+Next Step: **Task e - Documentation (CHANGELOG, README, ADR) and Test Coverage Verification**

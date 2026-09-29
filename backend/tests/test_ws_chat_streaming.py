@@ -167,3 +167,44 @@ def test_ws_chat_cancellation():
 
             assert "chat:cancel_ack" in received_types or "chat:cancelled" in received_types
 
+
+def test_ws_chat_cooldown_banner_on_exhaustion():
+    """Verify chat streaming emits chat:cooldown_banner when all providers are exhausted."""
+    from backend.app.llm.exceptions import AllProvidersExhaustedError
+
+    app = create_app()
+    client = TestClient(app)
+    settings = get_settings()
+
+    valid_token = create_jwt_token(
+        payload={"sub": "user_ws_exhaust", "username": "ws_exhaust_owner", "role": "owner"},
+        secret_key=settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+        expires_delta=timedelta(minutes=15),
+    )
+
+    async def mock_exhausted_stream(*args, **kwargs):
+        if False:
+            yield
+        raise AllProvidersExhaustedError(
+            role="chat",
+            attempts=[{"target": "gemini/gemini-2.0-flash", "status": "cooldown: predictive"}],
+        )
+
+    with patch("backend.app.llm.orchestrator.LLMOrchestrator.chat_stream", side_effect=mock_exhausted_stream):
+        with client.websocket_connect(
+            f"/ws?token={valid_token}", headers={"origin": "http://localhost:5173"}
+        ) as ws:
+            ws.send_json({
+                "type": "chat",
+                "request_id": "req-exhaust-1",
+                "content": "Perform exhausted request",
+            })
+
+            msg = ws.receive_json()
+            assert msg.get("type") == "chat:cooldown_banner"
+            assert "all providers cooling down, shortest reset in" in msg.get("message", "")
+            assert msg.get("role") == "chat"
+            assert msg.get("shortest_reset_seconds") is not None
+
+
