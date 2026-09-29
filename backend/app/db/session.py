@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.pool import NullPool
 
 from backend.app.config import get_settings
 
@@ -35,6 +36,7 @@ def create_engine_and_sessionmaker() -> tuple[AsyncEngine, async_sessionmaker[As
         settings.DATABASE_URL,
         echo=settings.DEBUG,
         future=True,
+        poolclass=NullPool,
     )
     configure_sqlite_pragmas(engine)
 
