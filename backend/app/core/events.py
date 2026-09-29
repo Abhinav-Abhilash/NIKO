@@ -29,6 +29,19 @@ class EventBus:
         self._global_subscribers: set[asyncio.Queue[Event]] = set()
         self._lock = asyncio.Lock()
 
+    def has_subscribers(self, topic: str | None = None) -> bool:
+        """Return True if there is at least one active subscriber for the given topic or globally."""
+        if self._global_subscribers:
+            return True
+        if topic is None:
+            return bool(self._subscribers)
+        if topic in self._subscribers and self._subscribers[topic]:
+            return True
+        for key, queues in self._subscribers.items():
+            if (key.startswith(f"{topic}:") or key == topic) and queues:
+                return True
+        return False
+
     async def publish(self, topic: str, event_type: str, payload: dict[str, Any]) -> None:
         """Publish an event to all subscribers of the topic and global subscribers."""
         event = Event(topic=topic, event_type=event_type, payload=payload)
