@@ -12,10 +12,14 @@ from fastapi.responses import JSONResponse
 from backend.app.api.v1.approvals import router as approvals_router
 from backend.app.api.v1.auth import router as auth_router
 from backend.app.api.v1.health import router as health_router
+from backend.app.api.v1.metrics import router as metrics_router
+from backend.app.api.v1.skills import router as skills_router
 from backend.app.api.v1.websocket import router as ws_router
 from backend.app.config import get_settings
 from backend.app.core.exceptions import register_exception_handlers
 from backend.app.core.logging import get_logger, request_id_ctx, setup_logging
+from backend.app.db.session import get_session_maker
+from backend.app.services.metrics_service import get_metrics_service
 
 logger = get_logger("main")
 
@@ -32,7 +36,10 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
         host=settings.HOST,
         port=settings.PORT,
     )
+    metrics_service = get_metrics_service(session_factory=get_session_maker())
+    await metrics_service.start_collector()
     yield
+    await metrics_service.stop_collector()
     logger.info("NIKO backend shutting down")
 
 
@@ -152,6 +159,8 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(approvals_router, prefix="/api/v1")
+    app.include_router(skills_router, prefix="/api/v1")
+    app.include_router(metrics_router, prefix="/api/v1")
     app.include_router(ws_router)
 
     return app
