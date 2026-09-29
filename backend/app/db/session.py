@@ -48,13 +48,38 @@ def create_engine_and_sessionmaker() -> tuple[AsyncEngine, async_sessionmaker[As
     return engine, session_maker
 
 
-# Global engine and sessionmaker instances
-engine, async_session_maker = create_engine_and_sessionmaker()
+# Internal singleton instances
+_engine: AsyncEngine | None = None
+_session_maker: async_sessionmaker[AsyncSession] | None = None
+
+
+def get_engine() -> AsyncEngine:
+    global _engine, _session_maker
+    if _engine is None:
+        _engine, _session_maker = create_engine_and_sessionmaker()
+    return _engine
+
+
+def get_session_maker() -> async_sessionmaker[AsyncSession]:
+    global _engine, _session_maker
+    if _session_maker is None:
+        _engine, _session_maker = create_engine_and_sessionmaker()
+    return _session_maker
+
+
+def __getattr__(name: str) -> Any:
+    """Allow backward-compatible module-level access to engine and async_session_maker lazily."""
+    if name == "engine":
+        return get_engine()
+    if name == "async_session_maker":
+        return get_session_maker()
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Dependency for providing an async database session per request."""
-    async with async_session_maker() as session:
+    session_maker = get_session_maker()
+    async with session_maker() as session:
         try:
             yield session
             await session.commit()
