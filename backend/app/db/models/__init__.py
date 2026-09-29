@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import Boolean, Float, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.app.db.base import Base, TimestampMixin, UUIDMixin, get_utc_now
+from backend.app.db.base import Base, TimestampMixin, UTCDateTime, UUIDMixin, get_utc_now
 
 
 class User(Base, UUIDMixin, TimestampMixin):
@@ -35,7 +35,7 @@ class Session(Base, UUIDMixin, TimestampMixin):
     )
     family_id: Mapped[str] = mapped_column(String(36), index=True, nullable=False)
     is_revoked: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
     ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
     user_agent: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
@@ -110,8 +110,8 @@ class Approval(Base, UUIDMixin, TimestampMixin):
     status: Mapped[str] = mapped_column(
         String(20), default="pending", nullable=False
     )  # pending, approved, denied, expired
-    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
+    decided_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     decided_by: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
@@ -143,7 +143,7 @@ class CommandLog(Base, UUIDMixin):
     )  # success, failed, blocked, denied
     client_ip: Mapped[str | None] = mapped_column(String(45), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=get_utc_now, nullable=False
+        UTCDateTime, default=get_utc_now, nullable=False
     )
 
     approval: Mapped["Approval | None"] = relationship("Approval", back_populates="command_logs")
@@ -179,7 +179,7 @@ class LLMProviderModel(Base, UUIDMixin, TimestampMixin):
     enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     total_tokens_used: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     total_calls: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_used_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
 
 
 class Setting(Base):
@@ -189,7 +189,7 @@ class Setting(Base):
     value_json: Mapped[str] = mapped_column(Text, nullable=False)
     category: Mapped[str] = mapped_column(String(50), default="general", nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=get_utc_now, onupdate=get_utc_now, nullable=False
+        UTCDateTime, default=get_utc_now, onupdate=get_utc_now, nullable=False
     )
 
 
@@ -202,7 +202,7 @@ class SystemMetric(Base):
     disk_percent: Mapped[float] = mapped_column(Float, nullable=False)
     battery_percent: Mapped[float | None] = mapped_column(Float, nullable=True)
     timestamp: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=get_utc_now, nullable=False
+        UTCDateTime, default=get_utc_now, nullable=False
     )
 
     __table_args__ = (Index("ix_system_metrics_timestamp", "timestamp"),)
@@ -216,7 +216,7 @@ class Reminder(Base, UUIDMixin, TimestampMixin):
     )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    trigger_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    trigger_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
     status: Mapped[str] = mapped_column(
         String(20), default="scheduled", nullable=False
     )  # scheduled, fired, cancelled
@@ -232,5 +232,5 @@ class StorageReport(Base, UUIDMixin):
     logs_size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     free_disk_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=get_utc_now, nullable=False
+        UTCDateTime, default=get_utc_now, nullable=False
     )
