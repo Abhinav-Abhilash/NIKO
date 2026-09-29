@@ -57,7 +57,7 @@ class SkillGuard:
         manifest: SkillManifest,
         context: SkillContext,
         stored_config: SkillConfig | None = None,
-        elevated_mode: bool = False,
+        elevated_mode: bool = False,  # noqa: ARG004 (BLOCKED skills are strictly forbidden under all modes)
     ) -> GuardDecision:
         # Determine effective tier and autonomy policy (allowing DB settings and context overrides)
         effective_tier: SkillTier = (
