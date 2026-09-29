@@ -63,7 +63,7 @@ async def test_skills_api_list_and_update(
     # 3. Execute datetime under 'ask' -> triggers confirmation required
     exec_res = await async_client.post(
         "/api/v1/skills/datetime/execute",
-        json={"arguments": {}, "provenance": "direct"},
+        json={"arguments": {}},
         headers=headers,
     )
     assert exec_res.status_code == 200
@@ -84,13 +84,31 @@ async def test_skills_api_list_and_update(
     # 5. Execute datetime under 'auto' -> executes immediately
     exec_ok = await async_client.post(
         "/api/v1/skills/datetime/execute",
-        json={"arguments": {}, "provenance": "direct"},
+        json={"arguments": {}},
         headers=headers,
     )
     assert exec_ok.status_code == 200
     data: dict[str, Any] = exec_ok.json()
     assert data["success"] is True
     assert "iso_local" in data["data"]
+
+
+@pytest.mark.asyncio
+async def test_provenance_cannot_be_supplied_by_client(
+    async_client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    """Provenance must be derived server-side only: never from a request body."""
+    _, headers = await _create_test_owner(db_session)
+
+    res = await async_client.post(
+        "/api/v1/skills/datetime/execute",
+        json={"arguments": {}, "provenance": "direct"},
+        headers=headers,
+    )
+    assert res.status_code == 422
+    err_body = res.json()
+    assert "extra_forbidden" in str(err_body) or "provenance" in str(err_body)
 
 
 @pytest.mark.asyncio
