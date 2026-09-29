@@ -1,3 +1,4 @@
+import os
 import secrets
 from pathlib import Path
 
@@ -13,6 +14,10 @@ def generate_env() -> None:
     fernet_key = Fernet.generate_key().decode()
     jwt_secret = secrets.token_urlsafe(32)
     setup_token = secrets.token_hex(24)
+
+    gemini_key = os.environ.get("INITIAL_GEMINI_API_KEY", "")
+    groq_key = os.environ.get("INITIAL_GROQ_API_KEY", "")
+    openrouter_key = os.environ.get("INITIAL_OPENROUTER_API_KEY", "")
 
     lines = [
         "# Auto-generated NIKO Environment Configuration",
@@ -39,9 +44,9 @@ def generate_env() -> None:
         "STORAGE_DIR=storage",
         "LOG_LEVEL=INFO",
         "",
-        "INITIAL_GEMINI_API_KEY=REMOVED",
-        "INITIAL_GROQ_API_KEY=REMOVED",
-        "INITIAL_OPENROUTER_API_KEY=REMOVED",
+        f"INITIAL_GEMINI_API_KEY={gemini_key}",
+        f"INITIAL_GROQ_API_KEY={groq_key}",
+        f"INITIAL_OPENROUTER_API_KEY={openrouter_key}",
     ]
 
     env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
