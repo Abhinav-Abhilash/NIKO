@@ -29,6 +29,11 @@ jobs:
         run: |
           uv sync --all-extras --dev
 
+      - name: Generate Runtime Test Environment Secrets
+        shell: bash
+        run: |
+          uv run python -c "from cryptography.fernet import Fernet; import secrets; print(f'ENCRYPTION_KEY={Fernet.generate_key().decode()}'); print(f'JWT_SECRET_KEY={secrets.token_urlsafe(48)}'); print(f'SETUP_TOKEN={secrets.token_urlsafe(24)}'); print('APP_ENV=test')" >> $GITHUB_ENV
+
       - name: Run Ruff Lint
         run: |
           uv run ruff check .
