@@ -26,6 +26,8 @@ class MetricsService:
 
     ACTIVE_INTERVAL: float = 2.0
     BACKGROUND_INTERVAL: float = 15.0
+    UNSUBSCRIBED_INTERVAL: float = 60.0
+    AGGREGATION_INTERVAL: float = 60.0
     DEFAULT_RETENTION_DAYS: int = 30
 
     def __init__(
@@ -98,10 +100,27 @@ class MetricsService:
         )
         return metrics
 
+    async def sample_background_unsubscribed(self) -> dict[str, Any]:
+        """
+        Low-rate (1/min) background sample when no client is subscribed.
+        Buffers for 1-minute historical aggregate persistence without publishing to EventBus.
+        """
+        metrics = await asyncio.to_thread(self.sample_current_metrics)
+        self._samples_buffer.append(
+            {
+                "cpu": metrics["cpu_percent"],
+                "ram": metrics["ram_percent"],
+                "disk": metrics["disk_percent"],
+                "battery": metrics["battery_percent"] or 0.0,
+            }
+        )
+        return metrics
+
     async def aggregate_and_persist(self, db: AsyncSession) -> SystemMetric | None:
         """Calculate average of buffered 1-minute samples and persist a SystemMetric row."""
         if not self._samples_buffer:
-            return None
+            # Low-rate on-demand sample so history never has gaps even when unsubscribed
+            await self.sample_background_unsubscribed()
 
         count = len(self._samples_buffer)
         avg_cpu = sum(s["cpu"] for s in self._samples_buffer) / count
@@ -155,19 +174,29 @@ class MetricsService:
 
         async def _loop() -> None:
             last_aggregate_time = datetime.now(UTC)
+            last_unsubscribed_sample = datetime.now(UTC)
             with contextlib.suppress(asyncio.CancelledError):
                 while True:
-                    await self.collect_and_publish_tick()
+                    has_subscribers = self.event_bus.has_subscribers("sys")
+                    if has_subscribers:
+                        await self.collect_and_publish_tick()
+                        sleep_interval = self.current_interval
+                    else:
+                        now = datetime.now(UTC)
+                        if (now - last_unsubscribed_sample).total_seconds() >= self.UNSUBSCRIBED_INTERVAL:
+                            await self.sample_background_unsubscribed()
+                            last_unsubscribed_sample = now
+                        sleep_interval = min(5.0, self.UNSUBSCRIBED_INTERVAL)
 
                     # Check 1-minute aggregation trigger
                     now = datetime.now(UTC)
-                    if (now - last_aggregate_time).total_seconds() >= 60.0:
+                    if (now - last_aggregate_time).total_seconds() >= self.AGGREGATION_INTERVAL:
                         if self.session_factory:
                             async with self.session_factory() as db:
                                 await self.aggregate_and_persist(db)
                         last_aggregate_time = now
 
-                    await asyncio.sleep(self.current_interval)
+                    await asyncio.sleep(sleep_interval)
 
         self._collector_task = asyncio.create_task(_loop())
         logger.info("Started background system metrics collector loop")
