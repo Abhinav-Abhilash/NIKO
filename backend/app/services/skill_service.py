@@ -1,3 +1,4 @@
+import json
 from typing import Any
 
 from sqlalchemy import select
@@ -5,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.exceptions import NotFoundError, ValidationFailedError
 from backend.app.core.logging import get_logger
-from backend.app.db.models import SkillConfig
+from backend.app.db.models import SkillConfig, ToolCall
 from backend.app.services.approval_service import ApprovalService
 from backend.app.services.audit_service import AuditService
 from backend.app.skills.base import AutonomyPolicy, SkillContext, SkillExecutor, SkillResult
@@ -159,8 +160,16 @@ class SkillService:
         if decision.requires_approval:
             # Need to stage approval request
             logger.info("Human confirmation required for skill execution", skill=name, reason=decision.reason)
+            tool_call = ToolCall(
+                skill_name=name,
+                arguments_json=json.dumps(arguments),
+                status="awaiting_approval",
+            )
+            self.db.add(tool_call)
+            await self.db.flush()
+
             approval = await self.approval_service.create_approval(
-                tool_call_id=f"tc_{context.request_id}",
+                tool_call_id=tool_call.id,
                 arguments=arguments,
                 skill_name=name,
                 expires_in_seconds=30,
