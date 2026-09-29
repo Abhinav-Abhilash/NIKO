@@ -67,6 +67,18 @@ class ApprovalService:
             },
         )
 
+        await self.event_bus.publish(
+            topic="chat",
+            event_type="tool_call",
+            payload={
+                "tool_call_id": tool_call_id,
+                "skill_name": skill_name,
+                "arguments": arguments,
+                "status": "awaiting_approval",
+                "approval_id": approval.id,
+            },
+        )
+
         return approval
 
     async def respond(
@@ -126,6 +138,17 @@ class ApprovalService:
                 "tool_call_id": resolved.tool_call_id,
                 "status": resolved.status,
                 "decided_by": user_id,
+            },
+        )
+
+        await self.event_bus.publish(
+            topic="chat",
+            event_type="tool_call",
+            payload={
+                "tool_call_id": resolved.tool_call_id,
+                "approval_id": resolved.id,
+                "status": "running" if target_status == "approved" else "rejected",
+                "decision": target_status,
             },
         )
 

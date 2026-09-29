@@ -36,10 +36,13 @@ class EventBus:
         async with self._lock:
             # Target topic queues
             topic_queues = self._subscribers.get(topic, set()).copy()
+            # Compound topic:event_type queues (e.g. approval:resolved, chat:tool_call)
+            compound_key = f"{topic}:{event_type}"
+            compound_queues = self._subscribers.get(compound_key, set()).copy()
             # Global queues (all topics)
             global_queues = self._global_subscribers.copy()
 
-        all_queues = topic_queues.union(global_queues)
+        all_queues = topic_queues.union(compound_queues).union(global_queues)
         if not all_queues:
             return
 
