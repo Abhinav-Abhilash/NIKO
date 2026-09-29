@@ -116,3 +116,28 @@ async def test_metrics_service_prune_stale_metrics(db_session: AsyncSession) -> 
     remaining = (await db_session.execute(select(SystemMetric))).scalars().all()
     assert any(m.cpu_percent == 15.0 for m in remaining)
     assert not any(m.cpu_percent == 55.0 for m in remaining)
+
+
+@pytest.mark.asyncio
+async def test_metrics_service_unsubscribed_gapless_persistence(db_session: AsyncSession) -> None:
+    """When no client is subscribed, background sampling persists records so history has no gaps."""
+    bus = EventBus()
+    service = MetricsService(event_bus=bus)
+
+    # Verify bus has no subscribers
+    assert bus.has_subscribers("sys") is False
+
+    # Low-rate background sample does not publish to event bus
+    sample = await service.sample_background_unsubscribed()
+    assert "cpu_percent" in sample
+    assert len(service._samples_buffer) == 1
+
+    # Aggregating persists to database without gaps
+    record = await service.aggregate_and_persist(db_session)
+    assert record is not None
+    assert record.cpu_percent == sample["cpu_percent"]
+
+    # Even with an empty buffer, aggregate_and_persist samples automatically to prevent gaps
+    empty_buffer_record = await service.aggregate_and_persist(db_session)
+    assert empty_buffer_record is not None
+    assert empty_buffer_record.cpu_percent >= 0.0
