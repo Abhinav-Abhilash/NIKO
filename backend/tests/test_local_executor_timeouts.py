@@ -107,3 +107,11 @@ async def test_run_in_thread() -> None:
 
     res = await LocalExecutor.run_in_thread(sync_compute, 6, 7)
     assert res == 42
+
+
+@pytest.mark.asyncio
+async def test_worker_thread_pool_is_bounded() -> None:
+    from backend.app.skills.executor import get_worker_thread_pool
+
+    pool = get_worker_thread_pool()
+    assert pool._max_workers == 4
