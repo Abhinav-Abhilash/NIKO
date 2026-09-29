@@ -1,20 +1,31 @@
 # NIKO Project Status
 
-Current Milestone: **Milestone 4 - Multi-Provider LLM & Chat**
+Current Milestone: **Milestone 5 - Autonomous AI Cockpit (Frontend & Desktop Shell)**
 
 ## Current Progress
-- [x] Architecture & Model Registry definition (`docs/MODELS.md`)
-- [x] Gemini Provider (`gemini-2.0-flash`, `gemini-2.0-flash-lite`) with SSE streaming & tool calling
-- [x] Groq Provider (`openai/gpt-oss-120b`, `llama-3.3-70b-versatile`, etc.) with LPU streaming
-- [x] OpenRouter Provider (`openrouter/free`, `qwen/qwen-2.5-coder-32b-instruct:free`) for code role fallback
-- [x] Predictive Cooldown Tracker & Live Model Discovery Service
-- [x] Multi-Provider LLM Orchestrator with role fallback, cooldown avoidance, and tool output pruning
-- [x] Model Roles & Settings Persistence + Admin Endpoints
-- [x] a. Key redaction in structlog & uvicorn logs
-- [x] b. ChatService (history, sliding context, tool dispatch via SkillService/Guard, provenance tagging, untrusted content wrapping, non-refusing system prompt)
-- [x] c. WebSocket chat streaming (`chat:chunk`, `chat:tool_call`, cancellation)
-- [x] d. Quota-exhaustion deferred queue + cooldown banner + automatic retry
-- [x] e. Tests, CHANGELOG, README, and ADR for model roles and fallback
-- [x] f. Final CI verification & push
+- [x] **Milestone 4 - Multi-Provider LLM & Chat (Complete)**
+  - Architecture & Model Registry (`docs/MODELS.md`)
+  - Gemini, Groq, OpenRouter, and Ollama providers
+  - Predictive Cooldown Tracker & Live Discovery Service
+  - Multi-Provider LLM Orchestrator with sequential role fallback & tool pruning
+  - Key redaction in structured logging
+  - ChatService with sliding context & provenance tagging
+  - WebSocket chat streaming (`chat:chunk`, `chat:tool_call`, `chat:done`, cancellation)
+  - Quota-exhaustion deferred queue & cooldown banner
+- [x] **Milestone 5 - UI & Frontend Cockpit (In Progress)**
+  - [x] Google Stitch AI Cockpit UI design system integration & design tokens
+  - [x] Vite + React + TypeScript + Tailwind CSS application setup (`frontend/`)
+  - [x] WebSocket client service with auto-reconnect, heartbeat ping, and EventBus multiplexing
+  - [x] Cockpit Header & Real-time Telemetry (Core status, CPU, RAM, Ping, Active Model)
+  - [x] Signature Animated Concentric SVG Reactor Core (`CockpitCore.tsx`)
+  - [x] Streaming Chat Viewport with tool execution cards and provenance wrapping (`ChatCockpit.tsx`)
+  - [x] Human-in-the-Loop (HITL) Permission Confirmation Modal (`ApprovalModal.tsx`)
+  - [x] Global Command Palette with ⌘K search & execution launcher (`CommandPalette.tsx`)
+  - [x] Real-time Telemetry & Latency Dashboard (`DashboardView.tsx`)
+  - [x] Agent Skills & Sandboxing Control View (`SkillsView.tsx`)
+  - [x] Model Roles Configuration & Priority Fallback View (`SettingsView.tsx`)
+  - [x] Cryptographic Tamper-Evident Audit Trail View (`AuditView.tsx`)
+  - [x] Operator JWT Authentication Unlock Modal (`LoginModal.tsx`)
+  - [ ] Electron Desktop Shell wrapper & system tray integration
 
-Next Step: **Milestone 4 Complete - Ready for Milestone 5 (Electron Desktop Shell & UI)**
+Next Step: **Electron Desktop Shell Wrapper (tray, global shortcuts, IPC)**
