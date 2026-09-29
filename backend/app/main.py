@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
+from backend.app.api.v1.approvals import router as approvals_router
 from backend.app.api.v1.auth import router as auth_router
 from backend.app.api.v1.health import router as health_router
 from backend.app.api.v1.websocket import router as ws_router
@@ -78,6 +79,7 @@ def create_app() -> FastAPI:
     # 5. Route Inclusions
     app.include_router(health_router)
     app.include_router(auth_router, prefix="/api/v1")
+    app.include_router(approvals_router, prefix="/api/v1")
     app.include_router(ws_router)
 
     return app
