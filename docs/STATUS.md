@@ -11,10 +11,10 @@ Current Milestone: **Milestone 4 - Multi-Provider LLM & Chat**
 - [x] Multi-Provider LLM Orchestrator with role fallback, cooldown avoidance, and tool output pruning
 - [x] Model Roles & Settings Persistence + Admin Endpoints
 - [x] a. Key redaction in structlog & uvicorn logs
-- [ ] b. ChatService (history, sliding context, tool dispatch via SkillService/Guard, provenance tagging, untrusted content wrapping, non-refusing system prompt)
+- [x] b. ChatService (history, sliding context, tool dispatch via SkillService/Guard, provenance tagging, untrusted content wrapping, non-refusing system prompt)
 - [ ] c. WebSocket chat streaming (`chat:chunk`, `chat:tool_call`, cancellation)
 - [ ] d. Quota-exhaustion deferred queue + cooldown banner + automatic retry
 - [ ] e. Tests, CHANGELOG, README, and ADR for model roles and fallback
 - [ ] f. Final CI verification & push
 
-Next Step: **Task b - ChatService Implementation**
+Next Step: **Task c - WebSocket Chat Streaming with Cancellation Support**

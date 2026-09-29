@@ -274,3 +274,26 @@ class LLMOrchestrator:
                 continue
 
         raise AllProvidersExhaustedError(role=str(role), attempts=attempts)
+
+
+_orchestrator_instance: LLMOrchestrator | None = None
+
+
+def get_llm_orchestrator(
+    provider_keys: dict[str, str] | None = None,
+    roles_config: ModelRolesConfig | None = None,
+) -> LLMOrchestrator:
+    global _orchestrator_instance
+    if _orchestrator_instance is None:
+        _orchestrator_instance = LLMOrchestrator(
+            provider_keys=provider_keys,
+            roles_config=roles_config,
+        )
+    else:
+        if provider_keys:
+            for p, k in provider_keys.items():
+                _orchestrator_instance.set_provider_key(p, k)
+        if roles_config:
+            _orchestrator_instance.set_roles_config(roles_config)
+    return _orchestrator_instance
+

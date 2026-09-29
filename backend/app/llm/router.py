@@ -87,3 +87,7 @@ def route_prompt_role(
 
     # 5. Default: conversational chat
     return ModelRole.CHAT
+
+
+route_role_heuristically = route_prompt_role
+
