@@ -1,4 +1,16 @@
+import os
+import tempfile
 from collections.abc import AsyncGenerator
+
+# Set safe test defaults before importing backend.app so tests run without .env
+_test_db_file = os.path.join(tempfile.gettempdir(), "niko_test.db").replace("\\", "/")
+TEST_DB_URL = f"sqlite+aiosqlite:///{_test_db_file}"
+
+os.environ.setdefault("DATABASE_URL", TEST_DB_URL)
+os.environ.setdefault("ENCRYPTION_KEY", "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY=")
+os.environ.setdefault("JWT_SECRET_KEY", "ci_test_jwt_secret_key_1234567890_abcdefghijklmnop")
+os.environ.setdefault("SETUP_TOKEN", "test_setup_token_12345")
+os.environ.setdefault("APP_ENV", "test")
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -14,18 +26,13 @@ from backend.app.db.base import Base
 from backend.app.db.session import configure_sqlite_pragmas, get_db
 from backend.app.main import create_app
 
-# Test database: use a test SQLite database
-TEST_DB_URL = "sqlite+aiosqlite:///storage/test_niko.db"
-
 
 @pytest.fixture(scope="session")
 def test_settings() -> Settings:
     settings = get_settings()
     settings.DATABASE_URL = TEST_DB_URL
     settings.SETUP_TOKEN = "test_setup_token_12345"
-    settings.ENCRYPTION_KEY = (
-        "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY="  # Valid 32-byte Fernet base64 key
-    )
+    settings.ENCRYPTION_KEY = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY="
     settings.TRUSTED_HOSTS = ["127.0.0.1", "localhost", "testserver"]
     settings.WS_ALLOWED_ORIGINS = ["http://127.0.0.1:5173", "http://localhost:5173"]
     settings.ensure_directories()
