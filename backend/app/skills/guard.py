@@ -72,10 +72,10 @@ class SkillGuard:
             else manifest.default_autonomy
         )
 
-        # 1. Blocked tier check
-        if effective_tier == "BLOCKED" and not elevated_mode:
+        # 1. Blocked tier check: BLOCKED tier skills are strictly forbidden and non-runnable under any mode
+        if effective_tier == "BLOCKED":
             logger.warning(
-                "Skill blocked by BLOCKED tier",
+                "Skill strictly blocked by BLOCKED tier",
                 skill_name=manifest.name,
                 provenance=context.provenance,
             )
@@ -84,7 +84,7 @@ class SkillGuard:
                 requires_approval=False,
                 effective_tier=effective_tier,
                 effective_autonomy=effective_autonomy,
-                reason=f"Skill '{manifest.name}' is in BLOCKED tier. Enable Elevated Mode in Settings to authorize.",
+                reason=f"Skill '{manifest.name}' is in BLOCKED tier and cannot be executed.",
             )
 
         # 2. Provenance Rule: Actions proposed after reading untrusted external data

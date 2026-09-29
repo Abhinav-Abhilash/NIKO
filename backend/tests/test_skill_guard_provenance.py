@@ -106,7 +106,7 @@ def test_guard_db_config_overrides_manifest() -> None:
     assert decision.requires_approval is False
 
 
-def test_guard_blocked_tier_requires_elevated_mode() -> None:
+def test_guard_blocked_tier_strictly_forbidden_in_all_modes() -> None:
     manifest = SkillManifest(
         name="dangerous_skill",
         description="test",
@@ -115,12 +115,14 @@ def test_guard_blocked_tier_requires_elevated_mode() -> None:
     )
     ctx = SkillContext(request_id="req6", provenance="direct")
 
-    # Without elevated mode -> blocked
+    # Unconditionally blocked in normal mode
     decision = SkillGuard.evaluate(manifest=manifest, context=ctx, elevated_mode=False)
     assert decision.execute_immediately is False
     assert decision.requires_approval is False
     assert "BLOCKED tier" in decision.reason
 
-    # With elevated mode -> allows direct execution if autonomy is auto
+    # Also strictly blocked even if elevated_mode=True
     decision_elevated = SkillGuard.evaluate(manifest=manifest, context=ctx, elevated_mode=True)
-    assert decision_elevated.execute_immediately is True
+    assert decision_elevated.execute_immediately is False
+    assert decision_elevated.requires_approval is False
+    assert "BLOCKED tier" in decision_elevated.reason
