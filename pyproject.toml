@@ -87,6 +87,7 @@ module = [
     "screen_brightness_control.*",
     "mss.*",
     "PIL.*",
+    "psutil.*",
 ]
 ignore_missing_imports = true
 
