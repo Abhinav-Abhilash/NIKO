@@ -1,12 +1,12 @@
-import json
 import time
-from typing import Any, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import Any
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import AsyncMock, patch
 
 from backend.app.llm.base import BaseLLMProvider
 from backend.app.llm.cooldown import PredictiveCooldownTracker
-from backend.app.llm.defaults import get_default_roles_config
 from backend.app.llm.discovery import ModelDiscoveryService
 from backend.app.llm.exceptions import (
     AllProvidersExhaustedError,
@@ -20,7 +20,6 @@ from backend.app.llm.types import (
     LLMResponse,
     ModelRole,
     ModelRolesConfig,
-    NormalizedToolCall,
     RoleModelTarget,
     StreamChunk,
 )
@@ -82,7 +81,7 @@ class MockProvider(BaseLLMProvider):
 
 
 @pytest.mark.asyncio
-async def test_role_fallback_order():
+async def test_role_fallback_order() -> None:
     """Verify orchestrator tries targets in exact role order on failure/429."""
     config = ModelRolesConfig(
         chat=[
@@ -116,7 +115,7 @@ async def test_role_fallback_order():
 
 
 @pytest.mark.asyncio
-async def test_missing_model_skip():
+async def test_missing_model_skip() -> None:
     """Verify that models not discovered or 404ing are skipped with warning without failing."""
     config = ModelRolesConfig(
         light=[
@@ -143,7 +142,7 @@ async def test_missing_model_skip():
 
 
 @pytest.mark.asyncio
-async def test_all_providers_exhausted_raises():
+async def test_all_providers_exhausted_raises() -> None:
     """Verify AllProvidersExhaustedError is raised if all candidates in sequence fail."""
     config = ModelRolesConfig(
         code=[
@@ -170,7 +169,7 @@ async def test_all_providers_exhausted_raises():
     assert len(exc_info.value.attempts) == 2
 
 
-def test_predictive_cooldown_tracker():
+def test_predictive_cooldown_tracker() -> None:
     """Verify predictive cooldown triggers BEFORE reaching the limit (at 90% quota)."""
     tracker = PredictiveCooldownTracker(predictive_threshold_ratio=0.90)
 
@@ -188,7 +187,7 @@ def test_predictive_cooldown_tracker():
     assert remaining > 0
 
 
-def test_upstream_429_cooldown():
+def test_upstream_429_cooldown() -> None:
     """Verify real 429 response engages forced cooldown with Retry-After header."""
     tracker = PredictiveCooldownTracker()
     now = time.time()
@@ -201,7 +200,7 @@ def test_upstream_429_cooldown():
     assert 30 <= remaining <= 36
 
 
-def test_heuristic_role_router():
+def test_heuristic_role_router() -> None:
     """Verify cheap heuristics correctly route code, search, light, and chat prompts."""
     # Code prompts
     assert route_prompt_role("def calculate_fibonacci(n):\n    return n") == ModelRole.CODE
@@ -225,7 +224,7 @@ def test_heuristic_role_router():
     assert route_prompt_role("Write a creative bedtime story about a friendly robot.") == ModelRole.CHAT
 
 
-def test_prune_tool_output_truncation():
+def test_prune_tool_output_truncation() -> None:
     """Verify tool output is pruned with head-tail truncation when exceeding 1200 tokens (~4800 chars)."""
     short_output = "Short tool result: OK"
     assert prune_tool_output(short_output, max_tokens=1200) == short_output
@@ -240,7 +239,7 @@ def test_prune_tool_output_truncation():
 
 
 @pytest.mark.asyncio
-async def test_discovery_skips_unreachable():
+async def test_discovery_skips_unreachable() -> None:
     """Verify model discovery returns empty or skips gracefully if endpoint fails."""
     service = ModelDiscoveryService()
 

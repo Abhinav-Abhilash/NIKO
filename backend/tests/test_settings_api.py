@@ -1,12 +1,13 @@
-import pytest
 from datetime import timedelta
+
+import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.config import get_settings
 from backend.app.core.security import create_jwt_token, hash_password
 from backend.app.db.models import User
-from backend.app.llm.types import ModelRole, ModelRolesConfig, RoleModelTarget
+from backend.app.llm.types import ModelRolesConfig, RoleModelTarget
 from backend.app.main import app
 
 
@@ -36,7 +37,7 @@ async def owner_token_and_headers(db_session: AsyncSession) -> dict[str, str]:
 
 
 @pytest.mark.asyncio
-async def test_get_and_put_model_roles(owner_token_and_headers: dict[str, str]):
+async def test_get_and_put_model_roles(owner_token_and_headers: dict[str, str]) -> None:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://127.0.0.1:8000") as client:
         # 1. Get default model roles
@@ -90,7 +91,7 @@ async def test_get_and_put_model_roles(owner_token_and_headers: dict[str, str]):
 
 
 @pytest.mark.asyncio
-async def test_models_status_and_refresh(owner_token_and_headers: dict[str, str]):
+async def test_models_status_and_refresh(owner_token_and_headers: dict[str, str]) -> None:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://127.0.0.1:8000") as client:
         # Check status

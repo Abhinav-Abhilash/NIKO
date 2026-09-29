@@ -1,8 +1,8 @@
 import asyncio
-from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
 import functools
 import time
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, TypeVar
 
 from backend.app.core.logging import get_logger

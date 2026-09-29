@@ -1,6 +1,8 @@
 import json
 import uuid
-from typing import Any, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import Any
+
 import httpx
 
 from backend.app.core.logging import get_logger
@@ -33,7 +35,7 @@ class GeminiProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         tools: list[dict[str, Any]] | None = None,
         max_output_tokens: int | None = None,
-        reasoning_effort: str | None = None,
+        _reasoning_effort: str | None = None,
         temperature: float = 0.7,
     ) -> dict[str, Any]:
         system_instruction_parts: list[dict[str, Any]] = []
@@ -64,7 +66,6 @@ class GeminiProvider(BaseLLMProvider):
             elif msg.role == "tool":
                 # Gemini functionResponse
                 name = msg.name or "tool"
-                call_id = msg.tool_call_id or ""
                 try:
                     res_val = json.loads(msg.content) if msg.content.startswith("{") else {"result": msg.content}
                 except Exception:

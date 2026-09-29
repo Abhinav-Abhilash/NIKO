@@ -16,7 +16,7 @@ from backend.app.llm.types import ModelRole, ModelRolesConfig, RoleModelTarget
 
 
 @pytest.fixture
-def mock_roles_config():
+def mock_roles_config() -> ModelRolesConfig:
     return ModelRolesConfig(
         light=[RoleModelTarget(provider="groq", model="test-light")],
         chat=[RoleModelTarget(provider="gemini", model="test-chat")],
@@ -26,14 +26,14 @@ def mock_roles_config():
 
 
 @pytest.mark.asyncio
-async def test_deferred_queue_cooldown_banner_format(mock_roles_config):
+async def test_deferred_queue_cooldown_banner_format(mock_roles_config: ModelRolesConfig) -> None:
     """Verify cooldown banner message format matches 'all providers cooling down, shortest reset in ...'"""
     queue = DeferredQueue(roles_config=mock_roles_config)
     bus = get_event_bus()
 
     received_events = []
 
-    async def listener():
+    async def listener() -> None:
         async for ev in bus.subscribe(topic="chat:cooldown_banner"):
             received_events.append(ev)
             break
@@ -65,7 +65,7 @@ async def test_deferred_queue_cooldown_banner_format(mock_roles_config):
 
 
 @pytest.mark.asyncio
-async def test_deferred_queue_cancellation(mock_roles_config):
+async def test_deferred_queue_cancellation(mock_roles_config: ModelRolesConfig) -> None:
     """Verify that a request in the deferred queue can be cancelled."""
     queue = DeferredQueue(roles_config=mock_roles_config)
 
@@ -88,7 +88,7 @@ async def test_deferred_queue_cancellation(mock_roles_config):
 
 
 @pytest.mark.asyncio
-async def test_deferred_queue_auto_retry_execution(mock_roles_config, db_session: AsyncSession):
+async def test_deferred_queue_auto_retry_execution(mock_roles_config: ModelRolesConfig, db_session: AsyncSession) -> None:
     """Verify that deferred queue worker automatically retries and executes requests when cooldown expires."""
     user = User(username="test_auto_retry_user", password_hash="disabled", role="owner")
     db_session.add(user)

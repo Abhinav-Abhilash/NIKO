@@ -34,7 +34,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     register_sensitive_token(settings.INITIAL_GROQ_API_KEY)
     register_sensitive_token(settings.INITIAL_OPENROUTER_API_KEY)
     register_sensitive_token(settings.SETUP_TOKEN)
-    register_sensitive_token(settings.JWT_SECRET)
+    register_sensitive_token(settings.JWT_SECRET_KEY)
     settings.ensure_directories()
     logger.info(
         "NIKO backend initialized",
@@ -48,6 +48,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
 
     # Discover models asynchronously at startup from each provider's list endpoint
     import asyncio
+
     from backend.app.llm.discovery import model_discovery
     from backend.app.repositories.settings_repository import SettingsRepository
 

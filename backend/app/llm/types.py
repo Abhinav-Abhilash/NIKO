@@ -1,9 +1,10 @@
-from enum import Enum
+from enum import StrEnum
 from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class ModelRole(str, Enum):
+class ModelRole(StrEnum):
     LIGHT = "light"
     CHAT = "chat"
     CODE = "code"
@@ -30,15 +31,13 @@ class ModelRolesConfig(BaseModel):
 
     def get_role_targets(self, role: ModelRole | str) -> list[RoleModelTarget]:
         role_str = role.value if isinstance(role, ModelRole) else str(role).lower()
-        if role_str == "light":
-            return self.light
-        elif role_str == "chat":
-            return self.chat
-        elif role_str == "code":
-            return self.code
-        elif role_str == "search":
-            return self.search
-        return self.chat
+        role_map = {
+            "light": self.light,
+            "chat": self.chat,
+            "code": self.code,
+            "search": self.search,
+        }
+        return role_map.get(role_str, self.chat)
 
 
 class NormalizedToolCall(BaseModel):

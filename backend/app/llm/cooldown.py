@@ -1,7 +1,8 @@
+import contextlib
 import threading
 import time
 from collections import deque
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from backend.app.core.logging import get_logger
@@ -18,7 +19,7 @@ class QuotaWindow:
         self.key = key  # (provider, model)
         # Store tuples of (timestamp, token_count) for the rolling 60-second window
         self.minute_records: deque[tuple[float, int]] = deque()
-        self.current_day_str: str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        self.current_day_str: str = datetime.now(UTC).strftime("%Y-%m-%d")
         self.daily_requests: int = 0
         self.daily_tokens: int = 0
         # Active forced cooldown (e.g. from upstream 429 or predictive exhaustion)
@@ -39,7 +40,7 @@ class QuotaWindow:
 
     def record_usage(self, now: float, tokens: int) -> None:
         self._prune_minute(now)
-        now_dt = datetime.fromtimestamp(now, tz=timezone.utc)
+        now_dt = datetime.fromtimestamp(now, tz=UTC)
         self._check_day_rollover(now_dt)
 
         self.minute_records.append((now, tokens))
@@ -48,7 +49,7 @@ class QuotaWindow:
 
     def get_current_usage(self, now: float) -> dict[str, int]:
         self._prune_minute(now)
-        now_dt = datetime.fromtimestamp(now, tz=timezone.utc)
+        now_dt = datetime.fromtimestamp(now, tz=UTC)
         self._check_day_rollover(now_dt)
 
         minute_reqs = len(self.minute_records)
@@ -149,7 +150,7 @@ class PredictiveCooldownTracker:
                 limits.rpd * self.predictive_threshold_ratio
             ):
                 # Cooldown until UTC midnight
-                now_dt = datetime.fromtimestamp(now, tz=timezone.utc)
+                now_dt = datetime.fromtimestamp(now, tz=UTC)
                 remaining = max(1.0, 86400.0 - (now_dt.hour * 3600 + now_dt.minute * 60 + now_dt.second))
                 reason = f"Predictive RPD threshold reached ({usage['daily_requests']}/{limits.rpd})"
                 window.cooldown_until = now + remaining
@@ -167,7 +168,7 @@ class PredictiveCooldownTracker:
             if limits.tpd > 0 and usage["daily_tokens"] >= int(
                 limits.tpd * self.predictive_threshold_ratio
             ):
-                now_dt = datetime.fromtimestamp(now, tz=timezone.utc)
+                now_dt = datetime.fromtimestamp(now, tz=UTC)
                 remaining = max(1.0, 86400.0 - (now_dt.hour * 3600 + now_dt.minute * 60 + now_dt.second))
                 reason = f"Predictive TPD threshold reached ({usage['daily_tokens']}/{limits.tpd})"
                 window.cooldown_until = now + remaining
@@ -214,10 +215,8 @@ class PredictiveCooldownTracker:
             # Check standard Retry-After header
             retry_header = headers.get("retry-after") or headers.get("Retry-After")
             if retry_header:
-                try:
+                with contextlib.suppress(ValueError):
                     cooldown_secs = float(retry_header)
-                except ValueError:
-                    pass
 
         cooldown_secs = max(5.0, cooldown_secs)
         with self._lock:

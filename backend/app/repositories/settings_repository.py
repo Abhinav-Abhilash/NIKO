@@ -1,4 +1,6 @@
+import contextlib
 import json
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -42,14 +44,12 @@ class SettingsRepository:
         return await self.set_setting("llm_model_roles", json_val, category="llm")
 
     async def get_decrypted_provider_keys(self, encryption_key: str) -> dict[str, str]:
-        result = await self.db.execute(select(LLMProviderModel).where(LLMProviderModel.enabled == True))
+        result = await self.db.execute(select(LLMProviderModel).where(LLMProviderModel.enabled))
         providers = result.scalars().all()
         keys: dict[str, str] = {}
         for p in providers:
             if p.encrypted_api_key:
-                try:
+                with contextlib.suppress(Exception):
                     decrypted = decrypt_secret(p.encrypted_api_key, encryption_key)
                     keys[p.name.lower()] = decrypted
-                except Exception:
-                    pass
         return keys

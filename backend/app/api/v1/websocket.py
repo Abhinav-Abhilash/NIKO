@@ -78,7 +78,7 @@ async def websocket_hub(
 
     # 2. Authenticate client
     auth_payload = authenticate_ws(websocket, token)
-    user_id = auth_payload.get("sub") if auth_payload else None
+    user_id: str = str(auth_payload.get("sub", "anonymous")) if auth_payload else "anonymous"
 
     await websocket.accept()
     logger.info("WebSocket connection established", user_id=user_id, origin=origin)
@@ -86,7 +86,7 @@ async def websocket_hub(
     # Subscribed topics for this connection (empty set means all topics)
     subscribed_topics: set[str] = set()
     event_bus = get_event_bus()
-    active_chat_tasks: dict[str, asyncio.Task] = {}
+    active_chat_tasks: dict[str, asyncio.Task[None]] = {}
 
     async def event_forwarder() -> None:
         """Stream events from EventBus out to the WebSocket client."""
@@ -118,6 +118,7 @@ async def websocket_hub(
     async def _stream_chat_task(req_id: str, chat_data: dict[str, Any]) -> None:
         try:
             from sqlalchemy import select
+
             from backend.app.db.models import User
             from backend.app.db.session import get_session_maker
             from backend.app.services.chat_service import ChatService
@@ -125,21 +126,26 @@ async def websocket_hub(
             nonlocal user_id
             session_maker = get_session_maker()
             async with session_maker() as db:
-                valid_user = False
-                if user_id:
-                    res = await db.execute(select(User.id).where(User.id == user_id))
-                    valid_user = bool(res.scalar_one_or_none())
-                if not valid_user:
-                    res = await db.execute(select(User.id).where(User.role == "owner").limit(1))
-                    user_id = res.scalar_one_or_none()
-                if not user_id:
-                    res = await db.execute(select(User.id).limit(1))
-                    user_id = res.scalar_one_or_none()
-                if not user_id:
-                    default_owner = User(username="owner", password_hash="disabled", role="owner")
-                    db.add(default_owner)
+                user_obj = None
+                if user_id and user_id != "anonymous":
+                    res_existing = await db.execute(select(User).where(User.id == user_id))
+                    user_obj = res_existing.scalar_one_or_none()
+                if not user_obj:
+                    res_owner = await db.execute(select(User).where(User.role == "owner").limit(1))
+                    user_obj = res_owner.scalar_one_or_none()
+                if not user_obj:
+                    res_first = await db.execute(select(User).limit(1))
+                    user_obj = res_first.scalar_one_or_none()
+                if not user_obj:
+                    user_obj = User(
+                        id=user_id if (user_id and user_id != "anonymous") else None,
+                        username="ws_user",
+                        password_hash="disabled",
+                        role="owner",
+                    )
+                    db.add(user_obj)
                     await db.flush()
-                    user_id = default_owner.id
+                user_id = user_obj.id
 
                 conv_id = chat_data.get("conversation_id")
                 content = chat_data.get("content") or chat_data.get("message") or ""
@@ -234,7 +240,7 @@ async def websocket_hub(
                 await websocket.send_json(banner_payload)
 
             loop = asyncio.get_running_loop()
-            future: asyncio.Future = loop.create_future()
+            future: asyncio.Future[dict[str, Any]] = loop.create_future()
 
             deferred_req = DeferredChatRequest(
                 request_id=req_id,
@@ -250,20 +256,20 @@ async def websocket_hub(
             await deferred_queue.enqueue(deferred_req)
 
             try:
-                res = await future
+                deferred_result = await future
                 with contextlib.suppress(Exception):
-                    if res.get("content"):
+                    if deferred_result.get("content"):
                         await websocket.send_json({
                             "type": "chat:chunk",
                             "request_id": req_id,
                             "conversation_id": conv_id,
-                            "chunk": res.get("content", ""),
+                            "chunk": deferred_result.get("content", ""),
                         })
                     await websocket.send_json({
                         "type": "chat:done",
                         "request_id": req_id,
                         "conversation_id": conv_id,
-                        "response": res,
+                        "response": deferred_result,
                     })
             except asyncio.CancelledError:
                 await deferred_queue.cancel(req_id)
@@ -304,7 +310,7 @@ async def websocket_hub(
                             secret_key=settings.JWT_SECRET_KEY,
                             algorithm=settings.JWT_ALGORITHM,
                         )
-                        user_id = auth_payload.get("sub")
+                        user_id = str(auth_payload.get("sub", ""))
                         await websocket.send_json({"type": "auth_ok", "user_id": user_id})
                     except AuthenticationError as err:
                         await websocket.send_json({"type": "auth_error", "message": str(err)})
@@ -339,7 +345,7 @@ async def websocket_hub(
                     active_chat_tasks[cancel_req_id].cancel()
                     await websocket.send_json({"type": "chat:cancel_ack", "request_id": cancel_req_id})
                 elif active_chat_tasks:
-                    for r_id, t in list(active_chat_tasks.items()):
+                    for _r_id, t in list(active_chat_tasks.items()):
                         t.cancel()
                     await websocket.send_json({"type": "chat:cancel_ack", "cancelled_all": True})
                 else:

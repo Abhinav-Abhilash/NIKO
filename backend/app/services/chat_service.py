@@ -1,13 +1,14 @@
 import json
 import time
 import uuid
-from typing import Any, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.logging import get_logger
-from backend.app.db.models import Conversation, Message, ToolCall
-from backend.app.llm.orchestrator import LLMOrchestrator, get_llm_orchestrator, prune_tool_output
+from backend.app.db.models import Conversation, Message
+from backend.app.llm.orchestrator import get_llm_orchestrator, prune_tool_output
 from backend.app.llm.router import route_role_heuristically
 from backend.app.llm.types import (
     LLMMessage,
@@ -17,7 +18,7 @@ from backend.app.llm.types import (
 )
 from backend.app.repositories.conversation_repository import ConversationRepository
 from backend.app.services.skill_service import SkillService
-from backend.app.skills.base import SkillContext
+from backend.app.skills.base import ProvenanceType, SkillContext
 from backend.app.skills.guard import (
     has_untrusted_content,
     wrap_untrusted_content,
@@ -60,7 +61,7 @@ class ChatService:
     def __init__(
         self,
         db: AsyncSession,
-        orchestrator: LLMOrchestrator | None = None,
+        orchestrator: Any | None = None,
         skill_service: SkillService | None = None,
         conversation_repo: ConversationRepository | None = None,
         system_prompt: str = DEFAULT_SYSTEM_PROMPT,
@@ -109,7 +110,7 @@ class ChatService:
         source: str | None = None,
         is_external: bool = False,
         prior_messages: list[Message] | None = None,
-    ) -> str:
+    ) -> ProvenanceType:
         """
         Server-side provenance check:
         Returns 'external_untrusted' whenever web/file/OCR content enters context.
@@ -144,6 +145,7 @@ class ChatService:
         - Keeps newest turns that fit within max_context_tokens
         - Prunes tool outputs to prevent context blowout
         """
+        _ = role
         system_msg = LLMMessage(role="system", content=self.system_prompt)
         sys_tokens = estimate_tokens(self.system_prompt)
         remaining_budget = max(1, self.max_context_tokens - sys_tokens)

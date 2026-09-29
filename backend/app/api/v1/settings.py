@@ -1,4 +1,5 @@
 from typing import Any
+
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,7 +17,7 @@ router = APIRouter(prefix="/settings", tags=["Settings & Model Roles"])
 
 @router.get("/roles", response_model=ModelRolesConfig)
 async def get_model_roles(
-    current_owner: User = Depends(get_current_owner),
+    _current_owner: User = Depends(get_current_owner),
     db: AsyncSession = Depends(get_db),
 ) -> ModelRolesConfig:
     """Retrieve the current ordered model roles configuration."""
@@ -27,8 +28,8 @@ async def get_model_roles(
 @router.put("/roles", response_model=ModelRolesConfig)
 async def update_model_roles(
     config: ModelRolesConfig,
-    request: Request,
-    current_owner: User = Depends(get_current_owner),
+    _request: Request,
+    _current_owner: User = Depends(get_current_owner),
     db: AsyncSession = Depends(get_db),
 ) -> ModelRolesConfig:
     """
@@ -43,8 +44,8 @@ async def update_model_roles(
 
 @router.post("/models/refresh")
 async def refresh_models(
-    request: Request,
-    current_owner: User = Depends(get_current_owner),
+    _request: Request,
+    _current_owner: User = Depends(get_current_owner),
     db: AsyncSession = Depends(get_db),
     app_settings: Settings = Depends(get_settings),
 ) -> dict[str, Any]:
@@ -71,7 +72,7 @@ async def refresh_models(
 
 @router.get("/models/status")
 async def get_models_status(
-    current_owner: User = Depends(get_current_owner),
+    _current_owner: User = Depends(get_current_owner),
 ) -> dict[str, Any]:
     """Return predictive cooldown and rate-limit consumption status."""
     return {

@@ -1,4 +1,5 @@
 import re
+
 from backend.app.llm.types import LLMMessage, ModelRole
 
 # Pre-compiled regex patterns for cheap heuristic classification
@@ -41,7 +42,7 @@ _LIGHT_GREETINGS_REGEX = re.compile(
 
 def route_prompt_role(
     prompt: str,
-    history: list[LLMMessage] | None = None,
+    _history: list[LLMMessage] | None = None,
     tool_hint: str | None = None,
 ) -> ModelRole:
     """

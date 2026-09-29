@@ -54,7 +54,8 @@ class ConversationRepository:
             stmt = stmt.where(Conversation.user_id == user_id)
         result = await self.db.execute(stmt)
         await self.db.flush()
-        return bool(result.rowcount and result.rowcount > 0)
+        rowcount = int(getattr(result, "rowcount", 0) or 0)
+        return rowcount > 0
 
     async def add_message(
         self,

@@ -1,5 +1,5 @@
-import json
-from typing import Any, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import Any
 
 from backend.app.core.logging import get_logger, register_sensitive_token
 from backend.app.llm.base import BaseLLMProvider
@@ -20,7 +20,6 @@ from backend.app.llm.types import (
     LLMResponse,
     ModelRole,
     ModelRolesConfig,
-    RoleModelTarget,
     StreamChunk,
 )
 
@@ -202,6 +201,9 @@ class LLMOrchestrator:
         logger.error("All providers and models exhausted for role", role=role_str, attempts=attempts)
         raise AllProvidersExhaustedError(role=role_str, attempts=attempts)
 
+    # Alias for non-streaming chat complete
+    chat = chat_complete
+
 
     async def chat_stream(
         self,
@@ -273,7 +275,7 @@ class LLMOrchestrator:
                 attempts.append({"target": f"{target.provider}/{target.model}", "status": f"error: {str(e)}"})
                 continue
 
-        raise AllProvidersExhaustedError(role=str(role), attempts=attempts)
+        raise AllProvidersExhaustedError(role=role_str, attempts=attempts)
 
 
 _orchestrator_instance: LLMOrchestrator | None = None

@@ -1,6 +1,8 @@
 import json
 import uuid
-from typing import Any, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import Any
+
 import httpx
 
 from backend.app.core.logging import get_logger
@@ -33,7 +35,7 @@ class GroqProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         tools: list[dict[str, Any]] | None = None,
         max_output_tokens: int | None = None,
-        reasoning_effort: str | None = None,
+        _reasoning_effort: str | None = None,
         temperature: float = 0.7,
     ) -> dict[str, Any]:
         openai_msgs: list[dict[str, Any]] = []

@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any
+
 import httpx
 
 from backend.app.core.logging import get_logger
@@ -144,7 +144,7 @@ class ModelDiscoveryService:
             self.discover_groq(provider_keys.get("groq")),
             self.discover_openrouter(provider_keys.get("openrouter")),
         ]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        await asyncio.gather(*tasks, return_exceptions=True)
         return {
             "gemini": list(self._discovered.get("gemini", set())),
             "groq": list(self._discovered.get("groq", set())),
@@ -152,7 +152,7 @@ class ModelDiscoveryService:
         }
 
     def get_discovered_summary(self) -> dict[str, list[str]]:
-        return {k: sorted(list(v)) for k, v in self._discovered.items()}
+        return {k: sorted(v) for k, v in self._discovered.items()}
 
 
 # Global discovery instance

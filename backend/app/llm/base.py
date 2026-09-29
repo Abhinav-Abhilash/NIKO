@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Any, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import Any
 
 from backend.app.llm.types import LLMMessage, LLMResponse, StreamChunk
 
@@ -18,7 +19,7 @@ class BaseLLMProvider(ABC):
         pass
 
     @abstractmethod
-    async def chat_stream(
+    def chat_stream(
         self,
         messages: list[LLMMessage],
         model: str,

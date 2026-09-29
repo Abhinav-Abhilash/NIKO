@@ -1,27 +1,25 @@
-import json
+from collections.abc import AsyncIterator
 from typing import Any
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.app.db.models import User
 from backend.app.llm.types import (
     LLMMessage,
     LLMResponse,
-    ModelRole,
     NormalizedToolCall,
     StreamChunk,
 )
 from backend.app.services.chat_service import (
     DEFAULT_SYSTEM_PROMPT,
     ChatService,
-    estimate_tokens,
 )
 from backend.app.skills.base import BaseSkill, SkillContext, SkillManifest, SkillResult
 from backend.app.skills.guard import (
-    UNTRUSTED_CONTENT_TAG_START,
     has_untrusted_content,
     wrap_untrusted_content,
 )
-from backend.app.db.models import User
 from backend.app.skills.registry import SkillRegistry
 
 
@@ -35,15 +33,17 @@ async def create_test_user(db: AsyncSession, username: str = "test_owner") -> Us
 class MockLLMOrchestrator:
     def __init__(self, responses: list[LLMResponse] | None = None) -> None:
         self.responses = list(responses or [])
-        self.recorded_calls: list[dict] = []
+        self.recorded_calls: list[dict[str, Any]] = []
 
-    async def chat(self, role: Any, messages: list[LLMMessage], tools: list[dict] | None = None) -> LLMResponse:
+    async def chat(self, role: Any, messages: list[LLMMessage], tools: list[dict[str, Any]] | None = None) -> LLMResponse:
         self.recorded_calls.append({"role": role, "messages": messages, "tools": tools})
         if self.responses:
             return self.responses.pop(0)
         return LLMResponse(content="Default mock response", provider_used="mock", model_used="mock-model")
 
-    async def chat_stream(self, role: Any, messages: list[LLMMessage], tools: list[dict] | None = None):
+    async def chat_stream(
+        self, role: Any, messages: list[LLMMessage], tools: list[dict[str, Any]] | None = None
+    ) -> AsyncIterator[StreamChunk]:
         self.recorded_calls.append({"role": role, "messages": messages, "tools": tools})
         if self.responses:
             resp = self.responses.pop(0)
@@ -70,7 +70,7 @@ class EchoSkill(BaseSkill):
             },
         )
 
-    async def execute(self, arguments: dict, _context: SkillContext) -> SkillResult:
+    async def execute(self, arguments: dict[str, Any], _context: SkillContext) -> SkillResult:
         return SkillResult(success=True, data={"echo": arguments.get("text", "")})
 
 
@@ -85,12 +85,12 @@ class DangerousSkill(BaseSkill):
             parameters_schema={"type": "object", "properties": {}},
         )
 
-    async def execute(self, arguments: dict, _context: SkillContext) -> SkillResult:
+    async def execute(self, arguments: dict[str, Any], _context: SkillContext) -> SkillResult:
         return SkillResult(success=True, data={"result": "sensitive executed"})
 
 
 @pytest.mark.asyncio
-async def test_chat_service_system_prompt_only_treats_untrusted_as_data():
+async def test_chat_service_system_prompt_only_treats_untrusted_as_data() -> None:
     """Verify that system prompt states untrusted content is data with no refusals or topic limits."""
     assert "<untrusted_external_content>" in DEFAULT_SYSTEM_PROMPT
     assert "data" in DEFAULT_SYSTEM_PROMPT.lower()
@@ -101,7 +101,7 @@ async def test_chat_service_system_prompt_only_treats_untrusted_as_data():
 
 
 @pytest.mark.asyncio
-async def test_chat_service_conversation_lifecycle(db_session: AsyncSession):
+async def test_chat_service_conversation_lifecycle(db_session: AsyncSession) -> None:
     """Test conversation creation, listing, message addition, and deletion."""
     user = await create_test_user(db_session, username="user_lifecycle")
     chat_svc = ChatService(db=db_session, orchestrator=MockLLMOrchestrator())
@@ -134,7 +134,7 @@ async def test_chat_service_conversation_lifecycle(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_chat_service_sliding_context_window(db_session: AsyncSession):
+async def test_chat_service_sliding_context_window(db_session: AsyncSession) -> None:
     """Verify sliding context preserves system prompt and drops oldest messages when budget exceeded."""
     user = await create_test_user(db_session, username="user_sliding")
     chat_svc = ChatService(db=db_session, max_context_tokens=100)
@@ -163,7 +163,7 @@ async def test_chat_service_sliding_context_window(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_chat_service_provenance_tagging_and_wrapping(db_session: AsyncSession):
+async def test_chat_service_provenance_tagging_and_wrapping(db_session: AsyncSession) -> None:
     """Verify server-side provenance: direct vs external_untrusted and wrapping."""
     chat_svc = ChatService(db=db_session)
 
@@ -189,7 +189,7 @@ async def test_chat_service_provenance_tagging_and_wrapping(db_session: AsyncSes
 
 
 @pytest.mark.asyncio
-async def test_chat_service_tool_dispatch_and_execution(db_session: AsyncSession):
+async def test_chat_service_tool_dispatch_and_execution(db_session: AsyncSession) -> None:
     """Verify tool dispatch via SkillService, DB recording, and feeding results back to LLM."""
     user = await create_test_user(db_session, username="user_tool")
     registry = SkillRegistry()
@@ -237,7 +237,7 @@ async def test_chat_service_tool_dispatch_and_execution(db_session: AsyncSession
 
 
 @pytest.mark.asyncio
-async def test_chat_service_untrusted_provenance_triggers_approval_on_confirm_tier(db_session: AsyncSession):
+async def test_chat_service_untrusted_provenance_triggers_approval_on_confirm_tier(db_session: AsyncSession) -> None:
     """When untrusted content enters context, state-altering skills require explicit approval."""
     user = await create_test_user(db_session, username="user_danger")
     registry = SkillRegistry()
@@ -282,7 +282,7 @@ async def test_chat_service_untrusted_provenance_triggers_approval_on_confirm_ti
 
 
 @pytest.mark.asyncio
-async def test_chat_service_streaming_yields_events(db_session: AsyncSession):
+async def test_chat_service_streaming_yields_events(db_session: AsyncSession) -> None:
     """Verify stream_chat yields chunk, tool_call, tool_result, and done events."""
     user = await create_test_user(db_session, username="user_stream")
     registry = SkillRegistry()

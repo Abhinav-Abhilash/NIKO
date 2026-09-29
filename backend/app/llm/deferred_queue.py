@@ -1,8 +1,8 @@
 import asyncio
-import contextlib
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 from backend.app.core.events import get_event_bus
 from backend.app.core.logging import get_logger
@@ -25,7 +25,7 @@ class DeferredChatRequest:
     is_external: bool = False
     elevated_mode: bool = False
     enqueued_at: float = field(default_factory=time.time)
-    future: asyncio.Future | None = None
+    future: asyncio.Future[Any] | None = None
     on_complete: Callable[[dict[str, Any]], Any] | None = None
     on_error: Callable[[Exception], Any] | None = None
 
@@ -46,7 +46,7 @@ class DeferredQueue:
         self._queue: list[DeferredChatRequest] = []
         self._lock = asyncio.Lock()
         self._wake_event = asyncio.Event()
-        self._worker_task: asyncio.Task | None = None
+        self._worker_task: asyncio.Task[None] | None = None
         self._running = False
         self._active_banner: dict[str, Any] | None = None
 
