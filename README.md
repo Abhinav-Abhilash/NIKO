@@ -4,14 +4,19 @@ NIKO is a private, single-owner AI assistant running entirely on your local mach
 
 ---
 
-## Key Features (Stage 1)
+## Key Features
 
 - **Pure Cloud API Fallback Chain**: Tiered execution through Google Gemini (Primary free tier) $\to$ Groq (Instant fallback) $\to$ OpenRouter (Backup). Zero heavy torch/Docker dependencies.
 - **Outsider Defense & Host Isolation**:
   - Bound strictly to `127.0.0.1` and `localhost` with `TrustedHostMiddleware` (blocks DNS rebinding).
   - WebSocket `/ws` Origin header validation (blocks cross-site WebSocket hijacking).
   - One-time setup token barrier (`/api/v1/auth/setup`) to claim owner account on first boot.
-- **Single-Use Cryptographic Approvals**: High-impact actions are mathematically bound to their exact arguments via SHA-256 hashes (`args_hash`), preventing parameter tampering or decision reuse.
+- **Core Orchestration & Real-Time Engine (Milestone 2)**:
+  - **Bounded Async EventBus**: Internal pub/sub (`asyncio.Queue(maxsize=1000)`) routing system events with non-blocking drop-oldest backpressure.
+  - **Multiplexed WebSocket Hub**: Single `/ws` connection streaming telemetry, chat chunks, and approvals with client topic subscriptions.
+  - **Single-Use Cryptographic Approvals**: High-impact actions are mathematically bound to their exact arguments via SHA-256 hashes (`args_hash`) with a 30-second TTL, preventing parameter tampering or decision reuse.
+  - **Audit Logging**: Comprehensive structured command logs tracking provenance, permission tiers, and execution outcomes.
+  - **Hardened Session Management**: Username-keyed exponential backoff rate limiting, JWT access cookies, and refresh token rotation with token family reuse revocation.
 - **Configurable Autonomy**: Every skill defaults to `ask`, `auto`, or `auto+log` and respects a strict provenance rule (actions triggered by untrusted external data require confirmation or offer an undo window).
 - **Hardened SQLite Storage**: Configured with `WAL` journal mode, `PRAGMA foreign_keys = ON`, busy timeouts, and Alembic batch migrations.
 - **Automated Retention**: 7-day WebP screenshot retention, downsampled system metrics, and log rotation to keep your PC storage lean.
@@ -75,7 +80,7 @@ curl http://127.0.0.1:8000/health
 
 ## Testing & Quality Assurance
 
-Run the complete test suite (25+ tests):
+Run the complete test suite (38+ tests):
 ```powershell
 uv run pytest -v
 ```
