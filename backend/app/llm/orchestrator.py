@@ -1,7 +1,7 @@
 import json
 from typing import Any, AsyncIterator
 
-from backend.app.core.logging import get_logger
+from backend.app.core.logging import get_logger, register_sensitive_token
 from backend.app.llm.base import BaseLLMProvider
 from backend.app.llm.cooldown import cooldown_tracker
 from backend.app.llm.defaults import get_default_roles_config
@@ -67,13 +67,17 @@ class LLMOrchestrator:
     def _init_providers(self) -> None:
         self._providers.clear()
         if "gemini" in self.provider_keys and self.provider_keys["gemini"]:
+            register_sensitive_token(self.provider_keys["gemini"])
             self._providers["gemini"] = GeminiProvider(self.provider_keys["gemini"])
         if "groq" in self.provider_keys and self.provider_keys["groq"]:
+            register_sensitive_token(self.provider_keys["groq"])
             self._providers["groq"] = GroqProvider(self.provider_keys["groq"])
         if "openrouter" in self.provider_keys and self.provider_keys["openrouter"]:
+            register_sensitive_token(self.provider_keys["openrouter"])
             self._providers["openrouter"] = OpenRouterProvider(self.provider_keys["openrouter"])
 
     def set_provider_key(self, provider: str, api_key: str) -> None:
+        register_sensitive_token(api_key)
         self.provider_keys[provider.lower()] = api_key
         self._init_providers()
 

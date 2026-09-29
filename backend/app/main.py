@@ -29,6 +29,12 @@ logger = get_logger("main")
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     settings = get_settings()
     setup_logging(settings.LOG_LEVEL, settings.APP_ENV)
+    from backend.app.core.logging import register_sensitive_token
+    register_sensitive_token(settings.INITIAL_GEMINI_API_KEY)
+    register_sensitive_token(settings.INITIAL_GROQ_API_KEY)
+    register_sensitive_token(settings.INITIAL_OPENROUTER_API_KEY)
+    register_sensitive_token(settings.SETUP_TOKEN)
+    register_sensitive_token(settings.JWT_SECRET)
     settings.ensure_directories()
     logger.info(
         "NIKO backend initialized",
