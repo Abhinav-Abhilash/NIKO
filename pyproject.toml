@@ -20,11 +20,11 @@ dependencies = [
     "slowapi>=0.1.9",
     "websockets>=13.0",
     "python-multipart>=0.0.9",
+    "psutil>=6.0.0",
 ]
 
 [project.optional-dependencies]
 windows = [
-    "psutil>=6.0.0",
     "mss>=9.0.2",
     "pillow>=10.4.0",
     "pycaw>=20240206; sys_platform == 'win32'",

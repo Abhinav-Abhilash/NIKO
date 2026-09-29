@@ -615,6 +615,7 @@ dependencies = [
     { name = "cryptography" },
     { name = "fastapi" },
     { name = "greenlet" },
+    { name = "psutil" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pyjwt" },
@@ -630,7 +631,6 @@ dependencies = [
 windows = [
     { name = "mss" },
     { name = "pillow" },
-    { name = "psutil" },
     { name = "pycaw", marker = "sys_platform == 'win32'" },
     { name = "screen-brightness-control" },
 ]
@@ -655,7 +655,7 @@ requires-dist = [
     { name = "greenlet", specifier = ">=3.0.3" },
     { name = "mss", marker = "extra == 'windows'", specifier = ">=9.0.2" },
     { name = "pillow", marker = "extra == 'windows'", specifier = ">=10.4.0" },
-    { name = "psutil", marker = "extra == 'windows'", specifier = ">=6.0.0" },
+    { name = "psutil", specifier = ">=6.0.0" },
     { name = "pycaw", marker = "sys_platform == 'win32' and extra == 'windows'", specifier = ">=20240206" },
     { name = "pydantic", specifier = ">=2.8.0" },
     { name = "pydantic-settings", specifier = ">=2.4.0" },
