@@ -27,6 +27,14 @@ from backend.app.db.session import configure_sqlite_pragmas, get_db
 from backend.app.main import create_app
 
 
+def pytest_sessionstart(session: pytest.Session) -> None:  # noqa: ARG001
+    """Strictly assert test suite runs on an isolated temp database and never touches storage/niko.db."""
+    settings = get_settings()
+    assert "storage/niko.db" not in settings.DATABASE_URL.replace("\\", "/"), (
+        "CRITICAL ERROR: Test runner configured to target production storage/niko.db!"
+    )
+
+
 @pytest.fixture(scope="session")
 def test_settings() -> Settings:
     settings = get_settings()
@@ -92,5 +100,9 @@ async def async_client(
     app.dependency_overrides[get_settings] = lambda: test_settings
 
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://testserver",
+        headers={"Origin": "http://localhost:5173"},
+    ) as client:
         yield client
