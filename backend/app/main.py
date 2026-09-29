@@ -13,6 +13,7 @@ from backend.app.api.v1.approvals import router as approvals_router
 from backend.app.api.v1.auth import router as auth_router
 from backend.app.api.v1.health import router as health_router
 from backend.app.api.v1.metrics import router as metrics_router
+from backend.app.api.v1.settings import router as settings_router
 from backend.app.api.v1.skills import router as skills_router
 from backend.app.api.v1.websocket import router as ws_router
 from backend.app.config import get_settings
@@ -38,9 +39,34 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     )
     metrics_service = get_metrics_service(session_factory=get_session_maker())
     await metrics_service.start_collector()
+
+    # Discover models asynchronously at startup from each provider's list endpoint
+    import asyncio
+    from backend.app.llm.discovery import model_discovery
+    from backend.app.repositories.settings_repository import SettingsRepository
+
+    async def _startup_discovery() -> None:
+        try:
+            session_maker = get_session_maker()
+            async with session_maker() as db:
+                repo = SettingsRepository(db)
+                keys = await repo.get_decrypted_provider_keys(settings.ENCRYPTION_KEY)
+                if "gemini" not in keys and settings.INITIAL_GEMINI_API_KEY:
+                    keys["gemini"] = settings.INITIAL_GEMINI_API_KEY
+                if "groq" not in keys and settings.INITIAL_GROQ_API_KEY:
+                    keys["groq"] = settings.INITIAL_GROQ_API_KEY
+                if "openrouter" not in keys and settings.INITIAL_OPENROUTER_API_KEY:
+                    keys["openrouter"] = settings.INITIAL_OPENROUTER_API_KEY
+                await model_discovery.refresh_all(keys)
+        except Exception as e:
+            logger.warning("Startup model discovery encounter issue", error=str(e))
+
+    asyncio.create_task(_startup_discovery())
+
     yield
     await metrics_service.stop_collector()
     logger.info("NIKO backend shutting down")
+
 
 
 def create_app() -> FastAPI:
@@ -161,6 +187,7 @@ def create_app() -> FastAPI:
     app.include_router(approvals_router, prefix="/api/v1")
     app.include_router(skills_router, prefix="/api/v1")
     app.include_router(metrics_router, prefix="/api/v1")
+    app.include_router(settings_router, prefix="/api/v1")
     app.include_router(ws_router)
 
     return app

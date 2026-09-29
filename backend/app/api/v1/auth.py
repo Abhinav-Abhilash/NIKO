@@ -95,19 +95,19 @@ async def setup_initial_owner(
     provider_seeds: list[dict[str, Any]] = [
         {
             "name": "gemini",
-            "default_model": "gemini-1.5-flash",
+            "default_model": "gemini-2.0-flash",
             "priority": 1,
             "key": settings.INITIAL_GEMINI_API_KEY,
         },
         {
             "name": "groq",
-            "default_model": "llama-3.1-8b-instant",
+            "default_model": "openai/gpt-oss-120b",
             "priority": 2,
             "key": settings.INITIAL_GROQ_API_KEY,
         },
         {
             "name": "openrouter",
-            "default_model": "meta-llama/llama-3.1-8b-instruct:free",
+            "default_model": "openrouter/free",
             "priority": 3,
             "key": settings.INITIAL_OPENROUTER_API_KEY,
         },
@@ -126,6 +126,13 @@ async def setup_initial_owner(
         )
         db.add(provider)
         initialized_providers.append(seed["name"])
+
+    # Seed default model roles configuration into settings table
+    from backend.app.llm.defaults import get_default_roles_config
+    from backend.app.repositories.settings_repository import SettingsRepository
+
+    settings_repo = SettingsRepository(db)
+    await settings_repo.save_model_roles_config(get_default_roles_config())
 
     await db.commit()
     await db.refresh(owner)
