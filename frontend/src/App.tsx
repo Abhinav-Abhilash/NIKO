@@ -5,12 +5,15 @@ import { ChatCockpit } from './components/ChatCockpit';
 import { CommandPalette } from './components/CommandPalette';
 import { DashboardView } from './components/DashboardView';
 import { Header } from './components/Header';
+import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
 import { LoginModal } from './components/LoginModal';
 import { SettingsView } from './components/SettingsView';
 import { Sidebar } from './components/Sidebar';
 import type { ActiveTab } from './components/Sidebar';
 import { SkillsView } from './components/SkillsView';
+import { ToastContainer } from './components/ToastContainer';
 import { ApiService } from './services/api';
+import { toastService } from './services/toast';
 import { wsClient } from './services/websocket';
 import type { ApprovalRequestItem, ChatMessage, CooldownBannerState, SystemMetrics } from './types';
 
@@ -18,11 +21,17 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('chat');
   const [isOnline, setIsOnline] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isShortcutsHelpOpen, setIsShortcutsHelpOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const [cooldownBanner, setCooldownBanner] = useState<CooldownBannerState | null>(null);
   const [currentApproval, setCurrentApproval] = useState<ApprovalRequestItem | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ username: string; role: string } | null>(null);
+
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('niko_theme') as 'dark' | 'light') || 'dark';
+  });
 
   const [activeModelName] = useState('groq/llama-3.3-70b');
 
@@ -39,7 +48,38 @@ export const App: React.FC = () => {
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
-  // Initialize WebSocket & Periodic Telemetry
+  // Apply theme class to <html>
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    } else {
+      root.classList.add('light');
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('niko_theme', theme);
+  }, [theme]);
+
+  // Check current session
+  const checkSession = async () => {
+    try {
+      const me = await ApiService.getMe();
+      if (me && me.username) {
+        setCurrentUser({ username: me.username, role: me.role });
+      } else {
+        setCurrentUser(null);
+      }
+    } catch {
+      setCurrentUser(null);
+    }
+  };
+
+  useEffect(() => {
+    checkSession();
+  }, []);
+
+  // Initialize WebSocket & Event Listeners
   useEffect(() => {
     wsClient.connect();
 
@@ -198,7 +238,7 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  // Cooldown timer interval
+  // Cooldown countdown timer
   useEffect(() => {
     if (!cooldownBanner || !cooldownBanner.active || !cooldownBanner.remainingSeconds) return;
 
@@ -215,12 +255,29 @@ export const App: React.FC = () => {
     return () => clearInterval(timer);
   }, [cooldownBanner]);
 
-  // Global Keyboard Shortcuts (⌘K, ⌘1-6)
+  // Global Keyboard Shortcuts (⌘K, ⌘1-6, ?, Y/N for approvals)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Approval hotkeys when approval modal is open
+      if (currentApproval) {
+        if (e.key === 'y' || e.key === 'Y') {
+          e.preventDefault();
+          handleApprovalResponse(currentApproval.id, 'approved');
+          return;
+        }
+        if (e.key === 'n' || e.key === 'N' || e.key === 'Escape') {
+          e.preventDefault();
+          handleApprovalResponse(currentApproval.id, 'rejected');
+          return;
+        }
+      }
+
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
+      } else if (e.key === '?' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+        e.preventDefault();
+        setIsShortcutsHelpOpen((prev) => !prev);
       } else if ((e.metaKey || e.ctrlKey) && e.key === '1') {
         e.preventDefault();
         setActiveTab('chat');
@@ -244,7 +301,7 @@ export const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [currentApproval]);
 
   const handleSendMessage = (content: string, role = 'chat', elevatedMode = false) => {
     const reqId = `req_${Date.now()}`;
@@ -253,6 +310,7 @@ export const App: React.FC = () => {
 
     const isExternal = content.includes('<untrusted_external_content>') || content.toLowerCase().includes('http');
 
+    // Optimistically add user message immediately
     setMessages((prev) => [
       ...prev,
       {
@@ -270,6 +328,7 @@ export const App: React.FC = () => {
   const handleCancelChat = () => {
     if (currentRequestId) {
       wsClient.cancelChat(currentRequestId);
+      toastService.info('Cancelled', 'Inference stream aborted.');
     }
     setIsStreaming(false);
   };
@@ -277,8 +336,12 @@ export const App: React.FC = () => {
   const handleApprovalResponse = async (approvalId: string, decision: 'approved' | 'rejected') => {
     try {
       await ApiService.respondToApproval(approvalId, decision);
-    } catch (err) {
-      console.warn('Approval response dispatch failed:', err);
+      toastService.info(
+        'Approval Sent',
+        `Action was ${decision === 'approved' ? 'approved for execution' : 'denied'}.`
+      );
+    } catch (err: any) {
+      toastService.error('Dispatch Failed', err.message || 'Could not dispatch approval decision.');
     } finally {
       setCurrentApproval(null);
     }
@@ -300,9 +363,13 @@ export const App: React.FC = () => {
         <Header
           metrics={metrics}
           activeModelName={activeModelName}
+          theme={theme}
+          onToggleTheme={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+          onOpenShortcutsHelp={() => setIsShortcutsHelpOpen(true)}
           onOpenSettings={() => setActiveTab('settings')}
           onOpenLogin={() => setIsLoginOpen(true)}
+          currentUser={currentUser}
         />
 
         {/* View Routing */}
@@ -326,8 +393,10 @@ export const App: React.FC = () => {
                 try {
                   const health = await ApiService.getHealth();
                   setIsOnline(health.status === 'healthy');
+                  toastService.success('Telemetry Refreshed', `Core is online (Uptime: ${health.uptime_seconds}s).`);
                 } catch {
                   setIsOnline(false);
+                  toastService.error('Telemetry Error', 'Backend service unreachable.');
                 }
               }}
             />
@@ -367,15 +436,33 @@ export const App: React.FC = () => {
         }}
       />
 
-      {/* Operator Login Modal */}
+      {/* Keyboard Shortcuts Reference Modal */}
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsHelpOpen}
+        onClose={() => setIsShortcutsHelpOpen(false)}
+      />
+
+      {/* Operator Login / Setup Modal */}
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
+        currentUser={currentUser}
         onLoginSuccess={() => {
+          checkSession();
           wsClient.disconnect();
           wsClient.connect();
+          toastService.success('Authenticated', 'Session authenticated successfully.');
+        }}
+        onLogout={() => {
+          setCurrentUser(null);
+          wsClient.disconnect();
+          wsClient.connect();
+          toastService.info('Logged Out', 'Operator session terminated.');
         }}
       />
+
+      {/* Reactive Toast Notification Stack */}
+      <ToastContainer />
     </div>
   );
 };

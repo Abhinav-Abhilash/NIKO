@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import type { SystemMetrics } from '../types';
 
 interface DashboardViewProps {
@@ -6,126 +6,279 @@ interface DashboardViewProps {
   onRefresh: () => void;
 }
 
+interface WidgetConfig {
+  id: string;
+  title: string;
+  visible: boolean;
+}
+
 export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh }) => {
+  const defaultWidgets: WidgetConfig[] = [
+    { id: 'telemetry_cards', title: 'Hardware & IPC Telemetry', visible: true },
+    { id: 'provider_matrix', title: 'Provider Latency & Availability Matrix', visible: true },
+    { id: 'engine_diagnostics', title: 'Agent Engine & Socket Health', visible: true },
+  ];
+
+  const [widgets, setWidgets] = useState<WidgetConfig[]>(() => {
+    try {
+      const saved = localStorage.getItem('niko_dashboard_widgets');
+      return saved ? JSON.parse(saved) : defaultWidgets;
+    } catch {
+      return defaultWidgets;
+    }
+  });
+
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem('niko_dashboard_widgets', JSON.stringify(widgets));
+  }, [widgets]);
+
+  const handleDragStart = (idx: number) => {
+    setDraggedIdx(idx);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === idx) return;
+
+    const updated = [...widgets];
+    const item = updated.splice(draggedIdx, 1)[0];
+    updated.splice(idx, 0, item);
+    setDraggedIdx(idx);
+    setWidgets(updated);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIdx(null);
+  };
+
+  const toggleWidgetVisibility = (id: string) => {
+    setWidgets((prev) =>
+      prev.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w))
+    );
+  };
+
+  const resetLayout = () => {
+    setWidgets(defaultWidgets);
+  };
+
   return (
-    <div className="flex-1 overflow-y-auto p-gutter-md flex flex-col gap-6 max-w-6xl mx-auto w-full">
+    <div className="flex-1 overflow-y-auto p-gutter-md flex flex-col gap-6 max-w-6xl mx-auto w-full font-mono">
       {/* View Header */}
       <div className="flex items-center justify-between border-b border-surface-variant/40 pb-4">
         <div>
-          <h1 className="font-mono text-xl font-bold text-on-surface">
+          <h1 className="text-xl font-bold text-on-surface">
             LIVE TELEMETRY & SYSTEM BENCHMARKS
           </h1>
-          <p className="font-mono text-xs text-on-surface-variant">
-            Real-time diagnostics, hardware allocation, and LLM latency telemetry.
+          <p className="text-xs text-on-surface-variant font-sans">
+            Modular, persisted diagnostics grid. Drag headers to reorder widgets.
           </p>
         </div>
-        <button
-          onClick={onRefresh}
-          className="flex items-center gap-2 px-3 py-1.5 bg-surface-container hover:bg-surface-variant border border-surface-variant/60 rounded text-xs font-mono text-on-surface transition-colors"
-        >
-          <span className="material-symbols-outlined text-sm">refresh</span>
-          <span>Refresh Metrics</span>
-        </button>
-      </div>
-
-      {/* Main Metric Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Core State */}
-        <div className="bg-surface-container-low p-4 rounded-xl border border-surface-variant/40 flex flex-col gap-2">
-          <div className="flex items-center justify-between text-mono-sm font-mono text-on-surface-variant">
-            <span>CORE ENGINE</span>
-            <span className={`w-2 h-2 rounded-full ${metrics.coreOnline ? 'bg-secondary animate-pulse' : 'bg-error'}`} />
-          </div>
-          <div className="font-mono text-2xl font-bold text-on-surface">
-            {metrics.coreOnline ? 'ONLINE' : 'OFFLINE'}
-          </div>
-          <div className="text-[11px] font-mono text-secondary">
-            IPC WebSocket active: 7421
-          </div>
-        </div>
-
-        {/* CPU Utilization */}
-        <div className="bg-surface-container-low p-4 rounded-xl border border-surface-variant/40 flex flex-col gap-2">
-          <div className="flex items-center justify-between text-mono-sm font-mono text-on-surface-variant">
-            <span>CPU UTILIZATION</span>
-            <span className="material-symbols-outlined text-base text-primary-container">memory</span>
-          </div>
-          <div className="font-mono text-2xl font-bold text-on-surface">
-            {metrics.cpuPercent.toFixed(1)}%
-          </div>
-          <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-primary-container h-full transition-all duration-500"
-              style={{ width: `${Math.min(100, metrics.cpuPercent)}%` }}
-            />
-          </div>
-        </div>
-
-        {/* RAM Usage */}
-        <div className="bg-surface-container-low p-4 rounded-xl border border-surface-variant/40 flex flex-col gap-2">
-          <div className="flex items-center justify-between text-mono-sm font-mono text-on-surface-variant">
-            <span>RAM CAPACITY</span>
-            <span className="material-symbols-outlined text-base text-primary-container">developer_board</span>
-          </div>
-          <div className="font-mono text-2xl font-bold text-on-surface">
-            {metrics.ramUsageGb.toFixed(1)} <span className="text-sm font-normal text-on-surface-variant">/ {metrics.ramTotalGb} GB</span>
-          </div>
-          <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-secondary h-full transition-all duration-500"
-              style={{ width: `${(metrics.ramUsageGb / metrics.ramTotalGb) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Latency / Ping */}
-        <div className="bg-surface-container-low p-4 rounded-xl border border-surface-variant/40 flex flex-col gap-2">
-          <div className="flex items-center justify-between text-mono-sm font-mono text-on-surface-variant">
-            <span>IPC LATENCY</span>
-            <span className="material-symbols-outlined text-base text-secondary">speed</span>
-          </div>
-          <div className="font-mono text-2xl font-bold text-secondary">
-            {metrics.pingMs} ms
-          </div>
-          <div className="text-[11px] font-mono text-on-surface-variant">
-            Zero network hop (LocalHost)
-          </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={resetLayout}
+            className="px-3 py-1.5 bg-surface-container hover:bg-surface-variant border border-surface-variant/60 rounded text-xs text-on-surface-variant hover:text-on-surface transition-colors"
+            title="Reset to default grid order"
+          >
+            Reset Grid
+          </button>
+          <button
+            onClick={onRefresh}
+            className="flex items-center gap-2 px-3 py-1.5 bg-primary-container text-on-primary-container font-bold rounded text-xs transition-colors shadow-[0_0_10px_rgba(255,176,32,0.3)]"
+          >
+            <span className="material-symbols-outlined text-sm">refresh</span>
+            <span>Refresh Telemetry</span>
+          </button>
         </div>
       </div>
 
-      {/* Provider Latency & Health Matrix */}
-      <div className="bg-surface-container-low p-5 rounded-xl border border-surface-variant/40 flex flex-col gap-4">
-        <h3 className="font-mono text-sm font-bold text-primary tracking-wider uppercase">
-          Provider Latency & Availability Matrix
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="p-3 bg-surface-container rounded-lg border border-surface-variant/40 flex flex-col gap-1 font-mono">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-on-surface">Groq Cloud</span>
-              <span className="text-secondary font-bold text-[10px] px-1.5 py-0.5 bg-secondary/10 rounded">ACTIVE</span>
-            </div>
-            <div className="text-on-surface-variant text-[11px]">Model: llama-3.3-70b-versatile</div>
-            <div className="text-primary-container text-xs font-semibold mt-1">Average TTFT: ~120ms</div>
-          </div>
+      {/* Modular Persisted Widgets */}
+      <div className="flex flex-col gap-6">
+        {widgets.map((widget, idx) => {
+          if (!widget.visible) return null;
 
-          <div className="p-3 bg-surface-container rounded-lg border border-surface-variant/40 flex flex-col gap-1 font-mono">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-on-surface">Google Gemini</span>
-              <span className="text-secondary font-bold text-[10px] px-1.5 py-0.5 bg-secondary/10 rounded">STANDBY</span>
-            </div>
-            <div className="text-on-surface-variant text-[11px]">Model: gemini-2.0-flash</div>
-            <div className="text-primary-container text-xs font-semibold mt-1">Average TTFT: ~280ms</div>
-          </div>
+          return (
+            <div
+              key={widget.id}
+              draggable
+              onDragStart={() => handleDragStart(idx)}
+              onDragOver={(e) => handleDragOver(e, idx)}
+              onDragEnd={handleDragEnd}
+              className={`flex flex-col gap-3 transition-opacity ${
+                draggedIdx === idx ? 'opacity-40 border-2 border-dashed border-primary-container p-2 rounded-xl' : ''
+              }`}
+            >
+              {/* Widget Header & Drag Handle */}
+              <div className="flex items-center justify-between px-2 cursor-grab active:cursor-grabbing text-xs text-on-surface-variant hover:text-on-surface">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-sm text-primary-container">
+                    drag_indicator
+                  </span>
+                  <span className="font-bold uppercase tracking-wider text-primary text-[11px]">
+                    {widget.title}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => toggleWidgetVisibility(widget.id)}
+                  className="hover:text-error text-xs"
+                  title="Hide widget"
+                >
+                  <span className="material-symbols-outlined text-sm">visibility_off</span>
+                </button>
+              </div>
 
-          <div className="p-3 bg-surface-container rounded-lg border border-surface-variant/40 flex flex-col gap-1 font-mono">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-on-surface">Local Ollama</span>
-              <span className="text-on-surface-variant font-bold text-[10px] px-1.5 py-0.5 bg-surface-variant rounded">OFFLINE</span>
+              {/* Widget 1: Hardware & IPC Telemetry */}
+              {widget.id === 'telemetry_cards' && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Core State */}
+                  <div className="bg-surface-container-low p-4 rounded-xl border border-surface-variant/40 flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-mono-sm text-on-surface-variant">
+                      <span>CORE ENGINE</span>
+                      <span
+                        className={`w-2 h-2 rounded-full ${
+                          metrics.coreOnline ? 'bg-secondary animate-pulse' : 'bg-error'
+                        }`}
+                      />
+                    </div>
+                    <div className="text-2xl font-bold text-on-surface">
+                      {metrics.coreOnline ? 'ONLINE' : 'OFFLINE'}
+                    </div>
+                    <div className="text-[11px] text-secondary">IPC Hub Active: 7421</div>
+                  </div>
+
+                  {/* CPU */}
+                  <div className="bg-surface-container-low p-4 rounded-xl border border-surface-variant/40 flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-mono-sm text-on-surface-variant">
+                      <span>CPU UTILIZATION</span>
+                      <span className="material-symbols-outlined text-base text-primary-container">
+                        memory
+                      </span>
+                    </div>
+                    <div className="text-2xl font-bold text-on-surface">
+                      {metrics.cpuPercent.toFixed(1)}%
+                    </div>
+                    <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-primary-container h-full transition-all duration-500"
+                        style={{ width: `${Math.min(100, metrics.cpuPercent)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* RAM */}
+                  <div className="bg-surface-container-low p-4 rounded-xl border border-surface-variant/40 flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-mono-sm text-on-surface-variant">
+                      <span>RAM CAPACITY</span>
+                      <span className="material-symbols-outlined text-base text-primary-container">
+                        developer_board
+                      </span>
+                    </div>
+                    <div className="text-2xl font-bold text-on-surface">
+                      {metrics.ramUsageGb.toFixed(1)}{' '}
+                      <span className="text-sm font-normal text-on-surface-variant">
+                        / {metrics.ramTotalGb} GB
+                      </span>
+                    </div>
+                    <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-secondary h-full transition-all duration-500"
+                        style={{ width: `${(metrics.ramUsageGb / metrics.ramTotalGb) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Ping */}
+                  <div className="bg-surface-container-low p-4 rounded-xl border border-surface-variant/40 flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-mono-sm text-on-surface-variant">
+                      <span>IPC LATENCY</span>
+                      <span className="material-symbols-outlined text-base text-secondary">
+                        speed
+                      </span>
+                    </div>
+                    <div className="text-2xl font-bold text-secondary">
+                      {metrics.pingMs} ms
+                    </div>
+                    <div className="text-[11px] text-on-surface-variant">
+                      Zero-hop local loopback
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Widget 2: Provider Latency Matrix */}
+              {widget.id === 'provider_matrix' && (
+                <div className="bg-surface-container-low p-5 rounded-xl border border-surface-variant/40 flex flex-col gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="p-3.5 bg-surface-container rounded-lg border border-surface-variant/40 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-on-surface">Google Gemini</span>
+                        <span className="text-secondary font-bold text-[10px] px-1.5 py-0.5 bg-secondary/10 rounded">
+                          PRIMARY
+                        </span>
+                      </div>
+                      <div className="text-on-surface-variant text-[11px]">Model: gemini-2.0-flash</div>
+                      <div className="text-primary-container text-xs font-semibold mt-1">
+                        Est. TTFT: ~280ms
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 bg-surface-container rounded-lg border border-surface-variant/40 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-on-surface">Groq Cloud</span>
+                        <span className="text-secondary font-bold text-[10px] px-1.5 py-0.5 bg-secondary/10 rounded">
+                          FALLBACK #1
+                        </span>
+                      </div>
+                      <div className="text-on-surface-variant text-[11px]">Model: llama-3.3-70b-versatile</div>
+                      <div className="text-primary-container text-xs font-semibold mt-1">
+                        Est. TTFT: ~120ms (LPU)
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 bg-surface-container rounded-lg border border-surface-variant/40 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-on-surface">OpenRouter</span>
+                        <span className="text-secondary font-bold text-[10px] px-1.5 py-0.5 bg-secondary/10 rounded">
+                          FALLBACK #2
+                        </span>
+                      </div>
+                      <div className="text-on-surface-variant text-[11px]">Model: qwen/qwen-2.5-coder-32b</div>
+                      <div className="text-primary-container text-xs font-semibold mt-1">
+                        Free Tier Standby
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Widget 3: Engine Diagnostics */}
+              {widget.id === 'engine_diagnostics' && (
+                <div className="bg-surface-container-low p-5 rounded-xl border border-surface-variant/40 flex flex-col gap-3 text-xs">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="p-3 bg-surface-container rounded-lg border border-surface-variant/30 flex flex-col">
+                      <span className="text-on-surface-variant text-[10px]">EVENT BUS STATUS</span>
+                      <span className="text-secondary font-bold text-sm">BOUNDED (1000)</span>
+                    </div>
+                    <div className="p-3 bg-surface-container rounded-lg border border-surface-variant/30 flex flex-col">
+                      <span className="text-on-surface-variant text-[10px]">RATE LIMIT COOLDOWN</span>
+                      <span className="text-primary font-bold text-sm">PREDICTIVE ACTIVE</span>
+                    </div>
+                    <div className="p-3 bg-surface-container rounded-lg border border-surface-variant/30 flex flex-col">
+                      <span className="text-on-surface-variant text-[10px]">HMAC INTEGRITY</span>
+                      <span className="text-secondary font-bold text-sm">SHA-256 VERIFIED</span>
+                    </div>
+                    <div className="p-3 bg-surface-container rounded-lg border border-surface-variant/30 flex flex-col">
+                      <span className="text-on-surface-variant text-[10px]">DB PERSISTENCE</span>
+                      <span className="text-on-surface font-bold text-sm">SQLITE WAL ON</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="text-on-surface-variant text-[11px]">Model: qwen2.5:7b-instruct</div>
-            <div className="text-on-surface-variant text-xs font-semibold mt-1">Auto-skipped when unreachable</div>
-          </div>
-        </div>
+          );
+        })}
       </div>
     </div>
   );

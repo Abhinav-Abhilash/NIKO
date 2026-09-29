@@ -4,19 +4,25 @@ import type { SystemMetrics } from '../types';
 interface HeaderProps {
   metrics: SystemMetrics;
   activeModelName: string;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
   onOpenCommandPalette: () => void;
+  onOpenShortcutsHelp: () => void;
   onOpenSettings: () => void;
   onOpenLogin: () => void;
-  userRole?: string;
+  currentUser?: { username: string; role: string } | null;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   metrics,
   activeModelName,
+  theme,
+  onToggleTheme,
   onOpenCommandPalette,
+  onOpenShortcutsHelp,
   onOpenSettings,
   onOpenLogin,
-  userRole = 'owner',
+  currentUser,
 }) => {
   return (
     <header className="fixed top-0 left-16 right-0 h-12 bg-surface-container-lowest/95 backdrop-blur border-b border-surface-variant/40 z-40 px-gutter flex items-center justify-between select-none">
@@ -63,12 +69,12 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Right Controls & Profile */}
-      <div className="flex items-center gap-space-md">
+      <div className="flex items-center gap-space-sm">
         {/* Active Model Switcher Pill */}
         <button
           onClick={onOpenSettings}
           className="flex items-center gap-space-xs px-space-sm py-1 bg-surface-container-low border border-surface-variant/60 hover:border-outline text-mono-sm font-mono rounded transition-colors"
-          title="Change active model configuration"
+          title="Configure Model Roles & Fallbacks"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-primary-container" />
           <span className="text-on-surface-variant">MODEL:</span>
@@ -85,11 +91,32 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={onOpenCommandPalette}
           className="flex items-center gap-space-xs px-space-sm py-1 bg-surface-container-low border border-surface-variant/60 hover:border-outline text-on-surface-variant hover:text-on-surface transition-colors rounded text-mono-sm font-mono"
           type="button"
+          title="Command Palette (⌘K)"
         >
           <span>Search & Exec</span>
           <kbd className="px-1 py-0.5 bg-surface-container-high border border-surface-variant rounded text-[10px] text-on-surface-variant font-mono">
             ⌘K
           </kbd>
+        </button>
+
+        {/* Shortcuts Help Button (?) */}
+        <button
+          onClick={onOpenShortcutsHelp}
+          className="w-8 h-8 rounded-lg bg-surface-container-low border border-surface-variant/60 hover:border-outline flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
+          title="Keyboard Shortcuts Reference (?)"
+        >
+          <span className="material-symbols-outlined text-sm">help_outline</span>
+        </button>
+
+        {/* Theme Toggle Button */}
+        <button
+          onClick={onToggleTheme}
+          className="w-8 h-8 rounded-lg bg-surface-container-low border border-surface-variant/60 hover:border-outline flex items-center justify-center text-primary-container hover:text-primary transition-colors"
+          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Theme`}
+        >
+          <span className="material-symbols-outlined text-sm">
+            {theme === 'dark' ? 'light_mode' : 'dark_mode'}
+          </span>
         </button>
 
         <div className="h-4 w-[1px] bg-surface-variant/60" />
@@ -98,10 +125,10 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={onOpenLogin}
           className="w-8 h-8 rounded-full bg-primary flex items-center justify-center hover:ring-2 hover:ring-primary-container transition-all"
-          title={`Operator: ${userRole}`}
+          title={currentUser ? `Operator: ${currentUser.username} (${currentUser.role})` : 'Click to Login'}
         >
           <span className="material-symbols-outlined text-on-primary text-[18px]">
-            person
+            {currentUser ? 'verified_user' : 'person'}
           </span>
         </button>
       </div>

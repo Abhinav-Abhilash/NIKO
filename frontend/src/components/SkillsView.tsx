@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ApiService } from '../services/api';
+import { toastService } from '../services/toast';
 import type { SkillItem } from '../types';
 
 export const SkillsView: React.FC = () => {
@@ -72,13 +73,33 @@ export const SkillsView: React.FC = () => {
 
   const handleToggle = async (skillId: string, currentEnabled: boolean) => {
     const nextState = !currentEnabled;
+    const skillName = skills.find((s) => s.id === skillId)?.name || skillId;
+
+    // Optimistic UI state update
     setSkills((prev) =>
       prev.map((s) => (s.id === skillId ? { ...s, enabled: nextState } : s))
     );
+
+    toastService.undo(
+      `Skill ${nextState ? 'Enabled' : 'Disabled'}`,
+      `${skillName} is now ${nextState ? 'active in tool calling' : 'disabled'}. Click to revert.`,
+      () => {
+        // Undo handler
+        setSkills((prev) =>
+          prev.map((s) => (s.id === skillId ? { ...s, enabled: currentEnabled } : s))
+        );
+        ApiService.toggleSkill(skillId, currentEnabled).catch(() => {});
+      }
+    );
+
     try {
       await ApiService.toggleSkill(skillId, nextState);
-    } catch (err) {
-      console.warn('Could not persist skill state to backend:', err);
+    } catch (err: any) {
+      // Revert on failure
+      setSkills((prev) =>
+        prev.map((s) => (s.id === skillId ? { ...s, enabled: currentEnabled } : s))
+      );
+      toastService.error('Update Failed', err.message || 'Could not update skill.');
     }
   };
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ApiService } from '../services/api';
+import { toastService } from '../services/toast';
 import type { ModelRoleMapping, ModelTarget } from '../types';
 
 export const SettingsView: React.FC = () => {
@@ -7,7 +8,7 @@ export const SettingsView: React.FC = () => {
     chat: [
       { provider: 'groq', model: 'llama-3.3-70b-versatile', temperature: 0.7, priority: 1 },
       { provider: 'gemini', model: 'gemini-2.0-flash', temperature: 0.7, priority: 2 },
-      { provider: 'ollama', model: 'qwen2.5:7b-instruct', temperature: 0.7, priority: 3 },
+      { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct:free', temperature: 0.7, priority: 3 },
     ],
     fast: [
       { provider: 'groq', model: 'llama-3.1-8b-instant', temperature: 0.2, priority: 1 },
@@ -16,6 +17,7 @@ export const SettingsView: React.FC = () => {
     reasoning: [
       { provider: 'gemini', model: 'gemini-2.0-flash', reasoningEffort: 'high', priority: 1 },
       { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 2 },
+      { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct:free', priority: 3 },
     ],
   });
 
@@ -49,9 +51,10 @@ export const SettingsView: React.FC = () => {
     try {
       await ApiService.updateModelRoles(roleMappings);
       setIsSaved(true);
+      toastService.success('Configuration Saved', 'Model role fallbacks updated successfully.');
       setTimeout(() => setIsSaved(false), 3000);
-    } catch (err) {
-      console.error('Error saving model roles:', err);
+    } catch (err: any) {
+      toastService.error('Save Failed', err.message || 'Could not save model roles.');
     }
   };
 
