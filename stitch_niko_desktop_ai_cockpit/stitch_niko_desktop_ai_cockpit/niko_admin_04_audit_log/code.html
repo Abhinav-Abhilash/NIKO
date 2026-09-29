@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"surface-container-highest":"#333538","primary":"#ffd59b","secondary":"#4ae176","inverse-primary":"#815600","on-surface-variant":"#d7c4ad","on-secondary":"#003915","on-primary-container":"#6b4600","on-secondary-fixed-variant":"#005321","error-container":"#93000a","on-secondary-fixed":"#002109","surface-container-low":"#1a1c1f","on-surface":"#e2e2e6","error":"#ffb4ab","inverse-on-surface":"#2f3034","on-primary-fixed-variant":"#624000","tertiary-fixed-dim":"#ffb3ad","primary-container":"#ffb020","on-primary":"#442b00","primary-fixed-dim":"#ffba4b","on-tertiary-fixed":"#410004","surface-bright":"#37393d","outline-variant":"#524533","background":"#111316","surface-container":"#1e2023","tertiary":"#ffd0cc","primary-fixed":"#ffddb1","secondary-fixed":"#6bff8f","surface-container-high":"#282a2d","on-error":"#690005","surface":"#111316","tertiary-container":"#ffa9a3","on-tertiary-fixed-variant":"#930013","tertiary-fixed":"#ffdad7","on-tertiary":"#68000a","on-secondary-container":"#004119","inverse-surface":"#e2e2e6","on-primary-fixed":"#291800","surface-variant":"#333538","on-tertiary-container":"#a00016","on-error-container":"#ffdad6","secondary-fixed-dim":"#4ae176","surface-tint":"#ffba4b","surface-container-lowest":"#0c0e11","outline":"#9f8e79","on-background":"#e2e2e6","surface-dim":"#111316","secondary-container":"#00b954"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"margin":"1rem","space-xs":"0.25rem","space-md":"0.75rem","space-xl":"1.5rem","margin-dock":"0.5rem","space-sm":"0.5rem","gutter":"0.75rem","gutter-md":"1rem","space-lg":"1rem"},"fontFamily":{"mono-sm":["JetBrains Mono"],"body-md":["Inter"],"headline-sm":["Inter"],"headline-md":["Inter"],"headline-lg":["Inter"],"mono-md":["JetBrains Mono"],"label-caps":["JetBrains Mono"],"mono-lg":["JetBrains Mono"],"body-sm":["Inter"],"body-lg":["Inter"]},"fontSize":{"mono-sm":["0.6875rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"body-md":["0.875rem",{"lineHeight":"1.375rem","fontWeight":"400"}],"headline-sm":["1rem",{"lineHeight":"1.5rem","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-md":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-lg":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.02em","fontWeight":"600"}],"mono-md":["0.8125rem",{"lineHeight":"1.25rem","fontWeight":"400"}],"label-caps":["0.625rem",{"lineHeight":"0.875rem","letterSpacing":"0.08em","fontWeight":"600"}],"mono-lg":["0.875rem",{"lineHeight":"1.375rem","letterSpacing":"-0.01em","fontWeight":"500"}],"body-sm":["0.8125rem",{"lineHeight":"1.25rem","fontWeight":"400"}],"body-lg":["0.9375rem",{"lineHeight":"1.5rem","fontWeight":"400"}]}}}}</script></head><body class="bg-surface text-on-surface font-body-md text-body-md min-h-screen selection:bg-primary-container selection:text-on-primary-container"><aside class="fixed left-0 top-0 bottom-0 w-14 bg-surface-container-lowest flex flex-col items-center justify-between py-space-md z-50 border-r border-outline-variant/30"><div class="flex flex-col items-center gap-space-md w-full"><div class="w-9 h-9 flex items-center justify-center bg-surface-container rounded-DEFAULT"><span class="material-symbols-outlined text-primary-container text-[20px]">terminal</span></div><div class="w-8 h-px bg-outline-variant/20 my-space-xs"></div><div class="flex flex-col items-center gap-space-sm w-full"><a class="w-10 h-10 flex items-center justify-center rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#" title="Chat"><span class="material-symbols-outlined text-[20px]">chat_bubble</span></a><a class="w-10 h-10 flex items-center justify-center rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#" title="Dashboard"><span class="material-symbols-outlined text-[20px]">grid_view</span></a><a class="w-10 h-10 flex items-center justify-center rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#" title="Usage"><span class="material-symbols-outlined text-[20px]">monitoring</span></a><a class="w-10 h-10 flex items-center justify-center rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#" title="Skills"><span class="material-symbols-outlined text-[20px]">bolt</span></a><a class="relative w-10 h-10 flex items-center justify-center rounded-DEFAULT bg-surface-container text-primary-container font-semibold transition-colors" href="#" title="Admin Control"><span class="material-symbols-outlined text-[20px]">admin_panel_settings</span><span class="absolute right-1.5 top-1.5 w-1.5 h-1.5 rounded-full bg-primary-container ring-2 ring-surface-container-lowest"></span></a><a class="w-10 h-10 flex items-center justify-center rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#" title="Settings"><span class="material-symbols-outlined text-[20px]">tune</span></a></div></div><div class="flex flex-col items-center gap-space-sm w-full"><div class="flex items-center justify-center w-8 h-8 rounded-DEFAULT bg-surface-container-low" title="Host Sync: Connected"><span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span></div><button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">power_settings_new</span></button></div></aside><aside class="fixed left-14 top-0 bottom-0 w-60 bg-surface-container-low flex flex-col z-40 border-r border-outline-variant/30"><div class="h-14 px-space-md flex items-center justify-between border-b border-outline-variant/30"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary-container text-[18px]">shield_person</span><span class="font-label-caps text-label-caps uppercase text-on-surface font-semibold tracking-wider">SYS_ADMIN</span></div><span class="font-mono-sm text-mono-sm text-primary-container bg-surface-container px-1.5 py-0.5 rounded-DEFAULT border border-outline-variant/40">ROOT</span></div><div class="px-space-md py-space-sm"><div class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest px-space-xs mb-space-xs">Control Nodes</div></div><nav class="flex-1 px-space-sm space-y-0.5 overflow-y-auto" data-active-classes="bg-surface-container text-primary-container border-l-2 border-primary-container font-semibold"><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-overview" href="#"><span class="font-body-sm text-body-sm">Overview</span><span class="material-symbols-outlined text-[16px] opacity-40">chevron_right</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-skills" href="#"><span class="font-body-sm text-body-sm">Skills</span><span class="font-mono-sm text-mono-sm px-1.5 py-0.5 bg-surface-container-highest rounded-DEFAULT text-on-surface-variant">24</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-providers" href="#"><span class="font-body-sm text-body-sm">Providers</span><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span></a><a aria-current="page" class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT transition-colors bg-surface-container text-primary-container border-l-2 border-primary-container font-semibold" data-path="admin-audit" href="#"><span class="font-body-sm text-body-sm">Audit Log</span><span class="font-mono-sm text-mono-sm text-on-surface-variant">LIVE</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-conversations" href="#"><span class="font-body-sm text-body-sm">Conversations</span><span class="font-mono-sm text-mono-sm px-1.5 py-0.5 bg-surface-container-highest rounded-DEFAULT text-on-surface-variant">142</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-sessions" href="#"><span class="font-body-sm text-body-sm">Sessions</span><span class="font-mono-sm text-mono-sm px-1.5 py-0.5 bg-surface-container-highest rounded-DEFAULT text-on-surface-variant">18</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-storage" href="#"><span class="font-body-sm text-body-sm">Storage</span><span class="font-mono-sm text-mono-sm text-on-surface-variant">64%</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-settings" href="#"><span class="font-body-sm text-body-sm">Settings</span><span class="material-symbols-outlined text-[16px] opacity-40">settings</span></a></nav><div class="p-space-md border-t border-outline-variant/30 bg-surface-container-lowest"><div class="flex items-center justify-between text-on-surface-variant"><span class="font-label-caps text-label-caps uppercase">Daemon Node</span><span class="font-mono-sm text-mono-sm text-secondary font-medium">READY</span></div><div class="mt-1 font-mono-sm text-mono-sm text-on-surface truncate">cluster-alpha.internal:7421</div></div></aside><div class="pl-[18.5rem] flex flex-col min-h-screen"><header class="fixed top-0 left-[18.5rem] right-0 h-14 bg-surface-container-lowest border-b border-outline-variant/30 z-30 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm"><img alt="Brand logo. - Primary color: #ffb020
+- Font: inter
+- Mode: dark
+- Roundness: rounded-sm
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XiObUzHveCuTOIuf_NDU615t--4WqWvHvjgZHrED668Xbk1lSKeGkMHkrrQh6KfqKAYALfPgbSDX7OH7lIgYpKrYbZ4w036E5j3arXmFvVH45uiFTcJmXTUDb-SgtxyEEmBm3jDx7wpkQMFXknd5KzWefuEETqJgifCQSrMwYKi3cncN5OyEk8-Ztd6n3F1a9v-BVPtKwA-RY1QrLUrIAUXKLdf9lCfgRxoGWmJ9EWpdx8Zq6Hh-nLog"/><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface font-semibold">NIKO</span></div><div class="h-4 w-px bg-outline-variant/30"></div><div class="flex items-center gap-space-xs font-mono-sm text-mono-sm"><span class="w-2 h-2 rounded-full bg-secondary"></span><span class="text-on-surface font-medium">CORE: ONLINE</span><span class="text-outline">/</span><span class="text-primary-container font-medium">ROOT_PRIVILEGES</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container px-space-md py-1 rounded-DEFAULT border border-outline-variant/40"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">search</span><span class="font-body-sm text-body-sm text-on-surface-variant">Search commands or nodes...</span><span class="font-mono-sm text-mono-sm text-on-surface-variant bg-surface-container-high px-1 py-0.5 rounded-DEFAULT ml-space-md border border-outline-variant/30">⌘K</span></div><div class="flex items-center gap-1.5 px-space-sm py-1 bg-surface-container rounded-DEFAULT border border-outline-variant/40 font-mono-sm text-mono-sm text-on-surface"><span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span><span>groq/llama-3.3-70b</span></div><div class="flex items-center gap-1 font-mono-sm text-mono-sm text-secondary bg-surface-container px-space-sm py-1 rounded-DEFAULT border border-outline-variant/30"><span class="material-symbols-outlined text-[14px]">speed</span><span>18ms</span></div><button class="flex items-center justify-center w-8 h-8 rounded-DEFAULT bg-surface-container text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors border border-outline-variant/30" title="Lock Terminal"><span class="material-symbols-outlined text-[18px]">lock</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 pt-14 pb-8 w-full bg-surface"><div class="flex flex-col w-full">
+<!-- Sub-header Breadcrumb / Control Band -->
+<div class="px-space-lg py-space-sm bg-surface-container-lowest flex flex-wrap items-center justify-between gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center gap-space-xs sm:gap-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">ADMIN CONTROL</span>
+<span class="text-outline-variant font-mono-sm text-mono-sm">/</span>
+<span class="font-mono-sm text-mono-sm text-primary-container font-semibold tracking-wide">SYSTEM AUDIT LOG</span>
+</div>
+<div class="flex items-center gap-1.5 px-space-sm py-0.5 rounded-DEFAULT bg-surface-container-high">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">CIRCULAR BUFFER: 100K EVENTS [ACTIVE]</span>
+</div>
+</div>
+<!-- Export Action Trays -->
+<div class="flex items-center gap-space-sm">
+<button class="h-7 px-space-md bg-surface-container hover:bg-surface-container-high text-primary-container rounded-DEFAULT font-mono-sm text-mono-sm flex items-center gap-1.5 transition-colors shadow-sm" onclick="simulateExport('JSON')">
+<span class="material-symbols-outlined text-[14px]">data_object</span>
+<span>Export JSON</span>
+</button>
+<button class="h-7 px-space-md bg-surface-container hover:bg-surface-container-high text-on-surface rounded-DEFAULT font-mono-sm text-mono-sm flex items-center gap-1.5 transition-colors shadow-sm" onclick="simulateExport('CSV')">
+<span class="material-symbols-outlined text-[14px]">grid_on</span>
+<span>Export CSV</span>
+</button>
+<div class="h-5 w-px bg-surface-container-highest"></div>
+<button class="h-7 px-space-sm bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface rounded-DEFAULT flex items-center justify-center transition-colors" title="Audit Stream Settings">
+<span class="material-symbols-outlined text-[15px]">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Telemetry Barometer Band -->
+<div class="px-space-lg py-space-xs bg-surface-container-low flex flex-wrap items-center justify-between text-on-surface-variant font-mono-sm text-mono-sm gap-y-1">
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-1.5">
+<span class="text-on-surface-variant">LOG_HASH:</span>
+<span class="text-on-surface">sha256:7f8a9e...e201c4</span>
+</div>
+<div class="hidden md:flex items-center gap-1.5">
+<span class="text-on-surface-variant">INGEST_RATE:</span>
+<span class="text-secondary font-medium">84.2 events/sec</span>
+</div>
+<div class="hidden lg:flex items-center gap-1.5">
+<span class="text-on-surface-variant">UNVERIFIED_DROPS:</span>
+<span class="text-on-surface">0</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="text-on-surface-variant">HEAD SEQUENCE:</span>
+<span class="text-primary-container font-medium">#094,821</span>
+</div>
+</div>
+<!-- Filter & Search Command Strip -->
+<div class="p-space-lg bg-surface-container flex flex-col gap-space-md">
+<!-- Search Row -->
+<div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-space-md">
+<div class="relative flex-1">
+<div class="absolute inset-y-0 left-0 pl-space-md flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+</div>
+<input class="w-full h-9 pl-9 pr-14 bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/60 font-mono-md text-mono-md rounded-DEFAULT focus:outline-none focus:ring-1 focus:ring-primary-container/60 shadow-inner" id="audit-search-input" placeholder="Search by skill, args, PID, or payload... (Press / to focus)" type="text"/>
+<div class="absolute inset-y-0 right-0 pr-space-md flex items-center pointer-events-none">
+<kbd class="px-1.5 py-0.5 font-mono-sm text-mono-sm text-on-surface-variant bg-surface-container-high rounded-DEFAULT shadow-sm">/</kbd>
+</div>
+</div>
+<!-- Quick Toggles -->
+<div class="flex items-center gap-space-md flex-wrap">
+<label class="flex items-center gap-space-xs cursor-pointer select-none text-on-surface-variant hover:text-on-surface transition-colors">
+<input checked="" class="w-3.5 h-3.5 bg-surface-container-lowest text-primary-container rounded-DEFAULT focus:ring-0 focus:ring-offset-0 cursor-pointer accent-primary-container" type="checkbox"/>
+<span class="font-mono-sm text-mono-sm">Hide Background Daemons</span>
+</label>
+<label class="flex items-center gap-space-xs cursor-pointer select-none text-on-surface-variant hover:text-on-surface transition-colors">
+<input class="w-3.5 h-3.5 bg-surface-container-lowest text-primary-container rounded-DEFAULT focus:ring-0 focus:ring-offset-0 cursor-pointer accent-primary-container" type="checkbox"/>
+<span class="font-mono-sm text-mono-sm">Only Errors & Rejections</span>
+</label>
+</div>
+</div>
+<!-- Dropdown Filter Strip -->
+<div class="flex flex-wrap items-center gap-space-sm pt-space-xs">
+<!-- Status Filter -->
+<div class="relative">
+<select class="appearance-none h-7 pl-space-sm pr-7 bg-surface-container-lowest text-on-surface font-mono-sm text-mono-sm rounded-DEFAULT cursor-pointer hover:bg-surface-container-high focus:outline-none focus:ring-1 focus:ring-primary-container">
+<option>Status: All Statuses</option>
+<option>Confirmed & Success</option>
+<option>Auto Allowed</option>
+<option>User Denied / Blocked</option>
+<option>Failed / Timeout</option>
+</select>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant absolute right-2 top-1.5 pointer-events-none">expand_more</span>
+</div>
+<!-- Skill Filter -->
+<div class="relative">
+<select class="appearance-none h-7 pl-space-sm pr-7 bg-surface-container-lowest text-on-surface font-mono-sm text-mono-sm rounded-DEFAULT cursor-pointer hover:bg-surface-container-high focus:outline-none focus:ring-1 focus:ring-primary-container">
+<option>Skill: All Skills (12)</option>
+<option>system_exec: terminal_command</option>
+<option>app_control: open_app</option>
+<option>fs_destroy: delete_directory</option>
+<option>system_stats: resource_profile</option>
+<option>llm_route: gemini-1.5-pro</option>
+<option>cron: morning_briefing</option>
+</select>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant absolute right-2 top-1.5 pointer-events-none">expand_more</span>
+</div>
+<!-- Tier Filter -->
+<div class="relative">
+<select class="appearance-none h-7 pl-space-sm pr-7 bg-surface-container-lowest text-on-surface font-mono-sm text-mono-sm rounded-DEFAULT cursor-pointer hover:bg-surface-container-high focus:outline-none focus:ring-1 focus:ring-primary-container">
+<option>Tier: Any Risk Tier</option>
+<option>CONFIRM (Requires Authorization)</option>
+<option>SAFE (Autonomic Read/Execute)</option>
+<option>BLOCKED (Supervisor Guardrail)</option>
+</select>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant absolute right-2 top-1.5 pointer-events-none">expand_more</span>
+</div>
+<!-- Time Window -->
+<div class="relative">
+<select class="appearance-none h-7 pl-space-sm pr-7 bg-surface-container-lowest text-on-surface font-mono-sm text-mono-sm rounded-DEFAULT cursor-pointer hover:bg-surface-container-high focus:outline-none focus:ring-1 focus:ring-primary-container">
+<option>Window: Last 24 Hours</option>
+<option>Window: Last 1 Hour</option>
+<option>Window: Last 6 Hours</option>
+<option>Window: Last 7 Days</option>
+<option>Window: Custom Range...</option>
+</select>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant absolute right-2 top-1.5 pointer-events-none">expand_more</span>
+</div>
+<div class="ml-auto flex items-center gap-space-xs text-on-surface-variant font-mono-sm text-mono-sm">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>AUTO-REFRESH: 1.0s</span>
+</div>
+</div>
+</div>
+<!-- Monospace Audit Table -->
+<div class="w-full overflow-x-auto bg-surface-container-lowest">
+<table class="w-full text-left border-collapse min-w-[1020px]">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-mono-sm text-mono-sm uppercase select-none tracking-wider">
+<th class="py-2.5 px-3 w-10 text-center"></th>
+<th class="py-2.5 px-3 w-44">TIMESTAMP (UTC)</th>
+<th class="py-2.5 px-3 w-64">SKILL INVOCATION</th>
+<th class="py-2.5 px-3">CALL ARGUMENTS SUMMARY</th>
+<th class="py-2.5 px-3 w-28 text-center">RISK TIER</th>
+<th class="py-2.5 px-3 w-24 text-right">DURATION</th>
+<th class="py-2.5 px-3 w-48 text-right">STATUS</th>
+</tr>
+</thead>
+<tbody class="font-mono-md text-mono-md divide-y-0">
+<!-- Row 1: EXPANDED RECORD -->
+<tr class="bg-surface-container-high/80 hover:bg-surface-container-high transition-colors cursor-pointer group" onclick="toggleDrawer('row-1-drawer', 'chevron-1')">
+<td class="py-2 px-3 text-center">
+<span class="material-symbols-outlined text-[16px] text-primary-container transform transition-transform rotate-90" id="chevron-1">expand_more</span>
+</td>
+<td class="py-2 px-3 text-on-surface-variant font-mono-sm text-mono-sm whitespace-nowrap">
+            2025-05-18 <span class="text-on-surface font-semibold">14:02:20.142</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+<span class="text-primary-container font-semibold">system_exec:</span>
+<span class="text-on-surface">terminal_command</span>
+</div>
+</td>
+<td class="py-2 px-3 truncate max-w-md text-on-surface-variant">
+<span class="text-primary-container">{</span><span class="text-on-surface">"cmd"</span>: <span class="text-secondary">"killall -9 Google Chrome && purge"</span><span class="text-primary-container">}</span>
+</td>
+<td class="py-2 px-3 text-center whitespace-nowrap">
+<span class="inline-block px-2 py-0.5 rounded-DEFAULT bg-primary-container text-on-primary-container font-mono-sm text-mono-sm font-semibold tracking-wider">CONFIRM</span>
+</td>
+<td class="py-2 px-3 text-right text-on-surface font-mono-sm text-mono-sm whitespace-nowrap">
+            18ms
+          </td>
+<td class="py-2 px-3 text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-DEFAULT bg-on-secondary/30 text-secondary font-mono-sm text-mono-sm font-medium">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+              CONFIRMED & SUCCESS
+            </span>
+</td>
+</tr>
+<!-- Row 1 EXPANDED DRAWER -->
+<tr class="bg-surface-container-low" id="row-1-drawer">
+<td class="p-0" colspan="7">
+<div class="p-space-lg flex flex-col gap-space-md bg-surface-container-lowest/60">
+<!-- Drawer Header Metadata -->
+<div class="flex flex-wrap items-center justify-between gap-space-md pb-space-xs">
+<div class="flex items-center gap-space-md flex-wrap font-mono-sm text-mono-sm text-on-surface-variant">
+<span class="flex items-center gap-1">
+<span class="text-on-surface-variant">INVOCATION_ID:</span>
+<span class="text-on-surface">inv_99841804f82</span>
+</span>
+<span class="h-3 w-px bg-surface-container-highest"></span>
+<span class="flex items-center gap-1">
+<span class="text-on-surface-variant">INITIATOR_PID:</span>
+<span class="text-primary-container">8044 (supervisor:cockpit)</span>
+</span>
+<span class="h-3 w-px bg-surface-container-highest"></span>
+<span class="flex items-center gap-1">
+<span class="text-on-surface-variant">CONFIRMATION_HASH:</span>
+<span class="text-on-surface">0x4ae89...f91a</span>
+</span>
+<span class="h-3 w-px bg-surface-container-highest"></span>
+<span class="flex items-center gap-1">
+<span class="text-on-surface-variant">SUPERVISOR_EVAL:</span>
+<span class="text-secondary font-semibold">POLICY_OVERRIDE_GRANTED</span>
+</span>
+</div>
+<div class="flex items-center gap-space-xs font-mono-sm text-mono-sm">
+<button class="px-space-sm py-1 bg-surface-container hover:bg-surface-container-high rounded-DEFAULT text-on-surface-variant hover:text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">content_copy</span>
+<span>Copy Trace JSON</span>
+</button>
+<button class="px-space-sm py-1 bg-surface-container hover:bg-surface-container-high rounded-DEFAULT text-on-surface-variant hover:text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">replay</span>
+<span>Re-run with Sandbox</span>
+</button>
+</div>
+</div>
+<!-- Two Column Detailed Drawer Body -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-md">
+<!-- Left Panel: Invocation Payload -->
+<div class="p-space-md bg-surface-container rounded-DEFAULT flex flex-col gap-space-sm shadow-sm">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-primary-container">code_blocks</span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface font-semibold tracking-wider">INVOCATION PAYLOAD (JSON)</span>
+</div>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">SCHEME: v2.schema.json</span>
+</div>
+<div class="p-space-md bg-surface-container-lowest rounded-DEFAULT font-mono-sm text-mono-sm text-on-surface overflow-x-auto space-y-1">
+<div><span class="text-on-surface-variant">{</span></div>
+<div class="pl-4"><span class="text-primary-container">"action"</span>: <span class="text-on-surface">"system_exec:terminal_command"</span>,</div>
+<div class="pl-4"><span class="text-primary-container">"cwd"</span>: <span class="text-on-surface">"/Users/cockpit/runtime"</span>,</div>
+<div class="pl-4"><span class="text-primary-container">"caller"</span>: <span class="text-on-surface-variant">{</span></div>
+<div class="pl-8"><span class="text-primary-container">"agent"</span>: <span class="text-on-surface">"supervisor_autonomous_core"</span>,</div>
+<div class="pl-8"><span class="text-primary-container">"session_id"</span>: <span class="text-on-surface">"sess_7421_active"</span>,</div>
+<div class="pl-8"><span class="text-primary-container">"pid"</span>: <span class="text-secondary">8044</span></div>
+<div class="pl-4"><span class="text-on-surface-variant">}</span>,</div>
+<div class="pl-4"><span class="text-primary-container">"args"</span>: <span class="text-on-surface-variant">{</span></div>
+<div class="pl-8"><span class="text-primary-container">"cmd"</span>: <span class="text-secondary">"killall -9 'Google Chrome' && purge"</span>,</div>
+<div class="pl-8"><span class="text-primary-container">"timeout_ms"</span>: <span class="text-secondary">5000</span>,</div>
+<div class="pl-8"><span class="text-primary-container">"elevated_privileges"</span>: <span class="text-primary-container">true</span></div>
+<div class="pl-4"><span class="text-on-surface-variant">}</span>,</div>
+<div class="pl-4"><span class="text-primary-container">"user_prompt"</span>: <span class="text-on-surface">"Kill Chrome immediately and flush local memory buffers"</span>,</div>
+<div class="pl-4"><span class="text-primary-container">"approval_token"</span>: <span class="text-secondary">"tok_auth_09f3e1b009cd7"</span></div>
+<div><span class="text-on-surface-variant">}</span></div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-mono-sm text-mono-sm pt-1">
+<span>CWD: /Users/cockpit/runtime</span>
+<span>TOKEN STATUS: VALIDATED</span>
+</div>
+</div>
+<!-- Right Panel: Execution Telemetry & Stdout -->
+<div class="p-space-md bg-surface-container rounded-DEFAULT flex flex-col gap-space-sm shadow-sm">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-secondary">terminal</span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface font-semibold tracking-wider">EXECUTION TELEMETRY & STDOUT</span>
+</div>
+<span class="font-mono-sm text-mono-sm text-secondary font-semibold">EXIT: 0 (EXIT_SUCCESS)</span>
+</div>
+<div class="p-space-md bg-surface-container-lowest rounded-DEFAULT font-mono-sm text-mono-sm text-on-surface overflow-x-auto space-y-1">
+<div class="text-on-surface-variant">[14:02:20.144] >> SPAWNING POSIX ISOLATE (Subprocess 8192)</div>
+<div class="text-on-surface-variant">[14:02:20.147] >> SIGKILL DISPATCHED: 4 matching processes terminated</div>
+<div class="text-secondary">[14:02:20.155] >> System memory flush complete. Reclaimed: 2,492 MB</div>
+<div class="text-on-surface-variant">[14:02:20.160] >> ISOLATE CLOSED WITH STATUS 0</div>
+<div class="pt-2 text-primary-container font-semibold">-- TELEMETRY SUMMARY --</div>
+<div class="text-on-surface">SYS_MEM_DELTA: -2,492,108 KB</div>
+<div class="text-on-surface">IO_OPS_WRITE: 14 ops</div>
+<div class="text-on-surface">MD5_INTEGRITY: 8f9b0021c3fa09819f0</div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-mono-sm text-mono-sm pt-1">
+<span>MEMORY RECLAIMED: 2.4 GB</span>
+<span class="text-secondary">MD5: 8f9b...09f0 MATCHED</span>
+</div>
+</div>
+</div>
+</div>
+</td>
+</tr>
+<!-- Row 2: app_control: open_app -->
+<tr class="bg-surface-container hover:bg-surface-container-high transition-colors">
+<td class="py-2.5 px-3 text-center">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant hover:text-on-surface cursor-pointer">chevron_right</span>
+</td>
+<td class="py-2.5 px-3 text-on-surface-variant font-mono-sm text-mono-sm whitespace-nowrap">
+            2025-05-18 <span class="text-on-surface">14:02:19.400</span>
+</td>
+<td class="py-2.5 px-3 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="text-on-surface font-semibold">app_control:</span>
+<span class="text-on-surface-variant">open_app</span>
+</div>
+</td>
+<td class="py-2.5 px-3 truncate max-w-md text-on-surface-variant">
+<span class="text-on-surface-variant">{</span><span class="text-on-surface">"app"</span>: <span class="text-on-surface">"Spotify.app"</span>, <span class="text-on-surface">"uri"</span>: <span class="text-on-surface-variant">"spotify:playlist:37i9dQZF1DXcBWIGoYBM5M"</span><span class="text-on-surface-variant">}</span>
+</td>
+<td class="py-2.5 px-3 text-center whitespace-nowrap">
+<span class="inline-block px-2 py-0.5 rounded-DEFAULT bg-on-secondary/30 text-secondary font-mono-sm text-mono-sm font-semibold tracking-wider">SAFE</span>
+</td>
+<td class="py-2.5 px-3 text-right text-on-surface font-mono-sm text-mono-sm whitespace-nowrap">
+            84ms
+          </td>
+<td class="py-2.5 px-3 text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-DEFAULT bg-surface-container-highest text-on-surface font-mono-sm text-mono-sm">
+<span class="material-symbols-outlined text-[12px] text-secondary">check_circle</span>
+              AUTO_ALLOWED
+            </span>
+</td>
+</tr>
+<!-- Row 3: fs_destroy: delete_directory (BLOCKED) -->
+<tr class="bg-surface-container-low hover:bg-surface-container-high transition-colors">
+<td class="py-2.5 px-3 text-center">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant hover:text-on-surface cursor-pointer">chevron_right</span>
+</td>
+<td class="py-2.5 px-3 text-on-surface-variant font-mono-sm text-mono-sm whitespace-nowrap">
+            2025-05-18 <span class="text-on-surface">13:58:11.029</span>
+</td>
+<td class="py-2.5 px-3 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span class="text-error font-semibold">fs_destroy:</span>
+<span class="text-on-surface">delete_directory</span>
+</div>
+</td>
+<td class="py-2.5 px-3 truncate max-w-md text-error">
+<span class="text-on-surface-variant">{</span><span class="text-error">"path"</span>: <span class="text-error">"/etc/hosts.d"</span>, <span class="text-error">"recursive"</span>: <span class="text-error">true</span><span class="text-on-surface-variant">}</span>
+</td>
+<td class="py-2.5 px-3 text-center whitespace-nowrap">
+<span class="inline-block px-2 py-0.5 rounded-DEFAULT bg-error-container text-on-error-container font-mono-sm text-mono-sm font-semibold tracking-wider">BLOCKED</span>
+</td>
+<td class="py-2.5 px-3 text-right text-on-surface-variant font-mono-sm text-mono-sm whitespace-nowrap">
+            2ms
+          </td>
+<td class="py-2.5 px-3 text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-DEFAULT bg-error-container/40 text-error font-mono-sm text-mono-sm font-medium">
+<span class="material-symbols-outlined text-[12px]">gpp_bad</span>
+              USER_DENIED
+            </span>
+</td>
+</tr>
+<!-- Row 4: system_stats: resource_profile -->
+<tr class="bg-surface-container hover:bg-surface-container-high transition-colors">
+<td class="py-2.5 px-3 text-center">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant hover:text-on-surface cursor-pointer">chevron_right</span>
+</td>
+<td class="py-2.5 px-3 text-on-surface-variant font-mono-sm text-mono-sm whitespace-nowrap">
+            2025-05-18 <span class="text-on-surface">13:45:00.812</span>
+</td>
+<td class="py-2.5 px-3 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="text-on-surface font-semibold">system_stats:</span>
+<span class="text-on-surface-variant">resource_profile</span>
+</div>
+</td>
+<td class="py-2.5 px-3 truncate max-w-md text-on-surface-variant">
+<span class="text-on-surface-variant">{</span><span class="text-on-surface">"sort"</span>: <span class="text-on-surface">"cpu_usage"</span>, <span class="text-on-surface">"limit"</span>: <span class="text-secondary">3</span><span class="text-on-surface-variant">}</span>
+</td>
+<td class="py-2.5 px-3 text-center whitespace-nowrap">
+<span class="inline-block px-2 py-0.5 rounded-DEFAULT bg-on-secondary/30 text-secondary font-mono-sm text-mono-sm font-semibold tracking-wider">SAFE</span>
+</td>
+<td class="py-2.5 px-3 text-right text-on-surface font-mono-sm text-mono-sm whitespace-nowrap">
+            412ms
+          </td>
+<td class="py-2.5 px-3 text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-DEFAULT bg-surface-container-highest text-on-surface font-mono-sm text-mono-sm">
+<span class="material-symbols-outlined text-[12px] text-secondary">check_circle</span>
+              AUTO_ALLOWED
+            </span>
+</td>
+</tr>
+<!-- Row 5: llm_route: gemini-1.5-pro (FAILED 429) -->
+<tr class="bg-surface-container-low hover:bg-surface-container-high transition-colors">
+<td class="py-2.5 px-3 text-center">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant hover:text-on-surface cursor-pointer">chevron_right</span>
+</td>
+<td class="py-2.5 px-3 text-on-surface-variant font-mono-sm text-mono-sm whitespace-nowrap">
+            2025-05-18 <span class="text-on-surface">12:20:14.991</span>
+</td>
+<td class="py-2.5 px-3 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+<span class="text-primary-container font-semibold">llm_route:</span>
+<span class="text-on-surface">gemini-1.5-pro</span>
+</div>
+</td>
+<td class="py-2.5 px-3 truncate max-w-md text-on-surface-variant">
+<span class="text-on-surface-variant">{</span><span class="text-on-surface">"prompt_tokens"</span>: <span class="text-primary-container">1402</span>, <span class="text-on-surface">"mode"</span>: <span class="text-on-surface">"eval"</span><span class="text-on-surface-variant">}</span>
+</td>
+<td class="py-2.5 px-3 text-center whitespace-nowrap">
+<span class="inline-block px-2 py-0.5 rounded-DEFAULT bg-on-secondary/30 text-secondary font-mono-sm text-mono-sm font-semibold tracking-wider">SAFE</span>
+</td>
+<td class="py-2.5 px-3 text-right text-on-surface font-mono-sm text-mono-sm whitespace-nowrap">
+            580ms
+          </td>
+<td class="py-2.5 px-3 text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-DEFAULT bg-primary-container/20 text-primary-container font-mono-sm text-mono-sm font-semibold">
+<span class="material-symbols-outlined text-[12px]">warning</span>
+              FAILED (429)
+            </span>
+</td>
+</tr>
+<!-- Row 6: cron: morning_briefing -->
+<tr class="bg-surface-container hover:bg-surface-container-high transition-colors">
+<td class="py-2.5 px-3 text-center">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant hover:text-on-surface cursor-pointer">chevron_right</span>
+</td>
+<td class="py-2.5 px-3 text-on-surface-variant font-mono-sm text-mono-sm whitespace-nowrap">
+            2025-05-18 <span class="text-on-surface">11:15:02.104</span>
+</td>
+<td class="py-2.5 px-3 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="text-on-surface font-semibold">cron:</span>
+<span class="text-on-surface-variant">morning_briefing</span>
+</div>
+</td>
+<td class="py-2.5 px-3 truncate max-w-md text-on-surface-variant">
+<span class="text-on-surface-variant">{</span><span class="text-on-surface">"source"</span>: <span class="text-on-surface">"notion_cache"</span>, <span class="text-on-surface">"sync"</span>: <span class="text-secondary">true</span><span class="text-on-surface-variant">}</span>
+</td>
+<td class="py-2.5 px-3 text-center whitespace-nowrap">
+<span class="inline-block px-2 py-0.5 rounded-DEFAULT bg-on-secondary/30 text-secondary font-mono-sm text-mono-sm font-semibold tracking-wider">SAFE</span>
+</td>
+<td class="py-2.5 px-3 text-right text-on-surface font-mono-sm text-mono-sm whitespace-nowrap">
+            1.48s
+          </td>
+<td class="py-2.5 px-3 text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-DEFAULT bg-surface-container-highest text-on-surface font-mono-sm text-mono-sm">
+<span class="material-symbols-outlined text-[12px] text-secondary">check_circle</span>
+              AUTO_ALLOWED
+            </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination & Checksum Deck -->
+<div class="px-space-lg py-space-sm bg-surface-container-low flex flex-col md:flex-row items-center justify-between gap-space-sm text-on-surface-variant font-mono-sm text-mono-sm">
+<div class="flex items-center gap-space-md">
+<span>Showing <strong class="text-on-surface">1-25</strong> of <strong class="text-on-surface">4,812</strong> audit records</span>
+<span class="h-3 w-px bg-surface-container-highest hidden sm:block"></span>
+<span class="hidden sm:inline">BUFFER RETENTION: 7 DAYS</span>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-1">
+<button class="h-6 px-2 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-DEFAULT disabled:opacity-30 disabled:cursor-not-allowed" disabled="">
+          Prev
+        </button>
+<span class="px-2 text-on-surface">Page 1 of 193</span>
+<button class="h-6 px-2 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-DEFAULT transition-colors">
+          Next
+        </button>
+</div>
+<div class="hidden lg:flex items-center gap-1.5 px-space-sm py-0.5 rounded-DEFAULT bg-surface-container-highest text-on-surface-variant font-mono-sm text-mono-sm">
+<span class="text-secondary">●</span>
+<span>CHAIN_SIG: sha256:7f8a9e...01c4 (TAMPER-EVIDENT)</span>
+</div>
+</div>
+</div>
+<!-- Dynamic Live Stream Mini-Bar -->
+<div class="mx-space-lg my-space-md p-space-md bg-surface-container rounded-DEFAULT flex flex-col md:flex-row items-center justify-between gap-space-sm shadow-sm">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+</span>
+<span class="font-mono-sm text-mono-sm text-on-surface font-semibold">LIVE REPLAY POINTER: TAIL</span>
+</div>
+<span class="text-on-surface-variant font-mono-sm text-mono-sm">Streaming uncommitted socket events directly from kernel bus</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">BUFFER FILL:</span>
+<div class="w-32 h-1.5 bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full bg-primary-container" style="width: 48%"></div>
+</div>
+<span class="font-mono-sm text-mono-sm text-primary-container font-semibold">48.1%</span>
+</div>
+</div>
+<script>
+    function toggleDrawer(drawerId, chevronId) {
+      const drawer = document.getElementById(drawerId);
+      const chevron = document.getElementById(chevronId);
+      if (drawer.classList.contains('hidden')) {
+        drawer.classList.remove('hidden');
+        chevron.classList.add('rotate-90');
+      } else {
+        drawer.classList.add('hidden');
+        chevron.classList.remove('rotate-90');
+      }
+    }
+
+    function simulateExport(format) {
+      const btn = event.currentTarget;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<span class="material-symbols-outlined text-[14px] animate-spin">refresh</span><span>Dumping ${format}...</span>`;
+      setTimeout(() => {
+        btn.innerHTML = `<span class="material-symbols-outlined text-[14px] text-secondary">check</span><span>Exported!</span>`;
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+        }, 1500);
+      }, 700);
+    }
+
+    // Hotkey listener for '/' search focus
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        const searchInput = document.getElementById('audit-search-input');
+        if (searchInput) searchInput.focus();
+      }
+    });
+  </script>
+</div></main><footer class="fixed bottom-0 left-[18.5rem] right-0 h-7 bg-surface-container-lowest border-t border-outline-variant/30 z-30 px-space-lg flex items-center justify-between font-mono-sm text-mono-sm text-on-surface-variant"><div class="flex items-center gap-space-md"><span>PID: 8044</span><span>RUNTIME: V8-ISOLATE</span><span>MEM: 248MB / 1024MB</span><span>PORT: 7421</span></div><div class="flex items-center gap-space-md"><span class="text-primary font-medium">NIKO COCKPIT v2.4.2</span><div class="flex items-center gap-1.5 text-secondary"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span><span>SYNCED</span></div></div></footer></div></body></html>

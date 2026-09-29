@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"tertiary":"#ffd0cc","on-secondary-fixed-variant":"#005321","on-primary":"#442b00","error":"#ffb4ab","error-container":"#93000a","surface":"#111316","background":"#111316","on-tertiary-fixed-variant":"#930013","on-primary-container":"#6b4600","secondary-fixed-dim":"#4ae176","surface-tint":"#ffba4b","on-secondary-container":"#004119","on-tertiary":"#68000a","primary-container":"#ffb020","tertiary-container":"#ffa9a3","on-primary-fixed":"#291800","secondary-fixed":"#6bff8f","surface-bright":"#37393d","inverse-surface":"#e2e2e6","secondary-container":"#00b954","tertiary-fixed-dim":"#ffb3ad","primary":"#ffd59b","surface-container-lowest":"#0c0e11","surface-variant":"#333538","on-tertiary-container":"#a00016","secondary":"#4ae176","on-primary-fixed-variant":"#624000","outline-variant":"#524533","surface-container-low":"#1a1c1f","on-secondary-fixed":"#002109","on-tertiary-fixed":"#410004","inverse-on-surface":"#2f3034","on-background":"#e2e2e6","surface-dim":"#111316","on-surface-variant":"#d7c4ad","primary-fixed":"#ffddb1","on-error-container":"#ffdad6","surface-container-highest":"#333538","tertiary-fixed":"#ffdad7","surface-container":"#1e2023","primary-fixed-dim":"#ffba4b","on-secondary":"#003915","inverse-primary":"#815600","outline":"#9f8e79","on-error":"#690005","surface-container-high":"#282a2d","on-surface":"#e2e2e6"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-sm":"0.5rem","gutter-md":"1rem","gutter":"0.75rem","margin":"1rem","space-xs":"0.25rem","space-md":"0.75rem","space-xl":"1.5rem","space-lg":"1rem","margin-dock":"0.5rem"},fontFamily:{"headline-sm":["Inter"],"mono-sm":["JetBrains Mono"],"body-sm":["Inter"],"label-caps":["JetBrains Mono"],"body-lg":["Inter"],"headline-md":["Inter"],"body-md":["Inter"],"mono-lg":["JetBrains Mono"],"headline-lg":["Inter"],"mono-md":["JetBrains Mono"]},fontSize:{"headline-sm":["1rem",{lineHeight:"1.5rem",letterSpacing:"-0.01em",fontWeight:"600"}],"mono-sm":["0.6875rem",{lineHeight:"1rem",letterSpacing:"0.02em",fontWeight:"500"}],"body-sm":["0.8125rem",{lineHeight:"1.25rem",fontWeight:"400"}],"label-caps":["0.625rem",{lineHeight:"0.875rem",letterSpacing:"0.08em",fontWeight:"600"}],"body-lg":["0.9375rem",{lineHeight:"1.5rem",fontWeight:"400"}],"headline-md":["1.25rem",{lineHeight:"1.75rem",letterSpacing:"-0.015em",fontWeight:"600"}],"body-md":["0.875rem",{lineHeight:"1.375rem",fontWeight:"400"}],"mono-lg":["0.875rem",{lineHeight:"1.375rem",letterSpacing:"-0.01em",fontWeight:"500"}],"headline-lg":["1.75rem",{lineHeight:"2.25rem",letterSpacing:"-0.02em",fontWeight:"600"}],"mono-md":["0.8125rem",{lineHeight:"1.25rem",fontWeight:"400"}]}}}}</script></head><body class="bg-surface-container-lowest font-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container"><aside class="fixed left-0 top-0 h-full w-16 bg-surface-container-lowest z-50 flex flex-col items-center justify-between border-r border-surface-variant/40 py-space-sm"><div class="flex flex-col items-center w-full gap-space-md"><div class="relative flex items-center justify-center w-10 h-10 group cursor-pointer"><img alt="Niko Core Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XKNoZXW9-1bI5wJ7lKDTW0gWsWdJKvdHvVPou-8l6dHykiHOnN_GdcT-qECgIyTjSf4WFeSznQLsQdYKcu0Jz0u5kWffQ2NZXgx0zE8RaTiK0l7fzh_YdWm5LaGZaKHF7O7DRZCwRMs7bBcKn1h1D4NFVfFwiCZDq4G_eDzsAQzrVX84AfjEbvVV1cWzbpTSOhdl1Jbga2WJOYe0XX9IlzHMmoheasbEzGfnH-mZRnGEjHjHXxSpEIeJk"/><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-surface-container-highest text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg border border-surface-variant/60">Niko Core</span></div><nav class="flex flex-col items-center w-full gap-space-xs" data-active-classes="bg-surface-container-high text-primary-container border-l-2 border-primary-container"><a class="relative flex items-center justify-center w-12 h-10 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded group" data-path="chat" href="#" title="Chat"><span class="material-symbols-outlined text-[20px]">terminal</span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-surface-container-highest text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg border border-surface-variant/60">Chat (⌘1)</span></a><a aria-current="page" class="relative flex items-center justify-center w-12 h-10 transition-colors rounded group bg-surface-container-high text-primary-container border-l-2 border-primary-container" data-path="dashboard" href="#" title="Dashboard"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-surface-container-highest text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg border border-surface-variant/60">Dashboard (⌘2)</span></a><a class="relative flex items-center justify-center w-12 h-10 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded group" data-path="usage" href="#" title="Usage"><span class="material-symbols-outlined text-[20px]">monitoring</span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-surface-container-highest text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg border border-surface-variant/60">Usage Telemetry (⌘3)</span></a><a class="relative flex items-center justify-center w-12 h-10 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded group" data-path="skills" href="#" title="Skills"><span class="material-symbols-outlined text-[20px]">extension</span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-surface-container-highest text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg border border-surface-variant/60">Agent Skills (⌘4)</span></a><a class="relative flex items-center justify-center w-12 h-10 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded group" data-path="admin" href="#" title="Admin"><span class="material-symbols-outlined text-[20px]">admin_panel_settings</span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-surface-container-highest text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg border border-surface-variant/60">Administration</span></a><a class="relative flex items-center justify-center w-12 h-10 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded group" data-path="settings" href="#" title="Settings"><span class="material-symbols-outlined text-[20px]">tune</span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-surface-container-highest text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg border border-surface-variant/60">System Settings</span></a></nav></div><div class="flex flex-col items-center w-full gap-space-sm border-t border-surface-variant/40 pt-space-sm"><div class="relative flex items-center justify-center w-10 h-10 group cursor-pointer"><span class="material-symbols-outlined text-[18px] text-on-surface-variant group-hover:text-primary-container transition-colors">dns</span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-surface-container-highest text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg border border-surface-variant/60">Groq / Llama-3.3-70b</span></div><div class="relative flex items-center justify-center w-8 h-8 group cursor-pointer"><span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(74,225,118,0.6)]"></span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-surface-container-highest text-secondary text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg border border-surface-variant/60">LOCAL :7421 ONLINE</span></div><div class="w-7 h-7 rounded-full bg-surface-container-high border border-surface-variant flex items-center justify-center"><span class="material-symbols-outlined text-primary-container text-[14px]">hub</span></div></div></aside><div class="pl-16"><header class="fixed top-0 left-16 right-0 h-12 bg-surface-container-lowest/95 backdrop-blur border-b border-surface-variant/40 z-40 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs text-mono-sm font-mono-sm text-on-surface-variant"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span><span class="text-on-surface font-mono-sm">CORE:</span><span class="text-secondary">ONLINE</span></div><div class="h-3 w-[1px] bg-surface-variant/60"></div><div class="flex items-center gap-space-xs text-mono-sm font-mono-sm text-on-surface-variant"><span>CPU:</span><span class="text-on-surface">18%</span></div><div class="h-3 w-[1px] bg-surface-variant/60"></div><div class="flex items-center gap-space-xs text-mono-sm font-mono-sm text-on-surface-variant"><span>RAM:</span><span class="text-on-surface">6.4 GB</span></div><div class="h-3 w-[1px] bg-surface-variant/60"></div><div class="flex items-center gap-space-xs text-mono-sm font-mono-sm text-on-surface-variant"><span>PING:</span><span class="text-primary-container font-mono-sm">24ms</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs px-space-sm py-space-xs bg-surface-container-low border border-surface-variant/60 rounded text-mono-sm font-mono-sm"><span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span><span class="text-on-surface-variant">MODEL:</span><span class="text-on-surface font-mono-sm">groq/llama-3.3-70b</span><span class="material-symbols-outlined text-[14px] text-on-surface-variant">expand_more</span></div><button class="flex items-center gap-space-xs px-space-sm py-space-xs bg-surface-container-low border border-surface-variant/60 hover:border-outline text-on-surface-variant hover:text-on-surface transition-colors rounded text-mono-sm font-mono-sm" type="button"><span>Search & Exec</span><kbd class="px-1 bg-surface-container-high rounded text-[10px] text-on-surface-variant font-mono-sm">⌘K</kbd></button><div class="h-4 w-[1px] bg-surface-variant/60"></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="w-full pt-12 min-h-screen bg-surface-container-lowest text-on-surface"><div class="flex flex-col w-full">
+<!-- DASHBOARD CONTROL HEADER -->
+<header class="w-full bg-surface-container-low px-gutter py-space-sm flex flex-wrap items-center justify-between gap-space-sm shadow-sm select-none">
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs font-mono-sm text-mono-sm">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(74,225,118,0.6)]"></span>
+<span class="text-on-surface font-headline-sm text-headline-sm uppercase tracking-tight">SYSTEM COCKPIT // NODE_01</span>
+<span class="text-on-surface-variant font-mono-sm text-mono-sm ml-space-xs">(Darwin 24.1.0 arm64)</span>
+</div>
+<div class="flex items-center gap-space-sm font-mono-sm text-mono-sm text-on-surface-variant mt-0.5">
+<span class="text-primary-container font-mono-sm">UPTIME: 14d 08h 22m 11s</span>
+<span>•</span>
+<span class="text-on-surface font-mono-sm">HOST: niko-macbook-pro.local</span>
+<span>•</span>
+<span class="text-secondary font-mono-sm text-mono-sm">DAEMON: ACTIVE</span>
+</div>
+</div>
+<!-- Right Controls -->
+<div class="flex items-center gap-space-sm">
+<!-- Provider badge -->
+<div class="flex items-center gap-space-xs px-space-sm py-1 bg-surface-container-high rounded text-mono-sm font-mono-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+<span class="text-on-surface-variant">Provider:</span>
+<span class="text-on-surface font-mono-sm">Gemini (Gemini 1.5 Pro)</span>
+</div>
+<!-- Edit layout toggle button -->
+<button class="flex items-center gap-space-xs px-space-sm py-1 bg-surface-container-highest hover:bg-surface-bright text-on-surface rounded font-mono-sm text-mono-sm transition-all shadow-sm" id="toggleEditBtn" type="button">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant" id="dragIcon">drag_indicator</span>
+<span id="editLayoutLabel">Edit Layout</span>
+<span class="w-1.5 h-1.5 rounded-full bg-on-surface-variant" id="editDot"></span>
+</button>
+<!-- Add Widget CTA -->
+<button class="flex items-center gap-space-xs px-space-sm py-1 bg-primary-container hover:bg-primary-fixed-dim text-on-primary-container rounded font-mono-sm text-mono-sm font-semibold transition-colors shadow-sm" id="addWidgetBtn" type="button">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Add Widget</span>
+</button>
+</div>
+</header>
+<!-- WORKSPACE BENTO GRID -->
+<div class="p-gutter grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter" id="cockpitGrid">
+<!-- 1. CPU GAUGE & SPARKLINE WIDGET -->
+<div class="widget-card bg-surface-container-low rounded p-space-md flex flex-col justify-between shadow-md hover:bg-surface-container transition-colors min-h-[220px]" draggable="false">
+<!-- Widget Top Bar -->
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary-container">memory</span>
+<span class="font-mono-sm text-mono-sm uppercase text-on-surface-variant tracking-wider">CPU_LOAD // SYS_UTIL</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant cursor-grab handle opacity-40 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[16px]">drag_indicator</span>
+</div>
+</div>
+<!-- Main Readout -->
+<div class="flex items-baseline justify-between">
+<div>
+<div class="font-mono-lg text-headline-lg text-on-surface tracking-tighter font-semibold">18.4% <span class="font-mono-sm text-mono-sm text-primary-container font-normal">CPU</span></div>
+<p class="font-mono-sm text-mono-sm text-on-surface-variant">4.0 GHz peak · 8 Cores (4P + 4E)</p>
+</div>
+<span class="px-space-xs py-0.5 bg-surface-container-highest text-secondary text-mono-sm font-mono-sm rounded">NOMINAL</span>
+</div>
+<!-- Sparkline (Inline SVG, Amber highlights, Peak alert marker) -->
+<div class="mt-space-sm pt-space-xs bg-surface-container-lowest/60 rounded p-space-xs">
+<div class="flex items-center justify-between text-mono-sm font-mono-sm text-on-surface-variant mb-1">
+<span>60s TELEMETRY</span>
+<span class="text-primary-container">PEAK ALERT: 42.1% @ -18s</span>
+</div>
+<div class="relative w-full h-14">
+<svg class="w-full h-full text-primary-container overflow-visible" preserveaspectratio="none" viewbox="0 0 300 60">
+<defs>
+<lineargradient id="cpuGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#ffb020" stop-opacity="0.35"></stop>
+<stop offset="100%" stop-color="#ffb020" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Area Fill -->
+<polygon fill="url(#cpuGradient)" points="0,60 0,45 25,48 50,42 75,50 100,38 125,44 150,40 175,25 200,5 215,28 240,42 270,39 300,43 300,60"></polygon>
+<!-- Line Path -->
+<polyline fill="none" points="0,45 25,48 50,42 75,50 100,38 125,44 150,40 175,25 200,5 215,28 240,42 270,39 300,43" stroke="#ffb020" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></polyline>
+<!-- Peak alert pinpoint -->
+<circle class="animate-ping" cx="200" cy="5" fill="#ffb020" opacity="0.75" r="3.5"></circle>
+<circle cx="200" cy="5" fill="#ffd59b" r="3"></circle>
+</svg>
+</div>
+</div>
+</div>
+<!-- 2. RAM GAUGE & MEMORY BREAKDOWN -->
+<div class="widget-card bg-surface-container-low rounded p-space-md flex flex-col justify-between shadow-md hover:bg-surface-container transition-colors min-h-[220px]" draggable="false">
+<!-- Widget Top Bar -->
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">memory_alt</span>
+<span class="font-mono-sm text-mono-sm uppercase text-on-surface-variant tracking-wider">RAM_ALLOCATION // LPDDR5</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant cursor-grab handle opacity-40 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[16px]">drag_indicator</span>
+</div>
+</div>
+<!-- Main Readout -->
+<div class="flex items-baseline justify-between">
+<div>
+<div class="font-mono-lg text-headline-lg text-on-surface tracking-tighter font-semibold">11.2 <span class="font-mono-md text-body-md text-on-surface-variant">/ 32.0 GB</span></div>
+<p class="font-mono-sm text-mono-sm text-on-surface-variant">35% Allocated · Unified Memory Bus</p>
+</div>
+<span class="px-space-xs py-0.5 bg-surface-container-highest text-primary-container text-mono-sm font-mono-sm rounded">20.8 GB FREE</span>
+</div>
+<!-- Segmented Breakdown Bar -->
+<div class="mt-space-sm space-y-space-xs">
+<div class="w-full h-3 bg-surface-container-lowest rounded-full overflow-hidden flex">
+<!-- Active: 6.2GB (19.4%) -->
+<div class="h-full bg-primary-container" style="width: 19.4%;" title="Active: 6.2 GB"></div>
+<!-- Wired: 3.1GB (9.7%) -->
+<div class="h-full bg-surface-tint" style="width: 9.7%;" title="Wired: 3.1 GB"></div>
+<!-- Compressed: 1.9GB (5.9%) -->
+<div class="h-full bg-secondary" style="width: 5.9%;" title="Compressed: 1.9 GB"></div>
+<!-- Free: 20.8GB (65%) -->
+<div class="h-full bg-surface-container-highest" style="width: 65%;" title="Free: 20.8 GB"></div>
+</div>
+<!-- Legend -->
+<div class="grid grid-cols-2 gap-x-2 gap-y-1 font-mono-sm text-mono-sm text-on-surface-variant pt-space-xs">
+<div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-primary-container"></span><span>Active: 6.2 GB</span></div>
+<div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-surface-tint"></span><span>Wired: 3.1 GB</span></div>
+<div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-secondary"></span><span>Compressed: 1.9 GB</span></div>
+<div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-surface-container-highest"></span><span>Free: 20.8 GB</span></div>
+</div>
+</div>
+</div>
+<!-- 3. DISK STORAGE BAR -->
+<div class="widget-card bg-surface-container-low rounded p-space-md flex flex-col justify-between shadow-md hover:bg-surface-container transition-colors min-h-[220px]" draggable="false">
+<!-- Widget Top Bar -->
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">hard_drive</span>
+<span class="font-mono-sm text-mono-sm uppercase text-on-surface-variant tracking-wider">STORAGE // APFS_ROOT</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant cursor-grab handle opacity-40 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[16px]">drag_indicator</span>
+</div>
+</div>
+<div>
+<div class="font-mono-lg text-headline-lg text-on-surface tracking-tighter font-semibold">642 <span class="font-mono-md text-body-md text-on-surface-variant">/ 1000 GB</span></div>
+<p class="font-mono-sm text-mono-sm text-on-surface-variant">NVMe SSD · 64% used · 358 GB Available</p>
+</div>
+<!-- Visual progress track -->
+<div class="mt-space-sm space-y-2">
+<div class="w-full bg-surface-container-lowest h-3 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(255,176,32,0.4)]" style="width: 64.2%"></div>
+</div>
+<!-- Read/Write Telemetry -->
+<div class="bg-surface-container-lowest/80 rounded p-space-xs flex items-center justify-between font-mono-sm text-mono-sm">
+<div class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+<span>R: 124 MB/s</span>
+</div>
+<div class="h-3 w-[1px] bg-surface-variant"></div>
+<div class="flex items-center gap-1 text-primary-container">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+<span>W: 45 MB/s</span>
+</div>
+<div class="h-3 w-[1px] bg-surface-variant"></div>
+<span class="text-on-surface-variant font-mono-sm">IOPS: 18.2k</span>
+</div>
+</div>
+</div>
+<!-- 4. BATTERY & POWER STATE -->
+<div class="widget-card bg-surface-container-low rounded p-space-md flex flex-col justify-between shadow-md hover:bg-surface-container transition-colors min-h-[220px]" draggable="false">
+<!-- Widget Top Bar -->
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">battery_charging_full</span>
+<span class="font-mono-sm text-mono-sm uppercase text-on-surface-variant tracking-wider">POWER // THERMAL</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant cursor-grab handle opacity-40 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[16px]">drag_indicator</span>
+</div>
+</div>
+<!-- Battery readout -->
+<div class="flex items-baseline justify-between">
+<div>
+<div class="font-mono-lg text-headline-lg text-on-surface tracking-tighter font-semibold">94% <span class="font-mono-sm text-mono-sm text-secondary font-normal">CHARGING</span></div>
+<p class="font-mono-sm text-mono-sm text-on-surface-variant">Connected to 85W GaN adapter</p>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+</div>
+</div>
+<!-- Diagnostics grid -->
+<div class="grid grid-cols-2 gap-space-xs mt-space-sm">
+<div class="bg-surface-container-lowest/80 p-space-xs rounded">
+<span class="font-mono-sm text-mono-sm text-on-surface-variant block">HEALTH</span>
+<span class="font-mono-md text-mono-md text-on-surface font-semibold">98% <span class="text-on-surface-variant font-normal">(42 cycles)</span></span>
+</div>
+<div class="bg-surface-container-lowest/80 p-space-xs rounded">
+<span class="font-mono-sm text-mono-sm text-on-surface-variant block">THERMAL</span>
+<span class="font-mono-md text-mono-md text-secondary font-semibold">Nominal <span class="text-on-surface-variant font-normal">(34°C)</span></span>
+</div>
+</div>
+</div>
+<!-- 5. NETWORK TELEMETRY (Span 2 columns on larger screens) -->
+<div class="widget-card bg-surface-container-low rounded p-space-md flex flex-col justify-between shadow-md hover:bg-surface-container transition-colors md:col-span-2 min-h-[220px]" draggable="false">
+<!-- Widget Top Bar -->
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary-container">lan</span>
+<span class="font-mono-sm text-mono-sm uppercase text-on-surface-variant tracking-wider">NET_TELEMETRY // INTERFACES & SOCKETS</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant cursor-grab handle opacity-40 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[16px]">drag_indicator</span>
+</div>
+</div>
+<!-- Bandwidth stats + Sockets split -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md items-center">
+<!-- Bandwidth readouts -->
+<div class="space-y-space-xs">
+<div class="flex items-center justify-between p-space-xs bg-surface-container-lowest/80 rounded">
+<span class="flex items-center gap-1 text-mono-sm font-mono-sm text-secondary">
+<span class="material-symbols-outlined text-[16px]">south</span> INCOMING
+            </span>
+<span class="font-mono-lg text-headline-sm text-on-surface font-semibold">182.4 Mbps</span>
+</div>
+<div class="flex items-center justify-between p-space-xs bg-surface-container-lowest/80 rounded">
+<span class="flex items-center gap-1 text-mono-sm font-mono-sm text-primary-container">
+<span class="material-symbols-outlined text-[16px]">north</span> OUTGOING
+            </span>
+<span class="font-mono-lg text-headline-sm text-on-surface font-semibold">38.9 Mbps</span>
+</div>
+</div>
+<!-- Active sockets table -->
+<div class="bg-surface-container-lowest/80 rounded p-space-xs space-y-1">
+<div class="text-mono-sm font-mono-sm text-on-surface-variant uppercase pb-1 flex justify-between">
+<span>SOCKET CHANNEL</span>
+<span>STATUS</span>
+</div>
+<div class="flex items-center justify-between font-mono-sm text-mono-sm">
+<span class="text-on-surface">Local loop :7421 (RPC)</span>
+<span class="text-secondary font-mono-sm">ESTABLISHED</span>
+</div>
+<div class="flex items-center justify-between font-mono-sm text-mono-sm">
+<span class="text-on-surface">Gemini API wss://gateway</span>
+<span class="text-secondary font-mono-sm">ONLINE (24ms)</span>
+</div>
+<div class="flex items-center justify-between font-mono-sm text-mono-sm">
+<span class="text-on-surface">OpenRouter TLS Handshake</span>
+<span class="text-primary-container font-mono-sm">IDLE POOL</span>
+</div>
+</div>
+</div>
+<!-- Network bar graph representation -->
+<div class="mt-space-sm flex items-center gap-1 h-3 bg-surface-container-lowest rounded-full overflow-hidden px-1">
+<div class="h-1.5 rounded-full bg-secondary" style="width: 62%;"></div>
+<div class="h-1.5 rounded-full bg-primary-container" style="width: 23%;"></div>
+<div class="h-1.5 rounded-full bg-surface-bright" style="width: 15%;"></div>
+</div>
+</div>
+<!-- 6. RECENT ACTIONS FEED (Monospace activity log) -->
+<div class="widget-card bg-surface-container-low rounded p-space-md flex flex-col justify-between shadow-md hover:bg-surface-container transition-colors md:col-span-2 xl:col-span-2 min-h-[220px]" draggable="false">
+<!-- Widget Top Bar -->
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary-container">terminal</span>
+<span class="font-mono-sm text-mono-sm uppercase text-on-surface-variant tracking-wider">EXECUTION_STREAM // LOCAL_AGENT_DISPATCH</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">AUTO_SCROLL</span>
+<div class="flex items-center gap-1 text-on-surface-variant cursor-grab handle opacity-40 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[16px]">drag_indicator</span>
+</div>
+</div>
+</div>
+<!-- Activity stream logs -->
+<div class="bg-surface-container-lowest/90 rounded p-space-sm font-mono-sm text-mono-sm space-y-2 overflow-x-auto">
+<div class="flex items-center justify-between gap-space-sm border-b border-surface-variant/20 pb-1">
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant">14:02:19</span>
+<span class="text-on-surface">open_app(<span class="text-primary-container">"Spotify"</span>)</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="text-secondary font-mono-sm font-semibold">SUCCESS</span>
+<span class="text-on-surface-variant">(0.8s)</span>
+</div>
+</div>
+<div class="flex items-center justify-between gap-space-sm border-b border-surface-variant/20 pb-1">
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant">13:45:02</span>
+<span class="text-on-surface">kill_process(<span class="text-primary-container">pid=4821</span>)</span>
+</div>
+<span class="text-secondary font-mono-sm font-semibold">SUCCESS</span>
+</div>
+<div class="flex items-center justify-between gap-space-sm border-b border-surface-variant/20 pb-1">
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant">12:30:11</span>
+<span class="text-on-surface">git_sync(<span class="text-primary-container">"/repo/niko-core"</span>)</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="text-secondary font-mono-sm font-semibold">SUCCESS</span>
+<span class="text-on-surface-variant">(3 files changed)</span>
+</div>
+</div>
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant">11:15:00</span>
+<span class="text-on-surface">screen_capture()</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="text-primary-container font-mono-sm font-semibold">ANALYZED</span>
+<span class="text-on-surface-variant">(OCR: 4 items)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 7. UPCOMING REMINDERS & CRON TASKS -->
+<div class="widget-card bg-surface-container-low rounded p-space-md flex flex-col justify-between shadow-md hover:bg-surface-container transition-colors md:col-span-2 xl:col-span-2 min-h-[220px]" draggable="false">
+<!-- Widget Top Bar -->
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary-container">schedule</span>
+<span class="font-mono-sm text-mono-sm uppercase text-on-surface-variant tracking-wider">TASK_QUEUE // SCHEDULED_AGENT_HOOKS</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant cursor-grab handle opacity-40 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[16px]">drag_indicator</span>
+</div>
+</div>
+<!-- Schedule task list -->
+<div class="grid grid-cols-1 gap-space-xs">
+<div class="flex items-center justify-between p-space-sm bg-surface-container-lowest/80 rounded hover:bg-surface-container-lowest transition-colors">
+<div class="flex items-center gap-space-md">
+<span class="font-mono-md text-mono-md text-primary-container font-semibold">14:30</span>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium">Standup summary sync -> Slack #eng</p>
+<p class="font-mono-sm text-mono-sm text-on-surface-variant">Trigger: Agent summary dispatch via webhook</p>
+</div>
+</div>
+<span class="px-space-xs py-0.5 bg-surface-container text-primary text-mono-sm font-mono-sm rounded uppercase">IN 28m</span>
+</div>
+<div class="flex items-center justify-between p-space-sm bg-surface-container-lowest/80 rounded hover:bg-surface-container-lowest transition-colors">
+<div class="flex items-center gap-space-md">
+<span class="font-mono-md text-mono-md text-on-surface-variant font-semibold">16:00</span>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium">Automated backup -> Local NVMe</p>
+<p class="font-mono-sm text-mono-sm text-on-surface-variant">Target: /Volumes/Storage/CoreSnapshots</p>
+</div>
+</div>
+<span class="px-space-xs py-0.5 bg-surface-container text-on-surface-variant text-mono-sm font-mono-sm rounded uppercase">CRON: HOURLY</span>
+</div>
+<div class="flex items-center justify-between p-space-sm bg-surface-container-lowest/80 rounded hover:bg-surface-container-lowest transition-colors">
+<div class="flex items-center gap-space-md">
+<span class="font-mono-md text-mono-md text-on-surface-variant font-semibold">18:00</span>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium">Daily system health diagnostic</p>
+<p class="font-mono-sm text-mono-sm text-on-surface-variant">Suite: GPU vRAM leaks, daemon latency test</p>
+</div>
+</div>
+<span class="px-space-xs py-0.5 bg-surface-container text-on-surface-variant text-mono-sm font-mono-sm rounded uppercase">SCHEDULED</span>
+</div>
+</div>
+</div>
+<!-- 8. THE CORE (SIGNATURE AGENT COCKPIT COMPONENT) -->
+<div class="widget-card bg-surface-container-low rounded p-space-md flex flex-col items-center justify-between shadow-md md:col-span-2 xl:col-span-4 min-h-[160px] relative overflow-hidden" draggable="false">
+<!-- Background subtle telemetry grid line -->
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent pointer-events-none"></div>
+<div class="w-full flex items-center justify-between z-10 mb-2">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary-container">hub</span>
+<span class="font-mono-sm text-mono-sm uppercase text-on-surface-variant tracking-wider">CORE ENGINE // AUTONOMOUS AGENT ORCHESTRATION</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-mono-sm text-mono-sm text-secondary">STATE: ACTIVE_SUPERVISOR</span>
+<div class="flex items-center gap-1 text-on-surface-variant cursor-grab handle opacity-40 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[16px]">drag_indicator</span>
+</div>
+</div>
+</div>
+<!-- Concentric 72px Signature Ring Device + Live Stats -->
+<div class="w-full flex flex-wrap items-center justify-around gap-space-lg z-10 py-space-xs">
+<!-- Engine Meta 1 -->
+<div class="flex flex-col items-start font-mono-sm text-mono-sm">
+<span class="text-on-surface-variant">EXECUTION LOOP</span>
+<span class="text-headline-sm font-headline-sm text-on-surface font-semibold">LOOP_#892</span>
+<span class="text-secondary font-mono-sm">0 ERRORS DETECTED</span>
+</div>
+<!-- The 72px x 72px concentric physical display unit -->
+<div class="relative w-[72px] h-[72px] flex items-center justify-center">
+<!-- Outer Ring (Clockwise Orbit) -->
+<div class="absolute inset-0 rounded-full border border-dashed border-primary-container/60 animate-spin" style="animation-duration: 9s;"></div>
+<!-- Middle Ring (Counter-Clockwise Orbit) -->
+<div class="absolute inset-2 rounded-full border border-primary/40 animate-spin" style="animation-duration: 5s; animation-direction: reverse;"></div>
+<!-- Inner Ring Quadrants -->
+<div class="absolute inset-4 rounded-full border border-surface-variant"></div>
+<!-- Luminescent Nucleus -->
+<div class="w-4 h-4 rounded-full bg-primary-container shadow-[0_0_16px_rgba(255,176,32,0.8)] animate-pulse"></div>
+</div>
+<!-- Engine Meta 2 -->
+<div class="flex flex-col items-end font-mono-sm text-mono-sm">
+<span class="text-on-surface-variant">REASONING LATENCY</span>
+<span class="text-headline-sm font-headline-sm text-primary-container font-semibold">142 ms</span>
+<span class="text-on-surface font-mono-sm">GROQ / LLAMA-3.3-70B</span>
+</div>
+</div>
+<!-- Live system ticker pill -->
+<div class="w-full mt-2 pt-2 border-t border-surface-variant/20 flex flex-wrap items-center justify-between font-mono-sm text-mono-sm text-on-surface-variant z-10">
+<div class="flex items-center gap-space-md">
+<span>PIPELINE: STREAMING</span>
+<span>CONTEXT BUFFER: 12.8%</span>
+<span>SUBPROCESS: PID 8941</span>
+</div>
+<div class="flex items-center gap-1 text-primary-container">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+<span>AGENT POLICY: AUTOMATIC_APPROVAL [READ_SAFE]</span>
+</div>
+</div>
+</div>
+</div>
+<!-- MODAL / NOTIFICATION TOAST FOR ADD WIDGET -->
+<div class="fixed bottom-12 right-6 bg-surface-container-high p-space-md rounded shadow-xl hidden z-50 max-w-sm flex-col gap-space-sm border border-surface-variant/40" id="widgetDrawer">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface">Add Telemetry Widget</span>
+<button class="text-on-surface-variant hover:text-on-surface" id="closeDrawerBtn"><span class="material-symbols-outlined text-[18px]">close</span></button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Select an avionics widget module to dock into your cockpit grid:</p>
+<div class="grid grid-cols-2 gap-space-xs mt-1">
+<button class="add-preset-btn p-space-xs bg-surface-container-low hover:bg-surface-bright rounded text-left font-mono-sm text-mono-sm text-on-surface" data-name="GPU VRAM">
+        + GPU vRAM Load
+      </button>
+<button class="add-preset-btn p-space-xs bg-surface-container-low hover:bg-surface-bright rounded text-left font-mono-sm text-mono-sm text-on-surface" data-name="Token Burn Rate">
+        + Token Burn Rate
+      </button>
+<button class="add-preset-btn p-space-xs bg-surface-container-low hover:bg-surface-bright rounded text-left font-mono-sm text-mono-sm text-on-surface" data-name="Docker Containers">
+        + Docker Runtime
+      </button>
+<button class="add-preset-btn p-space-xs bg-surface-container-low hover:bg-surface-bright rounded text-left font-mono-sm text-mono-sm text-on-surface" data-name="Agent Audio In">
+        + Audio Spectrum
+      </button>
+</div>
+</div>
+</div>
+<script>
+  (function () {
+    const toggleEditBtn = document.getElementById('toggleEditBtn');
+    const editLayoutLabel = document.getElementById('editLayoutLabel');
+    const editDot = document.getElementById('editDot');
+    const widgetCards = document.querySelectorAll('.widget-card');
+    const addWidgetBtn = document.getElementById('addWidgetBtn');
+    const widgetDrawer = document.getElementById('widgetDrawer');
+    const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+    const cockpitGrid = document.getElementById('cockpitGrid');
+
+    let isEditing = false;
+
+    // Toggle layout editing state
+    toggleEditBtn.addEventListener('click', () => {
+      isEditing = !isEditing;
+      if (isEditing) {
+        toggleEditBtn.classList.remove('bg-surface-container-highest', 'text-on-surface');
+        toggleEditBtn.classList.add('bg-primary-container', 'text-on-primary-container');
+        editLayoutLabel.textContent = 'Done Editing';
+        editDot.classList.replace('bg-on-surface-variant', 'bg-on-primary-container');
+        
+        widgetCards.forEach(card => {
+          card.setAttribute('draggable', 'true');
+          card.classList.add('ring-1', 'ring-primary-container/40', 'cursor-move');
+        });
+      } else {
+        toggleEditBtn.classList.remove('bg-primary-container', 'text-on-primary-container');
+        toggleEditBtn.classList.add('bg-surface-container-highest', 'text-on-surface');
+        editLayoutLabel.textContent = 'Edit Layout';
+        editDot.classList.replace('bg-on-primary-container', 'bg-on-surface-variant');
+
+        widgetCards.forEach(card => {
+          card.setAttribute('draggable', 'false');
+          card.classList.remove('ring-1', 'ring-primary-container/40', 'cursor-move');
+        });
+      }
+    });
+
+    // Add Widget drawer toggle
+    addWidgetBtn.addEventListener('click', () => {
+      widgetDrawer.classList.toggle('hidden');
+      widgetDrawer.classList.toggle('flex');
+    });
+
+    closeDrawerBtn.addEventListener('click', () => {
+      widgetDrawer.classList.add('hidden');
+      widgetDrawer.classList.remove('flex');
+    });
+
+    // Preset button simulation
+    document.querySelectorAll('.add-preset-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const name = this.getAttribute('data-name');
+        widgetDrawer.classList.add('hidden');
+        widgetDrawer.classList.remove('flex');
+
+        // Create new synthetic widget
+        const newCard = document.createElement('div');
+        newCard.className = 'widget-card bg-surface-container-low rounded p-space-md flex flex-col justify-between shadow-md hover:bg-surface-container transition-colors min-h-[220px]';
+        newCard.draggable = isEditing;
+        if (isEditing) newCard.classList.add('ring-1', 'ring-primary-container/40', 'cursor-move');
+        
+        newCard.innerHTML = `
+          <div class="flex items-center justify-between mb-space-sm">
+            <div class="flex items-center gap-space-xs">
+              <span class="material-symbols-outlined text-[16px] text-primary-container">speed</span>
+              <span class="font-mono-sm text-mono-sm uppercase text-on-surface-variant tracking-wider">\${name} // DOCKED</span>
+            </div>
+            <div class="flex items-center gap-1 text-on-surface-variant cursor-grab handle opacity-40 hover:opacity-100 transition-opacity">
+              <span class="material-symbols-outlined text-[16px]">drag_indicator</span>
+            </div>
+          </div>
+          <div>
+            <div class="font-mono-lg text-headline-lg text-on-surface tracking-tighter font-semibold">INITIALIZING...</div>
+            <p class="font-mono-sm text-mono-sm text-on-surface-variant">Connecting kernel metrics socket...</p>
+          </div>
+          <div class="w-full bg-surface-container-lowest h-2 rounded-full overflow-hidden mt-space-sm">
+            <div class="bg-secondary h-full rounded-full animate-pulse" style="width: 45%"></div>
+          </div>
+        `;
+        cockpitGrid.appendChild(newCard);
+      });
+    });
+
+    // Drag-and-drop mechanics
+    let draggedElement = null;
+
+    cockpitGrid.addEventListener('dragstart', (e) => {
+      if (!isEditing) return;
+      const targetCard = e.target.closest('.widget-card');
+      if (targetCard) {
+        draggedElement = targetCard;
+        targetCard.classList.add('opacity-40');
+      }
+    });
+
+    cockpitGrid.addEventListener('dragend', (e) => {
+      if (!isEditing) return;
+      const targetCard = e.target.closest('.widget-card');
+      if (targetCard) {
+        targetCard.classList.remove('opacity-40');
+      }
+      draggedElement = null;
+    });
+
+    cockpitGrid.addEventListener('dragover', (e) => {
+      if (!isEditing) return;
+      e.preventDefault();
+      const targetCard = e.target.closest('.widget-card');
+      if (targetCard && targetCard !== draggedElement) {
+        const rect = targetCard.getBoundingClientRect();
+        const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+        cockpitGrid.insertBefore(draggedElement, next && targetCard.nextSibling || targetCard);
+      }
+    });
+  })();
+</script></main><footer class="w-full bg-surface-container-lowest border-t border-surface-variant/40 px-gutter py-space-xs flex items-center justify-between text-mono-sm font-mono-sm text-on-surface-variant"><div class="flex items-center gap-space-md"><span>SYS_ACTIVE: LOCAL :7421</span><span>PID: 4912</span><span>TOKENS: 4,129/m</span><span>RUNTIME: SECURE_CONTAINER</span></div><div class="flex items-center gap-space-md"><span>TLS v1.3</span><span>NIKO ORCHESTRATOR v2.4.0</span></div></footer></div></body></html>

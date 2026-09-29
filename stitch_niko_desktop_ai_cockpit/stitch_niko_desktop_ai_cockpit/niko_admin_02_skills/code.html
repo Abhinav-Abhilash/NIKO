@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"surface-container-highest":"#333538","primary":"#ffd59b","secondary":"#4ae176","inverse-primary":"#815600","on-surface-variant":"#d7c4ad","on-secondary":"#003915","on-primary-container":"#6b4600","on-secondary-fixed-variant":"#005321","error-container":"#93000a","on-secondary-fixed":"#002109","surface-container-low":"#1a1c1f","on-surface":"#e2e2e6","error":"#ffb4ab","inverse-on-surface":"#2f3034","on-primary-fixed-variant":"#624000","tertiary-fixed-dim":"#ffb3ad","primary-container":"#ffb020","on-primary":"#442b00","primary-fixed-dim":"#ffba4b","on-tertiary-fixed":"#410004","surface-bright":"#37393d","outline-variant":"#524533","background":"#111316","surface-container":"#1e2023","tertiary":"#ffd0cc","primary-fixed":"#ffddb1","secondary-fixed":"#6bff8f","surface-container-high":"#282a2d","on-error":"#690005","surface":"#111316","tertiary-container":"#ffa9a3","on-tertiary-fixed-variant":"#930013","tertiary-fixed":"#ffdad7","on-tertiary":"#68000a","on-secondary-container":"#004119","inverse-surface":"#e2e2e6","on-primary-fixed":"#291800","surface-variant":"#333538","on-tertiary-container":"#a00016","on-error-container":"#ffdad6","secondary-fixed-dim":"#4ae176","surface-tint":"#ffba4b","surface-container-lowest":"#0c0e11","outline":"#9f8e79","on-background":"#e2e2e6","surface-dim":"#111316","secondary-container":"#00b954"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"margin":"1rem","space-xs":"0.25rem","space-md":"0.75rem","space-xl":"1.5rem","margin-dock":"0.5rem","space-sm":"0.5rem","gutter":"0.75rem","gutter-md":"1rem","space-lg":"1rem"},"fontFamily":{"mono-sm":["JetBrains Mono"],"body-md":["Inter"],"headline-sm":["Inter"],"headline-md":["Inter"],"headline-lg":["Inter"],"mono-md":["JetBrains Mono"],"label-caps":["JetBrains Mono"],"mono-lg":["JetBrains Mono"],"body-sm":["Inter"],"body-lg":["Inter"]},"fontSize":{"mono-sm":["0.6875rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"body-md":["0.875rem",{"lineHeight":"1.375rem","fontWeight":"400"}],"headline-sm":["1rem",{"lineHeight":"1.5rem","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-md":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-lg":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.02em","fontWeight":"600"}],"mono-md":["0.8125rem",{"lineHeight":"1.25rem","fontWeight":"400"}],"label-caps":["0.625rem",{"lineHeight":"0.875rem","letterSpacing":"0.08em","fontWeight":"600"}],"mono-lg":["0.875rem",{"lineHeight":"1.375rem","letterSpacing":"-0.01em","fontWeight":"500"}],"body-sm":["0.8125rem",{"lineHeight":"1.25rem","fontWeight":"400"}],"body-lg":["0.9375rem",{"lineHeight":"1.5rem","fontWeight":"400"}]}}}}</script></head><body class="bg-surface text-on-surface font-body-md text-body-md min-h-screen selection:bg-primary-container selection:text-on-primary-container"><aside class="fixed left-0 top-0 bottom-0 w-14 bg-surface-container-lowest flex flex-col items-center justify-between py-space-md z-50 border-r border-outline-variant/30"><div class="flex flex-col items-center gap-space-md w-full"><div class="w-9 h-9 flex items-center justify-center bg-surface-container rounded-DEFAULT"><span class="material-symbols-outlined text-primary-container text-[20px]">terminal</span></div><div class="w-8 h-px bg-outline-variant/20 my-space-xs"></div><div class="flex flex-col items-center gap-space-sm w-full"><a class="w-10 h-10 flex items-center justify-center rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#" title="Chat"><span class="material-symbols-outlined text-[20px]">chat_bubble</span></a><a class="w-10 h-10 flex items-center justify-center rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#" title="Dashboard"><span class="material-symbols-outlined text-[20px]">grid_view</span></a><a class="w-10 h-10 flex items-center justify-center rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#" title="Usage"><span class="material-symbols-outlined text-[20px]">monitoring</span></a><a class="w-10 h-10 flex items-center justify-center rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#" title="Skills"><span class="material-symbols-outlined text-[20px]">bolt</span></a><a class="relative w-10 h-10 flex items-center justify-center rounded-DEFAULT bg-surface-container text-primary-container font-semibold transition-colors" href="#" title="Admin Control"><span class="material-symbols-outlined text-[20px]">admin_panel_settings</span><span class="absolute right-1.5 top-1.5 w-1.5 h-1.5 rounded-full bg-primary-container ring-2 ring-surface-container-lowest"></span></a><a class="w-10 h-10 flex items-center justify-center rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#" title="Settings"><span class="material-symbols-outlined text-[20px]">tune</span></a></div></div><div class="flex flex-col items-center gap-space-sm w-full"><div class="flex items-center justify-center w-8 h-8 rounded-DEFAULT bg-surface-container-low" title="Host Sync: Connected"><span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span></div><button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">power_settings_new</span></button></div></aside><aside class="fixed left-14 top-0 bottom-0 w-60 bg-surface-container-low flex flex-col z-40 border-r border-outline-variant/30"><div class="h-14 px-space-md flex items-center justify-between border-b border-outline-variant/30"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary-container text-[18px]">shield_person</span><span class="font-label-caps text-label-caps uppercase text-on-surface font-semibold tracking-wider">SYS_ADMIN</span></div><span class="font-mono-sm text-mono-sm text-primary-container bg-surface-container px-1.5 py-0.5 rounded-DEFAULT border border-outline-variant/40">ROOT</span></div><div class="px-space-md py-space-sm"><div class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest px-space-xs mb-space-xs">Control Nodes</div></div><nav class="flex-1 px-space-sm space-y-0.5 overflow-y-auto" data-active-classes="bg-surface-container text-primary-container border-l-2 border-primary-container font-semibold"><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-overview" href="#"><span class="font-body-sm text-body-sm">Overview</span><span class="material-symbols-outlined text-[16px] opacity-40">chevron_right</span></a><a aria-current="page" class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT transition-colors bg-surface-container text-primary-container border-l-2 border-primary-container font-semibold" data-path="admin-skills" href="#"><span class="font-body-sm text-body-sm">Skills</span><span class="font-mono-sm text-mono-sm px-1.5 py-0.5 bg-surface-container-highest rounded-DEFAULT text-on-surface-variant">24</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-providers" href="#"><span class="font-body-sm text-body-sm">Providers</span><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-audit" href="#"><span class="font-body-sm text-body-sm">Audit Log</span><span class="font-mono-sm text-mono-sm text-on-surface-variant">LIVE</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-conversations" href="#"><span class="font-body-sm text-body-sm">Conversations</span><span class="font-mono-sm text-mono-sm px-1.5 py-0.5 bg-surface-container-highest rounded-DEFAULT text-on-surface-variant">142</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-sessions" href="#"><span class="font-body-sm text-body-sm">Sessions</span><span class="font-mono-sm text-mono-sm px-1.5 py-0.5 bg-surface-container-highest rounded-DEFAULT text-on-surface-variant">18</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-storage" href="#"><span class="font-body-sm text-body-sm">Storage</span><span class="font-mono-sm text-mono-sm text-on-surface-variant">64%</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="admin-settings" href="#"><span class="font-body-sm text-body-sm">Settings</span><span class="material-symbols-outlined text-[16px] opacity-40">settings</span></a></nav><div class="p-space-md border-t border-outline-variant/30 bg-surface-container-lowest"><div class="flex items-center justify-between text-on-surface-variant"><span class="font-label-caps text-label-caps uppercase">Daemon Node</span><span class="font-mono-sm text-mono-sm text-secondary font-medium">READY</span></div><div class="mt-1 font-mono-sm text-mono-sm text-on-surface truncate">cluster-alpha.internal:7421</div></div></aside><div class="pl-[18.5rem] flex flex-col min-h-screen"><header class="fixed top-0 left-[18.5rem] right-0 h-14 bg-surface-container-lowest border-b border-outline-variant/30 z-30 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm"><img alt="Brand logo. - Primary color: #ffb020
+- Font: inter
+- Mode: dark
+- Roundness: rounded-sm
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XiObUzHveCuTOIuf_NDU615t--4WqWvHvjgZHrED668Xbk1lSKeGkMHkrrQh6KfqKAYALfPgbSDX7OH7lIgYpKrYbZ4w036E5j3arXmFvVH45uiFTcJmXTUDb-SgtxyEEmBm3jDx7wpkQMFXknd5KzWefuEETqJgifCQSrMwYKi3cncN5OyEk8-Ztd6n3F1a9v-BVPtKwA-RY1QrLUrIAUXKLdf9lCfgRxoGWmJ9EWpdx8Zq6Hh-nLog"/><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface font-semibold">NIKO</span></div><div class="h-4 w-px bg-outline-variant/30"></div><div class="flex items-center gap-space-xs font-mono-sm text-mono-sm"><span class="w-2 h-2 rounded-full bg-secondary"></span><span class="text-on-surface font-medium">CORE: ONLINE</span><span class="text-outline">/</span><span class="text-primary-container font-medium">ROOT_PRIVILEGES</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container px-space-md py-1 rounded-DEFAULT border border-outline-variant/40"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">search</span><span class="font-body-sm text-body-sm text-on-surface-variant">Search commands or nodes...</span><span class="font-mono-sm text-mono-sm text-on-surface-variant bg-surface-container-high px-1 py-0.5 rounded-DEFAULT ml-space-md border border-outline-variant/30">⌘K</span></div><div class="flex items-center gap-1.5 px-space-sm py-1 bg-surface-container rounded-DEFAULT border border-outline-variant/40 font-mono-sm text-mono-sm text-on-surface"><span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span><span>groq/llama-3.3-70b</span></div><div class="flex items-center gap-1 font-mono-sm text-mono-sm text-secondary bg-surface-container px-space-sm py-1 rounded-DEFAULT border border-outline-variant/30"><span class="material-symbols-outlined text-[14px]">speed</span><span>18ms</span></div><button class="flex items-center justify-center w-8 h-8 rounded-DEFAULT bg-surface-container text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors border border-outline-variant/30" title="Lock Terminal"><span class="material-symbols-outlined text-[18px]">lock</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 pt-14 pb-8 w-full bg-surface"><div class="flex flex-col w-full">
+<!-- Command Header & Breadcrumb Strip -->
+<div class="px-space-lg py-space-md bg-surface-container-lowest border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-0.5">
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps uppercase text-primary font-semibold tracking-wider">ADMIN CONTROL // SKILLS & TOOL REPOSITORIES</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">POLICY_SYNCED</span>
+</div>
+<div class="flex items-center gap-space-sm font-mono-sm text-mono-sm text-on-surface-variant">
+<span class="text-on-surface font-semibold">12 REGISTERED SKILLS</span>
+<span class="text-outline">·</span>
+<span class="text-primary-container">3 SANDBOXED</span>
+<span class="text-outline">·</span>
+<span class="text-error">1 BLOCKED</span>
+</div>
+</div>
+<!-- Actions & Global Filter Deck -->
+<div class="flex items-center flex-wrap gap-space-sm">
+<div class="relative flex items-center bg-surface-container px-space-sm py-1 rounded-DEFAULT border border-outline-variant/30 text-on-surface-variant focus-within:border-primary-container/60 transition-colors">
+<span class="material-symbols-outlined text-[16px] mr-1.5 text-on-surface-variant">search</span>
+<input class="bg-transparent text-on-surface font-mono-sm text-mono-sm focus:outline-none placeholder:text-on-surface-variant/50 w-44 lg:w-56" placeholder="Filter skills or permissions..." type="text"/>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant/60 ml-2">⌘F</span>
+</div>
+<div class="flex items-center bg-surface-container p-0.5 rounded-DEFAULT border border-outline-variant/30">
+<button class="px-2 py-0.5 rounded-DEFAULT text-on-surface bg-surface-container-high font-mono-sm text-mono-sm font-medium">All (12)</button>
+<button class="px-2 py-0.5 rounded-DEFAULT text-on-surface-variant hover:text-on-surface font-mono-sm text-mono-sm">Safe (7)</button>
+<button class="px-2 py-0.5 rounded-DEFAULT text-on-surface-variant hover:text-on-surface font-mono-sm text-mono-sm">Confirm (4)</button>
+<button class="px-2 py-0.5 rounded-DEFAULT text-on-surface-variant hover:text-on-surface font-mono-sm text-mono-sm">Blocked (1)</button>
+</div>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-DEFAULT bg-primary-container text-on-primary-container font-mono-sm text-mono-sm font-semibold hover:bg-primary-fixed-dim active:bg-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Register Custom Skill</span>
+</button>
+</div>
+</div>
+<!-- Main Workplane: Table (65%) + Config Drawer (35%) Split View -->
+<div class="flex flex-col xl:flex-row w-full flex-1 min-h-[calc(100vh-140px)]">
+<!-- Left Split: Skills Registry Grid -->
+<div class="w-full xl:w-[63%] flex flex-col border-b xl:border-b-0 xl:border-r border-outline-variant/30 bg-surface">
+<!-- Table Header Bar -->
+<div class="grid grid-cols-12 px-space-md py-2.5 bg-surface-container-low border-b border-outline-variant/30 font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider select-none">
+<div class="col-span-1 flex items-center justify-center">ENABLE</div>
+<div class="col-span-4 pl-1">SKILL IDENTIFIER & NAME</div>
+<div class="col-span-2 text-center">TIER</div>
+<div class="col-span-2 text-right">SUCCESS RATE</div>
+<div class="col-span-1 text-right">LATENCY</div>
+<div class="col-span-2 text-right pr-2">ACTIONS</div>
+</div>
+<!-- Skill Rows Stream -->
+<div class="flex flex-col divide-y divide-outline-variant/20 font-body-sm text-body-sm overflow-x-auto">
+<!-- Row 1: Selected / In-drawer Focus -->
+<div class="grid grid-cols-12 px-space-md py-3 items-center bg-surface-container-high/70 border-l-2 border-primary-container transition-all">
+<div class="col-span-1 flex items-center justify-center">
+<button class="w-8 h-4 rounded-full bg-primary-container relative flex items-center px-0.5 cursor-pointer">
+<span class="w-3 h-3 rounded-full bg-on-primary-container translate-x-3.5 transition-transform"></span>
+</button>
+</div>
+<div class="col-span-4 pl-1 pr-2 min-w-0">
+<div class="flex items-center gap-1.5 font-mono-sm text-mono-sm text-primary font-semibold truncate">
+<span class="material-symbols-outlined text-[15px] text-primary-container">terminal</span>
+<span>system_exec: terminal_command</span>
+</div>
+<div class="text-on-surface-variant font-body-sm text-body-sm text-[11px] truncate mt-0.5">Executes sandboxed zsh shell utilities and Darwin runtime binaries.</div>
+</div>
+<div class="col-span-2 flex justify-center">
+<span class="px-2 py-0.5 rounded-DEFAULT font-mono-sm text-mono-sm text-[10px] tracking-wide uppercase bg-primary-container/15 text-primary-fixed border border-primary-container/40 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">verified_user</span>
+              CONFIRM
+            </span>
+</div>
+<div class="col-span-2 text-right">
+<div class="font-mono-sm text-mono-sm text-on-surface">98.4% <span class="text-on-surface-variant text-[10px]">(1,420)</span></div>
+<div class="w-20 ml-auto h-1 bg-surface-container-highest rounded-full overflow-hidden mt-1">
+<div class="w-[98.4%] h-full bg-secondary"></div>
+</div>
+</div>
+<div class="col-span-1 text-right font-mono-sm text-mono-sm text-secondary">18ms</div>
+<div class="col-span-2 flex items-center justify-end gap-1.5 pr-2">
+<button class="px-2 py-1 rounded-DEFAULT bg-surface-container hover:bg-surface-container-highest text-on-surface font-mono-sm text-mono-sm transition-colors" title="Trigger dry execution">Test</button>
+<button class="px-2 py-1 rounded-DEFAULT bg-primary-container text-on-primary-container font-mono-sm text-mono-sm font-semibold transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">tune</span>
+              Edit
+            </button>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-12 px-space-md py-3 items-center hover:bg-surface-container-low transition-colors">
+<div class="col-span-1 flex items-center justify-center">
+<button class="w-8 h-4 rounded-full bg-primary-container relative flex items-center px-0.5 cursor-pointer">
+<span class="w-3 h-3 rounded-full bg-on-primary-container translate-x-3.5 transition-transform"></span>
+</button>
+</div>
+<div class="col-span-4 pl-1 pr-2 min-w-0">
+<div class="flex items-center gap-1.5 font-mono-sm text-mono-sm text-on-surface font-medium truncate">
+<span class="material-symbols-outlined text-[15px] text-on-surface-variant">launch</span>
+<span>app_control: open_app</span>
+</div>
+<div class="text-on-surface-variant font-body-sm text-body-sm text-[11px] truncate mt-0.5">Invokes system-registered macOS launch handlers and workspace windows.</div>
+</div>
+<div class="col-span-2 flex justify-center">
+<span class="px-2 py-0.5 rounded-DEFAULT font-mono-sm text-mono-sm text-[10px] tracking-wide uppercase bg-secondary/10 text-secondary border border-secondary/30 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">check_circle</span>
+              SAFE
+            </span>
+</div>
+<div class="col-span-2 text-right">
+<div class="font-mono-sm text-mono-sm text-on-surface">99.9% <span class="text-on-surface-variant text-[10px]">(6,891)</span></div>
+<div class="w-20 ml-auto h-1 bg-surface-container-highest rounded-full overflow-hidden mt-1">
+<div class="w-[99.9%] h-full bg-secondary"></div>
+</div>
+</div>
+<div class="col-span-1 text-right font-mono-sm text-mono-sm text-secondary">84ms</div>
+<div class="col-span-2 flex items-center justify-end gap-1.5 pr-2">
+<button class="px-2 py-1 rounded-DEFAULT bg-surface-container hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-mono-sm text-mono-sm transition-colors">Test</button>
+<button class="px-2 py-1 rounded-DEFAULT bg-surface-container hover:bg-surface-container-highest text-on-surface font-mono-sm text-mono-sm transition-colors">Edit</button>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-12 px-space-md py-3 items-center hover:bg-surface-container-low transition-colors">
+<div class="col-span-1 flex items-center justify-center">
+<button class="w-8 h-4 rounded-full bg-primary-container relative flex items-center px-0.5 cursor-pointer">
+<span class="w-3 h-3 rounded-full bg-on-primary-container translate-x-3.5 transition-transform"></span>
+</button>
+</div>
+<div class="col-span-4 pl-1 pr-2 min-w-0">
+<div class="flex items-center gap-1.5 font-mono-sm text-mono-sm text-on-surface font-medium truncate">
+<span class="material-symbols-outlined text-[15px] text-on-surface-variant">travel_explore</span>
+<span>browser: dom_interact</span>
+</div>
+<div class="text-on-surface-variant font-body-sm text-body-sm text-[11px] truncate mt-0.5">Headless CDP runner for tab DOM indexing, click synthesis, and page snapshots.</div>
+</div>
+<div class="col-span-2 flex justify-center">
+<span class="px-2 py-0.5 rounded-DEFAULT font-mono-sm text-mono-sm text-[10px] tracking-wide uppercase bg-secondary/10 text-secondary border border-secondary/30 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">check_circle</span>
+              SAFE
+            </span>
+</div>
+<div class="col-span-2 text-right">
+<div class="font-mono-sm text-mono-sm text-on-surface">97.2% <span class="text-on-surface-variant text-[10px]">(892)</span></div>
+<div class="w-20 ml-auto h-1 bg-surface-container-highest rounded-full overflow-hidden mt-1">
+<div class="w-[97.2%] h-full bg-secondary"></div>
+</div>
+</div>
+<div class="col-span-1 text-right font-mono-sm text-mono-sm text-on-surface-variant">240ms</div>
+<div class="col-span-2 flex items-center justify-end gap-1.5 pr-2">
+<button class="px-2 py-1 rounded-DEFAULT bg-surface-container hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-mono-sm text-mono-sm transition-colors">Test</button>
+<button class="px-2 py-1 rounded-DEFAULT bg-surface-container hover:bg-surface-container-highest text-on-surface font-mono-sm text-mono-sm transition-colors">Edit</button>
+</div>
+</div>
+<!-- Row 4 -->
+<div class="grid grid-cols-12 px-space-md py-3 items-center hover:bg-surface-container-low transition-colors">
+<div class="col-span-1 flex items-center justify-center">
+<button class="w-8 h-4 rounded-full bg-primary-container relative flex items-center px-0.5 cursor-pointer">
+<span class="w-3 h-3 rounded-full bg-on-primary-container translate-x-3.5 transition-transform"></span>
+</button>
+</div>
+<div class="col-span-4 pl-1 pr-2 min-w-0">
+<div class="flex items-center gap-1.5 font-mono-sm text-mono-sm text-on-surface font-medium truncate">
+<span class="material-symbols-outlined text-[15px] text-on-surface-variant">edit_document</span>
+<span>fs_mutate: write_file</span>
+</div>
+<div class="text-on-surface-variant font-body-sm text-body-sm text-[11px] truncate mt-0.5">Atomic buffer overwrite with temporary file staging and hash parity check.</div>
+</div>
+<div class="col-span-2 flex justify-center">
+<span class="px-2 py-0.5 rounded-DEFAULT font-mono-sm text-mono-sm text-[10px] tracking-wide uppercase bg-primary-container/15 text-primary-fixed border border-primary-container/40 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">verified_user</span>
+              CONFIRM
+            </span>
+</div>
+<div class="col-span-2 text-right">
+<div class="font-mono-sm text-mono-sm text-on-surface">100% <span class="text-on-surface-variant text-[10px]">(3,109)</span></div>
+<div class="w-20 ml-auto h-1 bg-surface-container-highest rounded-full overflow-hidden mt-1">
+<div class="w-full h-full bg-secondary"></div>
+</div>
+</div>
+<div class="col-span-1 text-right font-mono-sm text-mono-sm text-secondary">12ms</div>
+<div class="col-span-2 flex items-center justify-end gap-1.5 pr-2">
+<button class="px-2 py-1 rounded-DEFAULT bg-surface-container hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-mono-sm text-mono-sm transition-colors">Test</button>
+<button class="px-2 py-1 rounded-DEFAULT bg-surface-container hover:bg-surface-container-highest text-on-surface font-mono-sm text-mono-sm transition-colors">Edit</button>
+</div>
+</div>
+<!-- Row 5 (Blocked) -->
+<div class="grid grid-cols-12 px-space-md py-3 items-center hover:bg-surface-container-low transition-colors bg-error-container/5">
+<div class="col-span-1 flex items-center justify-center">
+<button class="w-8 h-4 rounded-full bg-surface-container-highest relative flex items-center px-0.5 cursor-pointer">
+<span class="w-3 h-3 rounded-full bg-on-surface-variant translate-x-0 transition-transform"></span>
+</button>
+</div>
+<div class="col-span-4 pl-1 pr-2 min-w-0">
+<div class="flex items-center gap-1.5 font-mono-sm text-mono-sm text-error font-medium truncate">
+<span class="material-symbols-outlined text-[15px] text-error">folder_delete</span>
+<span>fs_destroy: delete_directory</span>
+</div>
+<div class="text-error/80 font-body-sm text-body-sm text-[11px] truncate mt-0.5">Recursive path tree unlinking. Completely disabled by root policy token.</div>
+</div>
+<div class="col-span-2 flex justify-center">
+<span class="px-2 py-0.5 rounded-DEFAULT font-mono-sm text-mono-sm text-[10px] tracking-wide uppercase bg-error/20 text-error border border-error/40 flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[12px]">block</span>
+              BLOCKED
+            </span>
+</div>
+<div class="col-span-2 text-right">
+<div class="font-mono-sm text-mono-sm text-error">0.0% <span class="text-on-surface-variant text-[10px]">(Prohibited)</span></div>
+<div class="w-20 ml-auto h-1 bg-surface-container-highest rounded-full overflow-hidden mt-1">
+<div class="w-0 h-full bg-error"></div>
+</div>
+</div>
+<div class="col-span-1 text-right font-mono-sm text-mono-sm text-on-surface-variant">0ms</div>
+<div class="col-span-2 flex items-center justify-end gap-1.5 pr-2">
+<button class="px-2 py-1 rounded-DEFAULT bg-surface-container-low opacity-40 text-on-surface-variant font-mono-sm text-mono-sm cursor-not-allowed" disabled="">Test</button>
+<button class="px-2 py-1 rounded-DEFAULT bg-surface-container hover:bg-surface-container-highest text-on-surface font-mono-sm text-mono-sm transition-colors">Edit</button>
+</div>
+</div>
+<!-- Row 6 -->
+<div class="grid grid-cols-12 px-space-md py-3 items-center hover:bg-surface-container-low transition-colors">
+<div class="col-span-1 flex items-center justify-center">
+<button class="w-8 h-4 rounded-full bg-primary-container relative flex items-center px-0.5 cursor-pointer">
+<span class="w-3 h-3 rounded-full bg-on-primary-container translate-x-3.5 transition-transform"></span>
+</button>
+</div>
+<div class="col-span-4 pl-1 pr-2 min-w-0">
+<div class="flex items-center gap-1.5 font-mono-sm text-mono-sm text-on-surface font-medium truncate">
+<span class="material-symbols-outlined text-[15px] text-on-surface-variant">graphic_eq</span>
+<span>audio: spotify_bus</span>
+</div>
+<div class="text-on-surface-variant font-body-sm text-body-sm text-[11px] truncate mt-0.5">Dispatches playback states and playlist controls via local AppleScript IPC.</div>
+</div>
+<div class="col-span-2 flex justify-center">
+<span class="px-2 py-0.5 rounded-DEFAULT font-mono-sm text-mono-sm text-[10px] tracking-wide uppercase bg-secondary/10 text-secondary border border-secondary/30 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">check_circle</span>
+              SAFE
+            </span>
+</div>
+<div class="col-span-2 text-right">
+<div class="font-mono-sm text-mono-sm text-on-surface">99.5% <span class="text-on-surface-variant text-[10px]">(512)</span></div>
+<div class="w-20 ml-auto h-1 bg-surface-container-highest rounded-full overflow-hidden mt-1">
+<div class="w-[99.5%] h-full bg-secondary"></div>
+</div>
+</div>
+<div class="col-span-1 text-right font-mono-sm text-mono-sm text-secondary">38ms</div>
+<div class="col-span-2 flex items-center justify-end gap-1.5 pr-2">
+<button class="px-2 py-1 rounded-DEFAULT bg-surface-container hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-mono-sm text-mono-sm transition-colors">Test</button>
+<button class="px-2 py-1 rounded-DEFAULT bg-surface-container hover:bg-surface-container-highest text-on-surface font-mono-sm text-mono-sm transition-colors">Edit</button>
+</div>
+</div>
+</div>
+<!-- Execution Telemetry Strip for Left Panel -->
+<div class="mt-auto px-space-md py-2.5 bg-surface-container-lowest border-t border-outline-variant/30 flex items-center justify-between font-mono-sm text-mono-sm text-on-surface-variant">
+<div class="flex items-center gap-space-md">
+<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>RUNS_TODAY: 12,024</span>
+<span>AVG_LATENCY: 42ms</span>
+<span>INTERCEPTS: 19</span>
+</div>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+<span>POLICY ENFORCED BY CORE DAEMON</span>
+</div>
+</div>
+</div>
+<!-- Right Split: Active Slide-Out Config Drawer (~37%) -->
+<div class="w-full xl:w-[37%] flex flex-col bg-surface-container-low shadow-xl">
+<!-- Drawer Header -->
+<div class="p-space-md bg-surface-container border-b border-outline-variant/30 flex items-start justify-between">
+<div class="flex flex-col min-w-0 pr-space-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant font-semibold">EDIT SKILL CONFIG</span>
+</div>
+<h2 class="font-mono-lg text-mono-lg text-on-surface font-bold truncate mt-0.5">system_exec: terminal_command</h2>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant/70 truncate mt-1">/Users/niko/.core/skills/terminal.json</span>
+</div>
+<button class="w-7 h-7 rounded-DEFAULT bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" title="Close configuration panel">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+<!-- Drawer Body: Configuration Controls -->
+<div class="p-space-md flex-1 overflow-y-auto space-y-space-md">
+<!-- Section: Permission Tier Selection -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps uppercase text-on-surface-variant">Execution Permission Tier</label>
+<div class="grid grid-cols-3 gap-space-xs">
+<!-- Safe Option -->
+<label class="flex flex-col p-2 rounded-DEFAULT bg-surface-container border border-outline-variant/30 hover:border-outline-variant/60 cursor-pointer transition-all">
+<div class="flex items-center justify-between">
+<span class="font-mono-sm text-mono-sm text-secondary font-semibold">SAFE</span>
+<input class="accent-primary-container" name="tier" type="radio"/>
+</div>
+<span class="font-body-sm text-body-sm text-[10px] text-on-surface-variant mt-1 leading-tight">Zero prompt, automatic run</span>
+</label>
+<!-- Confirm Option (Active/Selected) -->
+<label class="flex flex-col p-2 rounded-DEFAULT bg-surface-container-high border-2 border-primary-container shadow-[0_0_12px_rgba(255,176,32,0.15)] cursor-pointer transition-all">
+<div class="flex items-center justify-between">
+<span class="font-mono-sm text-mono-sm text-primary font-bold">CONFIRM</span>
+<input checked="" class="accent-primary-container" name="tier" type="radio"/>
+</div>
+<span class="font-body-sm text-body-sm text-[10px] text-on-surface mt-1 leading-tight">Approval modal prompt required</span>
+</label>
+<!-- Blocked Option -->
+<label class="flex flex-col p-2 rounded-DEFAULT bg-surface-container border border-outline-variant/30 hover:border-outline-variant/60 cursor-pointer transition-all">
+<div class="flex items-center justify-between">
+<span class="font-mono-sm text-mono-sm text-error font-semibold">BLOCKED</span>
+<input class="accent-primary-container" name="tier" type="radio"/>
+</div>
+<span class="font-body-sm text-body-sm text-[10px] text-on-surface-variant mt-1 leading-tight">Prohibit execution</span>
+</label>
+</div>
+</div>
+<!-- Section: Sandbox and Execution Bounds -->
+<div class="grid grid-cols-2 gap-space-sm pt-1">
+<!-- Stepper: Timeout -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps uppercase text-on-surface-variant">Timeout Boundary</label>
+<div class="flex items-center bg-surface-container border border-outline-variant/40 rounded-DEFAULT px-2 py-1">
+<input class="w-full bg-transparent font-mono-sm text-mono-sm text-on-surface focus:outline-none" type="text" value="30,000"/>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant/60">ms</span>
+</div>
+</div>
+<!-- Sandbox Policy -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps uppercase text-on-surface-variant">Isolation Policy</label>
+<div class="flex items-center bg-surface-container border border-outline-variant/40 rounded-DEFAULT px-2 py-1">
+<select class="w-full bg-transparent font-mono-sm text-mono-sm text-on-surface focus:outline-none cursor-pointer">
+<option selected="">Darwin Sandbox (Strict)</option>
+<option>Restricted Subshell</option>
+<option>Host Root (Unsafe)</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Section: Sudo Policy & Privilege Check -->
+<div class="p-2.5 rounded-DEFAULT bg-surface-container border border-outline-variant/30 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary-container">lock_person</span>
+<div class="flex flex-col">
+<span class="font-mono-sm text-mono-sm text-on-surface font-semibold">Disallow sudo escalation</span>
+<span class="font-body-sm text-body-sm text-[11px] text-on-surface-variant">Drops UID flags and sanitizes POSIX authorization tokens</span>
+</div>
+</div>
+<button class="w-8 h-4 rounded-full bg-primary-container relative flex items-center px-0.5 cursor-pointer">
+<span class="w-3 h-3 rounded-full bg-on-primary-container translate-x-3.5 transition-transform"></span>
+</button>
+</div>
+<!-- Section: Whitelisted & Disallowed Commands -->
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<label class="font-label-caps text-label-caps uppercase text-on-surface-variant">Binary Inspection & Filtering</label>
+<span class="font-mono-sm text-mono-sm text-[10px] text-secondary">POSIX_VERIFIED</span>
+</div>
+<!-- Allowed block -->
+<div class="p-2 rounded-DEFAULT bg-surface-container-lowest border border-outline-variant/30">
+<div class="flex items-center gap-1 font-label-caps text-label-caps text-secondary mb-1">
+<span class="material-symbols-outlined text-[12px]">check</span>
+<span>WHITELISTED BINARIES</span>
+</div>
+<p class="font-mono-sm text-mono-sm text-on-surface select-all">ls, ps, kill, brew, git, docker, cat, top, grep, awk</p>
+</div>
+<!-- Disallowed block -->
+<div class="p-2 rounded-DEFAULT bg-surface-container-lowest border border-error/30">
+<div class="flex items-center gap-1 font-label-caps text-label-caps text-error mb-1">
+<span class="material-symbols-outlined text-[12px]">do_not_disturb_on</span>
+<span>DISALLOWED TOKENS (ABORT CODES)</span>
+</div>
+<p class="font-mono-sm text-mono-sm text-error/90 select-all">rm -rf /, dd, mkfs, sudo, :(){ :|:& };:</p>
+</div>
+</div>
+<!-- Section: JSON Schema / Raw Configuration Preview -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<label class="font-label-caps text-label-caps uppercase text-on-surface-variant">Live JSON Contract</label>
+<span class="font-mono-sm text-mono-sm text-[10px] text-on-surface-variant">SCHEMA: v2.4-tool</span>
+</div>
+<div class="p-2.5 rounded-DEFAULT bg-surface-container-lowest border border-outline-variant/30 font-mono-sm text-mono-sm text-[11px] leading-relaxed overflow-x-auto text-on-surface-variant select-all">
+<span class="text-primary-container">"permission_level"</span>: <span class="text-secondary">"CONFIRM"</span>,<br/>
+<span class="text-primary-container">"max_exec_time_ms"</span>: <span class="text-primary">30000</span>,<br/>
+<span class="text-primary-container">"sandbox"</span>: {<br/>
+              <span class="text-primary-container">"policy"</span>: <span class="text-secondary">"darwin_sandbox_strict"</span>,<br/>
+              <span class="text-primary-container">"drop_sudo"</span>: <span class="text-primary">true</span>,<br/>
+              <span class="text-primary-container">"unveil_paths"</span>: [<span class="text-on-surface">"/usr/bin"</span>, <span class="text-on-surface">"/opt/homebrew"</span>]<br/>
+            }
+          </div>
+</div>
+</div>
+<!-- Drawer Footer CTA Dock -->
+<div class="p-space-md bg-surface-container border-t border-outline-variant/30 flex items-center justify-between gap-space-sm">
+<button class="px-3 py-1.5 rounded-DEFAULT border border-outline-variant/40 hover:bg-surface-container-highest text-on-surface font-mono-sm text-mono-sm transition-colors">
+          Cancel
+        </button>
+<div class="flex items-center gap-space-xs">
+<button class="px-2 py-1.5 rounded-DEFAULT bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant font-mono-sm text-mono-sm transition-colors" title="Audit configuration revisions">
+            Diff
+          </button>
+<button class="flex items-center gap-1.5 px-4 py-1.5 rounded-DEFAULT bg-primary-container text-on-primary-container font-mono-sm text-mono-sm font-semibold hover:bg-primary-fixed-dim active:bg-primary transition-all shadow-[0_0_12px_rgba(255,176,32,0.25)]">
+<span class="material-symbols-outlined text-[15px]">save</span>
+<span>Save Skill Configuration</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div></main><footer class="fixed bottom-0 left-[18.5rem] right-0 h-7 bg-surface-container-lowest border-t border-outline-variant/30 z-30 px-space-lg flex items-center justify-between font-mono-sm text-mono-sm text-on-surface-variant"><div class="flex items-center gap-space-md"><span>PID: 8044</span><span>RUNTIME: V8-ISOLATE</span><span>MEM: 248MB / 1024MB</span><span>PORT: 7421</span></div><div class="flex items-center gap-space-md"><span class="text-primary font-medium">NIKO COCKPIT v2.4.2</span><div class="flex items-center gap-1.5 text-secondary"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span><span>SYNCED</span></div></div></footer></div></body></html>

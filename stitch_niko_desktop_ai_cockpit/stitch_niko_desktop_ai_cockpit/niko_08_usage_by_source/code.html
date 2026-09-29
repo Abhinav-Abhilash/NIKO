@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-primary-container":"#6b4600","surface":"#111316","on-secondary":"#003915","inverse-primary":"#815600","surface-container-lowest":"#0c0e11","inverse-surface":"#e2e2e6","on-secondary-fixed-variant":"#005321","error":"#ffb4ab","on-secondary-fixed":"#002109","surface-container-low":"#1a1c1f","primary-fixed":"#ffddb1","on-tertiary-fixed-variant":"#930013","secondary-fixed":"#6bff8f","primary-container":"#ffb020","tertiary-fixed":"#ffdad7","surface-bright":"#37393d","on-secondary-container":"#004119","background":"#111316","outline-variant":"#524533","on-background":"#e2e2e6","on-tertiary-container":"#a00016","on-primary-fixed-variant":"#624000","surface-variant":"#333538","outline":"#9f8e79","surface-container-high":"#282a2d","surface-dim":"#111316","secondary":"#4ae176","on-surface-variant":"#d7c4ad","surface-container-highest":"#333538","surface-tint":"#ffba4b","tertiary-container":"#ffa9a3","primary-fixed-dim":"#ffba4b","secondary-container":"#00b954","on-tertiary":"#68000a","tertiary-fixed-dim":"#ffb3ad","tertiary":"#ffd0cc","error-container":"#93000a","on-error":"#690005","secondary-fixed-dim":"#4ae176","surface-container":"#1e2023","on-error-container":"#ffdad6","on-tertiary-fixed":"#410004","on-primary":"#442b00","on-surface":"#e2e2e6","inverse-on-surface":"#2f3034","on-primary-fixed":"#291800","primary":"#ffd59b"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-xs":"0.25rem","space-lg":"1rem","space-md":"0.75rem","margin-dock":"0.5rem","margin":"1rem","space-sm":"0.5rem","gutter":"0.75rem","space-xl":"1.5rem","gutter-md":"1rem"},fontFamily:{"mono-md":["JetBrains Mono"],"headline-md":["Inter"],"headline-lg":["Inter"],"body-md":["Inter"],"headline-sm":["Inter"],"body-sm":["Inter"],"label-caps":["JetBrains Mono"],"mono-sm":["JetBrains Mono"],"mono-lg":["JetBrains Mono"],"body-lg":["Inter"]},fontSize:{"mono-md":["0.8125rem",{lineHeight:"1.25rem",fontWeight:"400"}],"headline-md":["1.25rem",{lineHeight:"1.75rem",letterSpacing:"-0.015em",fontWeight:"600"}],"headline-lg":["1.75rem",{lineHeight:"2.25rem",letterSpacing:"-0.02em",fontWeight:"600"}],"body-md":["0.875rem",{lineHeight:"1.375rem",fontWeight:"400"}],"headline-sm":["1rem",{lineHeight:"1.5rem",letterSpacing:"-0.01em",fontWeight:"600"}],"body-sm":["0.8125rem",{lineHeight:"1.25rem",fontWeight:"400"}],"label-caps":["0.625rem",{lineHeight:"0.875rem",letterSpacing:"0.08em",fontWeight:"600"}],"mono-sm":["0.6875rem",{lineHeight:"1rem",letterSpacing:"0.02em",fontWeight:"500"}],"mono-lg":["0.875rem",{lineHeight:"1.375rem",letterSpacing:"-0.01em",fontWeight:"500"}],"body-lg":["0.9375rem",{lineHeight:"1.5rem",fontWeight:"400"}]}}}}</script></head><body class="bg-[#0B0C0E] font-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container"><aside class="fixed left-0 top-0 h-full w-14 bg-[#0B0C0E] z-50 flex flex-col items-center justify-between border-r border-[#262B33] py-space-sm"><div class="flex flex-col items-center w-full gap-space-md"><div class="relative flex items-center justify-center w-9 h-9 group cursor-pointer border border-[#262B33] bg-[#121417] rounded"><span class="w-2.5 h-2.5 rounded-full bg-primary-container shadow-[0_0_8px_rgba(255,176,32,0.8)]"></span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-[#181B20] text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-2xl border border-[#262B33]">Niko Core Cockpit</span></div><nav class="flex flex-col items-center w-full gap-space-xs" data-active-classes="bg-[#181B20] text-primary-container border-l-2 border-primary-container"><a class="relative flex items-center justify-center w-11 h-9 text-on-surface-variant hover:text-on-surface hover:bg-[#121417] transition-colors rounded group" data-path="chat" href="#" title="Chat"><span class="material-symbols-outlined text-[19px]">terminal</span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-[#181B20] text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-[#262B33]">Chat (⌘1)</span></a><a class="relative flex items-center justify-center w-11 h-9 text-on-surface-variant hover:text-on-surface hover:bg-[#121417] transition-colors rounded group" data-path="dashboard" href="#" title="Dashboard"><span class="material-symbols-outlined text-[19px]">grid_view</span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-[#181B20] text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-[#262B33]">Dashboard (⌘2)</span></a><a class="relative flex items-center justify-center w-11 h-9 text-on-surface-variant hover:text-on-surface hover:bg-[#121417] transition-colors rounded group" data-path="usage-overview" href="#" title="Usage"><span class="material-symbols-outlined text-[19px]">bar_chart</span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-[#181B20] text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-[#262B33]">Usage Telemetry (⌘3)</span></a><a class="relative flex items-center justify-center w-11 h-9 text-on-surface-variant hover:text-on-surface hover:bg-[#121417] transition-colors rounded group" data-path="skills" href="#" title="Skills"><span class="material-symbols-outlined text-[19px]">extension</span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-[#181B20] text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-[#262B33]">Skills Registry (⌘4)</span></a><a class="relative flex items-center justify-center w-11 h-9 text-on-surface-variant hover:text-on-surface hover:bg-[#121417] transition-colors rounded group" data-path="admin" href="#" title="Admin"><span class="material-symbols-outlined text-[19px]">admin_panel_settings</span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-[#181B20] text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-[#262B33]">Admin Cockpit</span></a><a class="relative flex items-center justify-center w-11 h-9 text-on-surface-variant hover:text-on-surface hover:bg-[#121417] transition-colors rounded group" data-path="settings" href="#" title="Settings"><span class="material-symbols-outlined text-[19px]">tune</span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-[#181B20] text-on-surface text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-[#262B33]">Settings</span></a></nav></div><div class="flex flex-col items-center w-full gap-space-sm border-t border-[#262B33] pt-space-sm"><div class="relative flex items-center justify-center w-9 h-9 group cursor-pointer"><span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(74,225,118,0.7)]"></span><span class="absolute left-14 ml-space-xs px-space-sm py-space-xs bg-[#181B20] text-secondary text-mono-sm font-mono-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-[#262B33]">PORT 7421 OK</span></div><div class="w-8 h-8 rounded bg-[#121417] border border-[#262B33] flex items-center justify-center text-on-surface-variant text-[12px] font-mono-sm">NK</div></div></aside><div class="pl-14"><header class="fixed top-0 left-14 right-0 h-12 bg-[#0B0C0E]/95 backdrop-blur-sm border-b border-[#262B33] z-40 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs text-mono-sm font-mono-sm"><span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span><span class="text-on-surface-variant">CORE:</span><span class="text-secondary font-mono-sm">RUNNING</span></div><div class="h-3 w-[1px] bg-[#262B33]"></div><div class="flex items-center gap-space-xs text-mono-sm font-mono-sm text-on-surface-variant"><span>CPU:</span><span class="text-on-surface">14%</span></div><div class="h-3 w-[1px] bg-[#262B33]"></div><div class="flex items-center gap-space-xs text-mono-sm font-mono-sm text-on-surface-variant"><span>MEM:</span><span class="text-on-surface">4.2 GB</span></div><div class="h-3 w-[1px] bg-[#262B33]"></div><div class="flex items-center gap-space-xs text-mono-sm font-mono-sm text-on-surface-variant"><span>LOOP:</span><span class="text-primary-container font-mono-sm">#8821</span></div></div><div class="flex items-center gap-space-sm"><div class="flex items-center gap-1.5 px-2 py-1 bg-[#121417] border border-[#262B33] rounded text-mono-sm font-mono-sm"><span class="text-[10px] text-on-surface-variant">MODEL:</span><div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#38bdf8]"></span><span class="text-on-surface">Gemini</span></div><span class="text-on-surface-variant">/</span><div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span><span class="text-primary-container">Groq</span></div><span class="text-on-surface-variant">/</span><div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#818cf8]"></span><span class="text-on-surface-variant">OpenRouter</span></div></div><div class="h-4 w-[1px] bg-[#262B33]"></div><div class="flex items-center gap-1 px-2 py-1 bg-[#121417] border border-[#262B33] rounded text-mono-sm font-mono-sm text-secondary"><span class="material-symbols-outlined text-[14px]">wifi_tethering</span><span>42ms</span></div><button class="flex items-center gap-space-xs px-2 py-1 bg-[#121417] border border-[#262B33] hover:border-primary-container/40 text-on-surface-variant hover:text-on-surface transition-colors rounded text-mono-sm font-mono-sm" type="button"><span class="material-symbols-outlined text-[14px]">terminal</span><span>EXEC</span><kbd class="px-1 bg-[#181B20] border border-[#262B33] rounded text-[10px] text-on-surface-variant font-mono-sm">⌘K</kbd></button></div></header><main class="w-full pt-12 min-h-screen bg-[#0B0C0E] text-on-surface"><div class="flex flex-col w-full">
+<div class="p-space-lg space-y-space-lg">
+<!-- Screen Operational Header -->
+<header class="bg-surface-container-low p-space-lg rounded-xl flex flex-wrap items-center justify-between gap-space-md shadow-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="w-2 h-2 rounded-full bg-primary-container shadow-[0_0_8px_rgba(255,176,32,0.8)]"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">TELEMETRY DECK // AUDIT MODULE</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">USAGE ATTRIBUTION // BY WORKLOAD SOURCE</h1>
+<p class="font-mono-sm text-mono-sm text-on-surface-variant">REAL-TIME INGESTION • RUNTIME METRIC COMPILATION (UTC+0)</p>
+</div>
+<!-- Actionable Filters -->
+<div class="flex items-center flex-wrap gap-space-sm">
+<div class="flex items-center gap-space-xs bg-surface-container-high px-space-md py-space-xs rounded-lg">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">calendar_today</span>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">RANGE:</span>
+<select class="bg-transparent font-mono-sm text-mono-sm text-primary focus:outline-none cursor-pointer">
+<option class="bg-surface-container text-on-surface">Last 7 Days (Feb 18 - Feb 25)</option>
+<option class="bg-surface-container text-on-surface">Last 24 Hours</option>
+<option class="bg-surface-container text-on-surface">Month to Date (Feb)</option>
+</select>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-high px-space-md py-space-xs rounded-lg">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">dns</span>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">PROVIDERS:</span>
+<select class="bg-transparent font-mono-sm text-mono-sm text-secondary focus:outline-none cursor-pointer">
+<option class="bg-surface-container text-on-surface">All (Gemini, Groq, OpenRouter)</option>
+<option class="bg-surface-container text-on-surface">Groq Only (Llama-3.3)</option>
+<option class="bg-surface-container text-on-surface">Gemini Cluster Only</option>
+<option class="bg-surface-container text-on-surface">OpenRouter Bridge</option>
+</select>
+</div>
+<button class="flex items-center gap-space-xs bg-primary text-on-primary px-space-md py-space-xs rounded-lg font-mono-sm text-mono-sm font-semibold hover:bg-surface-tint transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+<span>EXPORT CSV</span>
+</button>
+</div>
+</header>
+<!-- Top Telemetry Row: Visual Donut + High Agency Insights Strip -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Donut Chart & Category Breakdown Panel -->
+<section class="lg:col-span-6 bg-surface-container-low p-space-lg rounded-xl flex flex-col justify-between shadow-md">
+<div class="flex items-center justify-between pb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary-container text-[18px]">pie_chart</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">ALLOCATION SHARE</span>
+</div>
+<span class="bg-surface-container-high text-primary-container px-space-sm py-0.5 rounded font-mono-sm text-mono-sm">4.82M AGGREGATE</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 items-center gap-space-lg py-space-md">
+<!-- Donut Graphic (Pure Inline Scalable SVG) -->
+<div class="relative flex items-center justify-center">
+<svg class="w-48 h-48 -rotate-90" viewbox="0 0 160 160">
+<!-- Background ring -->
+<circle class="text-surface-container-highest" cx="80" cy="80" fill="none" r="64" stroke="currentColor" stroke-width="20"></circle>
+<!-- Chat: 44% -> circumference = 2 * PI * 64 = 402.12. Stroke = 176.93, gap = 402.12 -->
+<circle class="transition-all duration-700 ease-out" cx="80" cy="80" fill="none" r="64" stroke="#FFB020" stroke-dasharray="176.93 402.12" stroke-dashoffset="0" stroke-width="20"></circle>
+<!-- Tool Calls: 31% -> 124.65. Offset = -176.93 -->
+<circle class="transition-all duration-700 ease-out" cx="80" cy="80" fill="none" r="64" stroke="#4ae176" stroke-dasharray="124.65 402.12" stroke-dashoffset="-176.93" stroke-width="20"></circle>
+<!-- Background Daemons: 16% -> 64.33. Offset = -(176.93 + 124.65) = -301.58 -->
+<circle class="transition-all duration-700 ease-out" cx="80" cy="80" fill="none" r="64" stroke="#38bdf8" stroke-dasharray="64.33 402.12" stroke-dashoffset="-301.58" stroke-width="20"></circle>
+<!-- Reminders/Briefings: 9% -> 36.19. Offset = -(301.58 + 64.33) = -365.91 -->
+<circle class="transition-all duration-700 ease-out" cx="80" cy="80" fill="none" r="64" stroke="#9f8e79" stroke-dasharray="36.19 402.12" stroke-dashoffset="-365.91" stroke-width="20"></circle>
+</svg>
+<!-- Centered Metric Hub -->
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tighter">4.82M</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">TOTAL 7D TOKENS</span>
+</div>
+</div>
+<!-- Monospace Telemetry Legend -->
+<div class="flex flex-col gap-space-sm">
+<!-- Category 1: Chat -->
+<div class="bg-surface-container p-space-sm rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="w-3 h-3 rounded bg-primary-container shadow-[0_0_6px_rgba(255,176,32,0.6)]"></span>
+<div>
+<div class="font-headline-sm text-body-sm text-on-surface">Interactive Chat</div>
+<div class="font-mono-sm text-mono-sm text-on-surface-variant">44% of capacity</div>
+</div>
+</div>
+<div class="text-right">
+<span class="font-mono-md text-mono-md text-primary font-semibold">2,120,800</span>
+<span class="block font-mono-sm text-mono-sm text-on-surface-variant">tokens</span>
+</div>
+</div>
+<!-- Category 2: Tool Calls -->
+<div class="bg-surface-container p-space-sm rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="w-3 h-3 rounded bg-secondary shadow-[0_0_6px_rgba(74,225,118,0.6)]"></span>
+<div>
+<div class="font-headline-sm text-body-sm text-on-surface">Tool Calls &amp; System Exec</div>
+<div class="font-mono-sm text-mono-sm text-on-surface-variant">31% of capacity</div>
+</div>
+</div>
+<div class="text-right">
+<span class="font-mono-md text-mono-md text-secondary font-semibold">1,494,200</span>
+<span class="block font-mono-sm text-mono-sm text-on-surface-variant">tokens</span>
+</div>
+</div>
+<!-- Category 3: Background Tasks -->
+<div class="bg-surface-container p-space-sm rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="w-3 h-3 rounded bg-[#38bdf8] shadow-[0_0_6px_rgba(56,189,248,0.6)]"></span>
+<div>
+<div class="font-headline-sm text-body-sm text-on-surface">Daemons &amp; Background Tasks</div>
+<div class="font-mono-sm text-mono-sm text-on-surface-variant">16% of capacity</div>
+</div>
+</div>
+<div class="text-right">
+<span class="font-mono-md text-mono-md text-[#38bdf8] font-semibold">771,200</span>
+<span class="block font-mono-sm text-mono-sm text-on-surface-variant">tokens</span>
+</div>
+</div>
+<!-- Category 4: Reminders -->
+<div class="bg-surface-container p-space-sm rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="w-3 h-3 rounded bg-outline shadow-[0_0_6px_rgba(159,142,121,0.6)]"></span>
+<div>
+<div class="font-headline-sm text-body-sm text-on-surface">Reminders &amp; Briefings</div>
+<div class="font-mono-sm text-mono-sm text-on-surface-variant">9% of capacity</div>
+</div>
+</div>
+<div class="text-right">
+<span class="font-mono-md text-mono-md text-on-surface-variant font-semibold">433,800</span>
+<span class="block font-mono-sm text-mono-sm text-on-surface-variant">tokens</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-highest px-space-md py-space-xs rounded flex items-center justify-between text-mono-sm font-mono-sm text-on-surface-variant">
+<span>RUN_ID: #ATTR-7721A</span>
+<span>EST. TOTAL COMPUTATION: ~18.42 GPU-HRS</span>
+</div>
+</section>
+<!-- Operational Insights Strip (High Priority Warnings & Analytics) -->
+<section class="lg:col-span-6 flex flex-col justify-between gap-space-sm">
+<!-- Insight Card 1 (Quota Limit Warning) -->
+<div class="bg-surface-container p-space-md rounded-xl flex items-start gap-space-md shadow-sm">
+<div class="p-space-xs rounded bg-on-primary-container text-primary-container shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</div>
+<div class="flex flex-col gap-1 min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-primary-container uppercase">CRITICAL BURN ALERT</span>
+<span class="font-mono-sm text-mono-sm text-primary-container">6 PM PROJECTION</span>
+</div>
+<p class="font-headline-sm text-headline-sm text-primary-fixed">Gemini will hit its quota limit around 6 PM at this rate.</p>
+<p class="font-mono-sm text-mono-sm text-on-surface-variant">Calculated burn rate: <span class="text-primary-container font-mono-md">42.1K tokens/hr</span> vs 68K remaining allocated quota threshold.</p>
+</div>
+</div>
+<!-- Insight Card 2 (Terminal Spikes) -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex items-start gap-space-md shadow-sm">
+<div class="p-space-xs rounded bg-surface-container-highest text-secondary shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">code_blocks</span>
+</div>
+<div class="flex flex-col gap-1 min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-secondary uppercase">PAYLOAD TELEMETRY</span>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">INSPECTION NODE</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface">Tool call payloads account for <span class="text-secondary font-semibold">68%</span> of input token spikes during terminal command sequences.</p>
+<p class="font-mono-sm text-mono-sm text-on-surface-variant">Recommend setting payload truncation flags on verbose `docker ps` outputs.</p>
+</div>
+</div>
+<!-- Insight Card 3 (Provider Efficiency) -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex items-start gap-space-md shadow-sm">
+<div class="p-space-xs rounded bg-surface-container-highest text-[#38bdf8] shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">speed</span>
+</div>
+<div class="flex flex-col gap-1 min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-[#38bdf8] uppercase">PROVIDER BENCHMARK</span>
+<span class="font-mono-sm text-mono-sm text-[#38bdf8]">PERFORMANCE GAIN</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface"><span class="text-[#38bdf8] font-semibold">Groq Llama-3.3-70b</span> latency is <span class="text-primary-container font-mono-md">4.2x faster</span> for background indexing tasks with 0 errors.</p>
+<p class="font-mono-sm text-mono-sm text-on-surface-variant">Average turnaround down to 240ms per batch indexing event.</p>
+</div>
+</div>
+<!-- Insight Card 4 (Cron Budget Efficiency) -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex items-start gap-space-md shadow-sm">
+<div class="p-space-xs rounded bg-surface-container-highest text-on-surface-variant shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">event_repeat</span>
+</div>
+<div class="flex flex-col gap-1 min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">CRON TASK EFFICIENCY</span>
+<span class="font-mono-sm text-mono-sm text-secondary">-12% COMPARED TO PREV</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface">Automated cron briefings consumed only <span class="font-mono-md text-on-surface font-semibold">432K tokens</span> this week (-12% vs last week).</p>
+<p class="font-mono-sm text-mono-sm text-on-surface-variant">Cache compression filter applied to morning synthesis routines.</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Bottom Section: Top 5 Costliest Tasks / Workflows -->
+<section class="bg-surface-container-low p-space-lg rounded-xl shadow-md">
+<div class="flex flex-wrap items-center justify-between pb-space-lg gap-space-sm">
+<div>
+<span class="font-label-caps text-label-caps text-primary-container uppercase">RANKED BY VOLUME</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">TOP 5 COSTLIEST CONVERSATIONS &amp; EXEC TASKS</h2>
+</div>
+<div class="flex items-center gap-space-sm font-mono-sm text-mono-sm text-on-surface-variant">
+<span>SORT BY: WEIGHTED CONSUMPTION</span>
+<span class="text-secondary font-semibold">LIVE RECALC</span>
+</div>
+</div>
+<!-- Ranked Horizontal Bar Items -->
+<div class="space-y-space-md">
+<!-- Rank Item #01 -->
+<div class="bg-surface-container p-space-md rounded-lg flex flex-col gap-space-sm hover:bg-surface-container-high transition-colors">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-md min-w-0">
+<span class="px-space-sm py-0.5 rounded font-mono-md text-mono-md font-bold bg-primary text-on-primary">#01</span>
+<div class="min-w-0">
+<div class="font-headline-sm text-headline-sm text-on-surface truncate">Refactoring and building Docker orchestration daemon</div>
+<div class="flex items-center gap-space-sm font-mono-sm text-mono-sm text-on-surface-variant">
+<span class="text-primary-container">Groq + Gemini Multi-pass</span>
+<span>•</span>
+<span>84 requests</span>
+<span>•</span>
+<span class="text-secondary">$0.41 est. cost</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="text-right">
+<span class="font-mono-lg text-mono-lg font-bold text-primary-container">842,100</span>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant ml-1">TOK</span>
+</div>
+<button class="flex items-center gap-space-xs bg-surface-container-highest hover:bg-primary-container hover:text-on-primary-container text-on-surface px-space-md py-space-xs rounded font-mono-sm text-mono-sm transition-colors" onclick="alert('Opening Execution Trace Inspector for Task #01: PID 89412')">
+<span class="material-symbols-outlined text-[15px]">terminal</span>
+<span>Inspect trace</span>
+</button>
+</div>
+</div>
+<!-- Bar Track -->
+<div class="w-full bg-surface-container-lowest h-2 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary via-primary-container to-secondary" style="width: 100%;"></div>
+</div>
+</div>
+<!-- Rank Item #02 -->
+<div class="bg-surface-container p-space-md rounded-lg flex flex-col gap-space-sm hover:bg-surface-container-high transition-colors">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-md min-w-0">
+<span class="px-space-sm py-0.5 rounded font-mono-md text-mono-md font-bold bg-surface-container-highest text-on-surface">#02</span>
+<div class="min-w-0">
+<div class="font-headline-sm text-headline-sm text-on-surface truncate">Analyze and clean 2.4 GB Chrome background cache</div>
+<div class="flex items-center gap-space-sm font-mono-sm text-mono-sm text-on-surface-variant">
+<span class="text-[#38bdf8]">Gemini 1.5 Pro</span>
+<span>•</span>
+<span>42 requests</span>
+<span>•</span>
+<span class="text-secondary">$0.31 est. cost</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="text-right">
+<span class="font-mono-lg text-mono-lg font-bold text-on-surface">612,400</span>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant ml-1">TOK</span>
+</div>
+<button class="flex items-center gap-space-xs bg-surface-container-highest hover:bg-primary-container hover:text-on-primary-container text-on-surface px-space-md py-space-xs rounded font-mono-sm text-mono-sm transition-colors" onclick="alert('Opening Execution Trace Inspector for Task #02')">
+<span class="material-symbols-outlined text-[15px]">terminal</span>
+<span>Inspect trace</span>
+</button>
+</div>
+</div>
+<!-- Bar Track -->
+<div class="w-full bg-surface-container-lowest h-2 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary via-primary-container to-secondary" style="width: 72.7%;"></div>
+</div>
+</div>
+<!-- Rank Item #03 -->
+<div class="bg-surface-container p-space-md rounded-lg flex flex-col gap-space-sm hover:bg-surface-container-high transition-colors">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-md min-w-0">
+<span class="px-space-sm py-0.5 rounded font-mono-md text-mono-md font-bold bg-surface-container-highest text-on-surface">#03</span>
+<div class="min-w-0">
+<div class="font-headline-sm text-headline-sm text-on-surface truncate">Synthesize weekly Obsidian engineering notes</div>
+<div class="flex items-center gap-space-sm font-mono-sm text-mono-sm text-on-surface-variant">
+<span class="text-on-surface-variant">OpenRouter Claude 3.5 Sonnet</span>
+<span>•</span>
+<span>19 requests</span>
+<span>•</span>
+<span class="text-secondary">$0.23 est. cost</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="text-right">
+<span class="font-mono-lg text-mono-lg font-bold text-on-surface">389,000</span>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant ml-1">TOK</span>
+</div>
+<button class="flex items-center gap-space-xs bg-surface-container-highest hover:bg-primary-container hover:text-on-primary-container text-on-surface px-space-md py-space-xs rounded font-mono-sm text-mono-sm transition-colors" onclick="alert('Opening Execution Trace Inspector for Task #03')">
+<span class="material-symbols-outlined text-[15px]">terminal</span>
+<span>Inspect trace</span>
+</button>
+</div>
+</div>
+<!-- Bar Track -->
+<div class="w-full bg-surface-container-lowest h-2 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary via-primary-container to-secondary" style="width: 46.2%;"></div>
+</div>
+</div>
+<!-- Rank Item #04 -->
+<div class="bg-surface-container p-space-md rounded-lg flex flex-col gap-space-sm hover:bg-surface-container-high transition-colors">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-md min-w-0">
+<span class="px-space-sm py-0.5 rounded font-mono-md text-mono-md font-bold bg-surface-container-highest text-on-surface">#04</span>
+<div class="min-w-0">
+<div class="font-headline-sm text-headline-sm text-on-surface truncate">Spotify audio bus controller and hotkey daemon</div>
+<div class="flex items-center gap-space-sm font-mono-sm text-mono-sm text-on-surface-variant">
+<span class="text-primary-container">Groq Llama-3.3-70b</span>
+<span>•</span>
+<span>61 requests</span>
+<span>•</span>
+<span class="text-secondary">$0.08 est. cost</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="text-right">
+<span class="font-mono-lg text-mono-lg font-bold text-on-surface">210,500</span>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant ml-1">TOK</span>
+</div>
+<button class="flex items-center gap-space-xs bg-surface-container-highest hover:bg-primary-container hover:text-on-primary-container text-on-surface px-space-md py-space-xs rounded font-mono-sm text-mono-sm transition-colors" onclick="alert('Opening Execution Trace Inspector for Task #04')">
+<span class="material-symbols-outlined text-[15px]">terminal</span>
+<span>Inspect trace</span>
+</button>
+</div>
+</div>
+<!-- Bar Track -->
+<div class="w-full bg-surface-container-lowest h-2 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary via-primary-container to-secondary" style="width: 25.0%;"></div>
+</div>
+</div>
+<!-- Rank Item #05 -->
+<div class="bg-surface-container p-space-md rounded-lg flex flex-col gap-space-sm hover:bg-surface-container-high transition-colors">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-md min-w-0">
+<span class="px-space-sm py-0.5 rounded font-mono-md text-mono-md font-bold bg-surface-container-highest text-on-surface">#05</span>
+<div class="min-w-0">
+<div class="font-headline-sm text-headline-sm text-on-surface truncate">Daily system health diagnostic &amp; GPU vRAM audit</div>
+<div class="flex items-center gap-space-sm font-mono-sm text-mono-sm text-on-surface-variant">
+<span class="text-[#38bdf8]">Gemini Flash 2.0</span>
+<span>•</span>
+<span>28 requests</span>
+<span>•</span>
+<span class="text-secondary">$0.04 est. cost</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="text-right">
+<span class="font-mono-lg text-mono-lg font-bold text-on-surface">144,200</span>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant ml-1">TOK</span>
+</div>
+<button class="flex items-center gap-space-xs bg-surface-container-highest hover:bg-primary-container hover:text-on-primary-container text-on-surface px-space-md py-space-xs rounded font-mono-sm text-mono-sm transition-colors" onclick="alert('Opening Execution Trace Inspector for Task #05')">
+<span class="material-symbols-outlined text-[15px]">terminal</span>
+<span>Inspect trace</span>
+</button>
+</div>
+</div>
+<!-- Bar Track -->
+<div class="w-full bg-surface-container-lowest h-2 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary via-primary-container to-secondary" style="width: 17.1%;"></div>
+</div>
+</div>
+</div>
+<!-- Footer Micro Stats for Workload Audit -->
+<div class="mt-space-lg pt-space-md flex flex-wrap items-center justify-between text-mono-sm font-mono-sm text-on-surface-variant gap-space-sm">
+<div class="flex items-center gap-space-md">
+<span>TOP 5 TOTAL: 2.19M TOKENS (45.4% OF TOTAL AUDIT)</span>
+<span>MEDIAN REQUEST TOKENS: 14,210</span>
+</div>
+<div class="flex items-center gap-space-xs text-secondary">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>ALL PROVIDER LOGS FULLY CROSS-REFERENCED</span>
+</div>
+</div>
+</section>
+</div>
+</div></main><footer class="w-full bg-[#0B0C0E] border-t border-[#262B33] px-gutter py-space-xs flex items-center justify-between text-mono-sm font-mono-sm text-on-surface-variant"><div class="flex items-center gap-space-md"><span>SYS_ACTIVE: LOCAL :7421</span><span>PID: 4912</span><span>TOKENS: 4,129/m</span><span>LATENCY: 84ms</span><span>RUNTIME: SECURE_SANDBOX</span></div><div class="flex items-center gap-space-md"><span>NIKO COCKPIT v2.4.2</span><span class="text-secondary">SYNCED</span></div></footer></div></body></html>
