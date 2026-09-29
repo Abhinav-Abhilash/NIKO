@@ -227,5 +227,7 @@ def validate_approval_state(approval_status: str, expires_at: datetime) -> None:
         raise ValidationFailedError(
             f"Approval cannot be decided or reused: already in '{approval_status}' state."
         )
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=UTC)
     if datetime.now(UTC) > expires_at:
         raise ValidationFailedError("Approval request has expired and can no longer be decided.")
