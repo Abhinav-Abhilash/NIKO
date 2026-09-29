@@ -19,25 +19,28 @@ def test_open_app_rejects_nonexistent_binary() -> None:
         validate_open_app_path(fake_exe)
 
 
-def test_open_app_rejects_untrusted_directories(tmp_path: Path) -> None:
-    # Executable created in untrusted location (e.g. temp or desktop download)
+def test_open_app_rejects_unallowlisted_binary(tmp_path: Path) -> None:
+    # Executable created in unallowlisted location
     untrusted_exe = tmp_path / "malicious.exe"
     untrusted_exe.write_text("dummy binary content")
 
-    # With default trusted windows dirs, tmp_path is rejected
-    trusted_dirs = [Path(r"C:\Program Files"), Path(r"C:\Windows\System32")]
-    with pytest.raises(ValidationFailedError, match="not within any trusted directory"):
-        validate_open_app_path(str(untrusted_exe), allowed_dirs=trusted_dirs)
+    # Only SafeApp.exe is in the allowlist
+    safe_exe = tmp_path / "SafeApp.exe"
+    safe_exe.write_text("safe binary")
+
+    with pytest.raises(ValidationFailedError, match="not in the pinned application allowlist"):
+        validate_open_app_path(str(untrusted_exe), allowlist=[safe_exe])
 
 
-def test_open_app_allows_path_in_trusted_dir(tmp_path: Path) -> None:
-    # Simulate a trusted directory with spaces
-    trusted_base = tmp_path / "Program Files" / "Sub Dir"
-    trusted_base.mkdir(parents=True)
-    valid_exe = trusted_base / "SafeApp.exe"
+def test_open_app_pins_exact_resolved_path(tmp_path: Path) -> None:
+    # Simulate an allowlisted executable with spaces
+    app_dir = tmp_path / "Program Files" / "Sub Dir"
+    app_dir.mkdir(parents=True)
+    valid_exe = app_dir / "Code.exe"
     valid_exe.write_text("binary")
 
-    resolved = validate_open_app_path(str(valid_exe), allowed_dirs=[trusted_base])
+    # Validated against explicit allowlist
+    resolved = validate_open_app_path(str(valid_exe), allowlist={"vscode": valid_exe})
     assert resolved == valid_exe.resolve()
 
 
@@ -47,8 +50,7 @@ def test_open_app_allows_explicitly_allowlisted_binary(tmp_path: Path) -> None:
 
     resolved = validate_open_app_path(
         str(custom_exe),
-        allowed_dirs=[],
-        allowlisted_exact_files=[custom_exe],
+        allowlist=[custom_exe],
     )
     assert resolved == custom_exe.resolve()
 

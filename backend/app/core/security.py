@@ -121,16 +121,33 @@ def get_default_trusted_windows_dirs() -> list[Path]:
 DISALLOWED_APP_EXTENSIONS = {".cmd", ".bat", ".vbs", ".ps1", ".sh", ".com"}
 
 
+DEFAULT_APP_ALLOWLIST: dict[str, str] = {
+    "notepad": r"C:\Windows\System32\notepad.exe",
+    "calc": r"C:\Windows\System32\calc.exe",
+    "explorer": r"C:\Windows\explorer.exe",
+    "taskmgr": r"C:\Windows\System32\Taskmgr.exe",
+}
+
+
+def get_default_pinned_allowlist() -> list[Path]:
+    """Return resolved canonical paths for default allowed applications."""
+    pinned: list[Path] = []
+    for raw_path in DEFAULT_APP_ALLOWLIST.values():
+        p = Path(raw_path)
+        if p.exists():
+            pinned.append(p.resolve())
+    return pinned
+
+
 def validate_open_app_path(
     target_path_str: str,
-    allowed_dirs: list[Path] | None = None,
-    allowlisted_exact_files: list[Path] | None = None,
+    allowlist: list[Path] | dict[str, Path | str] | None = None,
 ) -> Path:
     """
-    Validate and pin an executable path for the open_app skill.
+    Validate and pin an exact executable path for the open_app skill.
     - Resolves symlinks and canonicalizes the path (Path.resolve).
     - Prevents script wrapper launches (e.g., Code.exe directly, not code.cmd).
-    - Ensures target is inside a trusted directory or exact allowlisted path.
+    - Strictly validates against an exact pinned path allowlist (user-editable).
     - Fully handles paths containing spaces.
     """
     if not target_path_str.strip():
@@ -148,35 +165,27 @@ def validate_open_app_path(
     if not target_path.exists():
         raise ValidationFailedError(f"Target executable does not exist: {target_path}")
 
-    # Check exact allowlisted file paths
-    if allowlisted_exact_files:
-        for exact in allowlisted_exact_files:
-            if target_path == exact.resolve():
-                return target_path
+    # Build canonical pinned allowlist
+    pinned_paths: list[Path] = []
+    if allowlist is not None:
+        if isinstance(allowlist, dict):
+            for val in allowlist.values():
+                pinned_paths.append(Path(val).resolve())
+        else:
+            for p in allowlist:
+                pinned_paths.append(p.resolve())
+    else:
+        pinned_paths = get_default_pinned_allowlist()
 
-    # Check trusted directories
-    search_dirs = allowed_dirs if allowed_dirs is not None else get_default_trusted_windows_dirs()
-    is_safe = False
-    for directory in search_dirs:
-        try:
-            if target_path.is_relative_to(directory):
-                is_safe = True
-                break
-        except (ValueError, AttributeError):
-            # Fallback for older python or cross-drive comparisons
-            try:
-                target_path.relative_to(directory)
-                is_safe = True
-                break
-            except ValueError:
-                continue
+    # Exact path comparison
+    for allowed_path in pinned_paths:
+        if target_path == allowed_path:
+            return target_path
 
-    if not is_safe:
-        raise ValidationFailedError(
-            f"Executable path '{target_path}' is not within any trusted directory and is not allowlisted."
-        )
-
-    return target_path
+    raise ValidationFailedError(
+        f"Executable '{target_path}' is not in the pinned application allowlist. "
+        "Add this exact executable to your allowlist in Settings to authorize it."
+    )
 
 
 def validate_url(url_str: str, allow_private: bool = False) -> str:
