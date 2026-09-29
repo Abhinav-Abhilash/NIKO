@@ -1,6 +1,6 @@
 import json
-from datetime import datetime
 from typing import Any
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.logging import get_logger

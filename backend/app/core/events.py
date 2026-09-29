@@ -2,6 +2,7 @@ import asyncio
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
 from typing import Any
+
 from pydantic import BaseModel, Field
 
 from backend.app.core.logging import get_logger

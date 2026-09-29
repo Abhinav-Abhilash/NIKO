@@ -1,4 +1,5 @@
 import asyncio
+
 import pytest
 
 from backend.app.core.events import EventBus
