@@ -216,3 +216,16 @@ def validate_url(url_str: str, allow_private: bool = False) -> str:
             pass
 
     return url_str
+
+
+def validate_approval_state(approval_status: str, expires_at: datetime) -> None:
+    """
+    Validate that an approval is strictly single-use and unexpired.
+    Raises ValidationFailedError if the approval was already decided or has expired.
+    """
+    if approval_status != "pending":
+        raise ValidationFailedError(
+            f"Approval cannot be decided or reused: already in '{approval_status}' state."
+        )
+    if datetime.now(UTC) > expires_at:
+        raise ValidationFailedError("Approval request has expired and can no longer be decided.")

@@ -81,3 +81,27 @@ async def test_approval_record_binding(db_session: AsyncSession) -> None:
     assert saved_approval.tool_call_id == tool_call.id
     assert len(saved_approval.command_logs) == 1
     assert saved_approval.command_logs[0].request_id == "req_test_12345"
+
+
+def test_approval_rejects_expired() -> None:
+    from backend.app.core.exceptions import ValidationFailedError
+    from backend.app.core.security import validate_approval_state
+
+    past_time = datetime.now(UTC) - timedelta(seconds=10)
+    with pytest.raises(ValidationFailedError, match="expired"):
+        validate_approval_state(approval_status="pending", expires_at=past_time)
+
+
+def test_approval_rejects_reuse_or_duplicate_decision() -> None:
+    from backend.app.core.exceptions import ValidationFailedError
+    from backend.app.core.security import validate_approval_state
+
+    future_time = datetime.now(UTC) + timedelta(minutes=1)
+
+    # Trying to decide an already approved request must fail
+    with pytest.raises(ValidationFailedError, match="already in 'approved' state"):
+        validate_approval_state(approval_status="approved", expires_at=future_time)
+
+    # Trying to decide an already denied request must fail
+    with pytest.raises(ValidationFailedError, match="already in 'denied' state"):
+        validate_approval_state(approval_status="denied", expires_at=future_time)

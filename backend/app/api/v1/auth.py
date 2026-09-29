@@ -1,3 +1,4 @@
+import secrets
 from typing import Any
 
 from fastapi import APIRouter, Depends, Header
@@ -52,9 +53,11 @@ async def setup_initial_owner(
             message="Owner account already initialized. The setup endpoint is permanently disabled."
         )
 
-    # 2. Verify the one-time setup token
+    # 2. Verify the one-time setup token using constant-time comparison
     provided_token = req.setup_token or x_setup_token
-    if not provided_token or provided_token.strip() != settings.SETUP_TOKEN.strip():
+    if not provided_token or not secrets.compare_digest(
+        provided_token.strip(), settings.SETUP_TOKEN.strip()
+    ):
         raise InvalidSetupTokenError(
             message="Invalid or missing setup token. Provide the one-time token from your terminal/env."
         )
