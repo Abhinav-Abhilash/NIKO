@@ -51,6 +51,14 @@ async def test_engine(test_settings: Settings) -> AsyncGenerator[AsyncEngine, No
     await engine.dispose()
 
 
+@pytest.fixture(autouse=True)
+async def clean_db_tables(test_engine: AsyncEngine) -> AsyncGenerator[None, None]:
+    async with test_engine.begin() as conn:
+        for table in reversed(Base.metadata.sorted_tables):
+            await conn.execute(table.delete())
+    yield
+
+
 @pytest.fixture
 async def db_session(test_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
     async_session = async_sessionmaker(
