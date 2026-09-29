@@ -57,7 +57,7 @@ class LLMOrchestrator:
         self,
         provider_keys: dict[str, str] | None = None,
         roles_config: ModelRolesConfig | None = None,
-    ):
+    ) -> None:
         self.provider_keys = provider_keys or {}
         self.roles_config = roles_config or get_default_roles_config()
         self._providers: dict[str, BaseLLMProvider] = {}
@@ -118,7 +118,7 @@ class LLMOrchestrator:
         Execute chat completion with role-based sequential fallback across providers.
         Skips missing models and models in predictive/429 cooldown.
         """
-        role_str = role.value if isinstance(role, ModelRole) else str(role).lower()
+        role_str = role.value if isinstance(role, ModelRole) else role.lower()
         targets = self.roles_config.get_role_targets(role)
         prepared_messages = self._prepare_messages_for_context(messages, max_tool_tokens)
         attempts: list[dict[str, str]] = []
@@ -215,7 +215,7 @@ class LLMOrchestrator:
         """
         Execute streaming chat with role-based sequential fallback across providers.
         """
-        role_str = role.value if isinstance(role, ModelRole) else str(role).lower()
+        role_str = role.value if isinstance(role, ModelRole) else role.lower()
         targets = self.roles_config.get_role_targets(role)
         prepared_messages = self._prepare_messages_for_context(messages, max_tool_tokens)
         attempts: list[dict[str, str]] = []
