@@ -28,15 +28,38 @@ class LoginRateLimiter:
     """
 
     MAX_BACKOFF_SECONDS: float = 60.0
+    MAX_ENTRIES: int = 5000
     BACKOFF_SCHEDULE: dict[int, float] = {
         4: 2.0,
         5: 5.0,
         6: 15.0,
     }
 
-    def __init__(self, reset_seconds: int = 300) -> None:
+    def __init__(self, reset_seconds: int = 300, max_entries: int = 5000) -> None:
         self.reset_seconds = reset_seconds
+        self.max_entries = max_entries
         self._history: dict[str, dict[str, float]] = {}
+
+    def _evict_if_needed(self, now: float) -> None:
+        """Evict expired entries or oldest records when history reaches maximum capacity."""
+        if len(self._history) < self.max_entries:
+            return
+
+        # 1. Purge entries where reset_seconds has elapsed
+        expired_keys = [
+            k for k, v in self._history.items() if now - v["last_failed"] > self.reset_seconds
+        ]
+        for k in expired_keys:
+            del self._history[k]
+
+        # 2. If still at or over capacity, evict oldest by last_failed timestamp
+        if len(self._history) >= self.max_entries:
+            overflow = len(self._history) - self.max_entries + 1
+            sorted_keys = sorted(
+                self._history.keys(), key=lambda k: self._history[k]["last_failed"]
+            )
+            for k in sorted_keys[:overflow]:
+                del self._history[k]
 
     def get_lockout_remaining(self, username: str) -> float:
         now = time.time()
@@ -66,6 +89,7 @@ class LoginRateLimiter:
 
     def record_failure(self, username: str) -> None:
         now = time.time()
+        self._evict_if_needed(now)
         record = self._history.get(username, {"attempts": 0.0, "last_failed": now, "locked_until": 0.0})
         attempts = int(record["attempts"]) + 1
 
