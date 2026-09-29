@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator
-from pathlib import Path
 from typing import Any
+
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import (

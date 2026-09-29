@@ -1,5 +1,6 @@
 import secrets
 from pathlib import Path
+
 from cryptography.fernet import Fernet
 
 

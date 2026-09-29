@@ -2,7 +2,7 @@ import hashlib
 import ipaddress
 import json
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -51,7 +51,9 @@ def decrypt_secret(cipher_text: str, key: str) -> str:
         f = Fernet(key.encode("utf-8") if isinstance(key, str) else key)
         return f.decrypt(cipher_text.encode("utf-8")).decode("utf-8")
     except InvalidToken as exc:
-        raise AuthenticationError("Failed to decrypt secret: invalid key or corrupted payload.") from exc
+        raise AuthenticationError(
+            "Failed to decrypt secret: invalid key or corrupted payload."
+        ) from exc
 
 
 def hash_token(token: str) -> str:
@@ -76,7 +78,7 @@ def create_jwt_token(
 ) -> str:
     """Generate a signed JWT token with expiration timestamp."""
     to_encode = payload.copy()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     expire = now + (expires_delta or timedelta(minutes=15))
     to_encode.update({"iat": now, "exp": expire})
     return jwt.encode(to_encode, secret_key, algorithm=algorithm)
@@ -96,15 +98,15 @@ def get_default_trusted_windows_dirs() -> list[Path]:
     """Return canonical paths for trusted system execution directories on Windows."""
     trusted = []
     # Program Files
-    prog_files = os.environ.get("ProgramFiles", r"C:\Program Files")
+    prog_files = os.environ.get("PROGRAMFILES", r"C:\Program Files")
     trusted.append(Path(prog_files).resolve())
 
     # Program Files (x86)
-    prog_files_x86 = os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")
+    prog_files_x86 = os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)")
     trusted.append(Path(prog_files_x86).resolve())
 
     # Windows System32
-    windir = os.environ.get("SystemRoot", r"C:\Windows")
+    windir = os.environ.get("SYSTEMROOT", r"C:\Windows")
     system32 = Path(windir) / "System32"
     trusted.append(system32.resolve())
 

@@ -1,4 +1,5 @@
 from typing import Any
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -14,7 +15,9 @@ class APIErrorDetails(BaseModel):
     code: str = Field(..., description="Machine-readable error code")
     message: str = Field(..., description="Human-readable error explanation")
     request_id: str = Field(..., description="Unique request tracing ID")
-    details: dict[str, Any] = Field(default_factory=dict, description="Additional structured error metadata")
+    details: dict[str, Any] = Field(
+        default_factory=dict, description="Additional structured error metadata"
+    )
 
 
 class APIErrorResponse(BaseModel):
@@ -117,9 +120,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(
-        _: Request, exc: RequestValidationError
-    ) -> JSONResponse:
+    async def validation_exception_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
         req_id = request_id_ctx.get()
         logger.info("Request validation failed", errors=exc.errors())
         return JSONResponse(

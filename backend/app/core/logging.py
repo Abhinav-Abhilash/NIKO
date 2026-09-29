@@ -1,14 +1,15 @@
 import logging
 import sys
 from contextvars import ContextVar
-from typing import Any
+from typing import Any, cast
+
 import structlog
 
 # Context variable for request-scoped correlation ID
 request_id_ctx: ContextVar[str] = ContextVar("request_id", default="")
 
 
-def add_request_id(_: Any, __: Any, event_dict: dict[str, Any]) -> dict[str, Any]:
+def add_request_id(_: Any, __: str, event_dict: structlog.types.EventDict) -> structlog.types.EventDict:
     req_id = request_id_ctx.get()
     if req_id:
         event_dict["request_id"] = req_id
@@ -64,4 +65,4 @@ def setup_logging(log_level: str = "INFO", app_env: str = "development") -> None
 
 
 def get_logger(name: str = "niko") -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(name)
+    return cast(structlog.stdlib.BoundLogger, structlog.get_logger(name))
