@@ -24,11 +24,27 @@ class LoginRateLimiter:
     """
     In-memory rate limiter keyed on username with exponential backoff.
     Prevents localhost IP lockout while stopping brute-force password guessing.
+    Throttles registered and unknown/unregistered usernames identically.
     """
+
+    MAX_BACKOFF_SECONDS: float = 60.0
+    BACKOFF_SCHEDULE: dict[int, float] = {
+        4: 2.0,
+        5: 5.0,
+        6: 15.0,
+    }
 
     def __init__(self, reset_seconds: int = 300) -> None:
         self.reset_seconds = reset_seconds
         self._history: dict[str, dict[str, float]] = {}
+
+    def get_lockout_remaining(self, username: str) -> float:
+        now = time.time()
+        record = self._history.get(username)
+        if not record:
+            return 0.0
+        locked_until = record.get("locked_until", 0.0)
+        return max(0.0, locked_until - now)
 
     def check_limit(self, username: str) -> None:
         now = time.time()
@@ -53,25 +69,26 @@ class LoginRateLimiter:
         record = self._history.get(username, {"attempts": 0.0, "last_failed": now, "locked_until": 0.0})
         attempts = int(record["attempts"]) + 1
 
-        # Exponential backoff schedule:
+        # Exponential backoff schedule capped at MAX_BACKOFF_SECONDS:
         # Attempts 1-3: no delay
-        # 4: 2s delay | 5: 5s delay | 6: 15s delay | 7+: 60s delay
-        backoff_delay = 0.0
-        if attempts == 4:
-            backoff_delay = 2.0
-        elif attempts == 5:
-            backoff_delay = 5.0
-        elif attempts == 6:
-            backoff_delay = 15.0
-        elif attempts >= 7:
-            backoff_delay = 60.0
+        # 4: 2s delay | 5: 5s delay | 6: 15s delay | 7+: capped at 60s
+        if attempts >= 7:
+            backoff_delay = self.MAX_BACKOFF_SECONDS
+        else:
+            backoff_delay = self.BACKOFF_SCHEDULE.get(attempts, 0.0)
 
         self._history[username] = {
             "attempts": float(attempts),
             "last_failed": now,
             "locked_until": now + backoff_delay,
         }
-        logger.warning("Failed login attempt recorded", username=username, attempts=attempts, backoff=backoff_delay)
+        logger.warning(
+            "Failed login attempt recorded",
+            username=username,
+            attempts=attempts,
+            backoff=backoff_delay,
+            cap=self.MAX_BACKOFF_SECONDS,
+        )
 
     def record_success(self, username: str) -> None:
         self._history.pop(username, None)
