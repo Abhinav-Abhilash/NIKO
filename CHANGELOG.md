@@ -6,6 +6,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - Milestone 4: Multi-Provider LLM Orchestration, Streaming Chat & Quota Resilience
+
+### Added
+- **Multi-Provider LLM Architecture & Fallback Engine**:
+  - Implemented base provider interface and standardized message/tool types (`LLMMessage`, `NormalizedToolCall`, `StreamChunk`, `LLMResponse`).
+  - Native provider adapters for Google Gemini (SSE streaming, tool calling), Groq (LPU streaming, delta tool assembly), and OpenRouter (free fallback models).
+  - Four distinct task roles (`light`, `chat`, `code`, `search`) configured with verified free-tier models and fallback sequences in `docs/MODELS.md`.
+  - Sequential lazy fallback: models are queried sequentially without wasteful parallel burns.
+  - Tool output pruning: trims verbose tool outputs to 1,200 tokens using head/tail truncation.
+- **Predictive Cooldown Tracker & Dynamic Discovery**:
+  - `PredictiveCooldownTracker` tracks rolling minute and daily requests/tokens, engaging cooldown predictively at 90% quota thresholds.
+  - Upstream HTTP 429 and `Retry-After` header extraction with exponential backoff.
+  - `ModelDiscoveryService` dynamically probes provider model endpoints at startup and via `POST /api/v1/settings/models/refresh`, automatically skipping 404/deprecated models.
+- **Model Roles & Settings Persistence**:
+  - `SettingsRepository` for storing encrypted provider keys and ordered role models in SQLite.
+  - REST endpoints: `GET /api/v1/settings/roles`, `PUT /api/v1/settings/roles`, `POST /api/v1/settings/models/refresh`, `GET /api/v1/settings/models/status`.
+- **Security & Key Redaction**:
+  - Comprehensive logging redaction processor and uvicorn logging filter preventing provider API keys (Gemini, Groq, OpenRouter, bearer tokens) from appearing in logs.
+  - Dynamic sensitive token registration for configured keys and secrets.
+- **ChatService & Conversation Management**:
+  - `ConversationRepository` managing persistent conversations, messages, and tool call audit states.
+  - Token-budget sliding context window pinning the system prompt at index 0.
+  - Server-side provenance resolution setting `external_untrusted` when web/file/OCR data enters context.
+  - Automatic wrapping of untrusted data inside `<untrusted_external_content>` containment delimiters.
+  - Clean, direct system prompt instructing the model that untrusted content is raw data, free of refusals, topic limits, or hedging.
+  - Integrated tool dispatch through `SkillService` and `SkillGuard`, enforcing human approvals (`CONFIRMATION_REQUIRED`) and toast undo windows.
+- **WebSocket Chat Streaming & Cancellation**:
+  - Real-time chat streaming over `/ws` emitting `chat:chunk` text tokens and `chat:tool_call` events.
+  - Client cancellation support (`chat:cancel`) cleanly terminating active execution tasks.
+- **Quota-Exhaustion Deferred Queue & Cooldown Banner**:
+  - In-memory `DeferredQueue` holding requests when all providers for a role are cooling down.
+  - Cooldown banner events (`all providers cooling down, shortest reset in ...`) broadcast over EventBus and WebSocket.
+  - Automatic retry worker re-executing deferred requests and clearing the banner when cooldown expires.
+- **Architecture Documentation & Decision Records**:
+  - Created ADR 0005 (`docs/decisions/0005-model-roles-and-fallback.md`).
+  - Added project tracking documentation (`docs/STATUS.md`).
+
+---
+
 ## [0.3.0] - Milestone 3: Skill Framework, System Telemetry & Live Metrics
 
 ### Added

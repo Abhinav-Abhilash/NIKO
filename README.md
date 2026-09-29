@@ -24,6 +24,15 @@ NIKO is a private, single-owner AI assistant running entirely on your local mach
   - **Isolated Local PC Executor**: Subprocess execution with process-level termination on timeout, per-skill execution deadlines (`timeout_seconds`), and clean thread delegation (`run_in_thread`).
   - **Built-in System Skills**: Host date/time manipulation (`datetime`) and CPU/RAM/Disk/Battery telemetry (`system_stats`).
   - **Live Metrics Streaming & 30-Day Aggregator**: Subscriber-aware live telemetry streaming over EventBus (`sys:metrics`) at 2s intervals, dynamically throttling to 15s when browser tab is hidden, aggregating 1-minute averages to SQLite, and automatically pruning records older than 30 days.
+- **Multi-Provider LLM & Streaming Chat (Milestone 4)**:
+  - **Zero-Cost Model Roles**: Specializes requests into `light`, `chat`, `code`, and `search` using verified free tiers from Google Gemini, Groq, and OpenRouter (see `docs/MODELS.md`).
+  - **Sequential Lazy Fallback**: Mid-turn failover without wasteful parallel burning; queries fallback models sequentially only upon HTTP 429 or provider errors.
+  - **Predictive Cooldown Tracker**: Predictively pauses providers at 90% quota consumption before upstream 429 errors occur, with rolling minute and daily limit tracking.
+  - **Live Discovery**: Automatically queries model list endpoints at startup and via admin refresh, skipping 404 or deprecated models.
+  - **Quota-Exhaustion Deferred Queue**: When all role models are cooling down, requests enter an in-memory queue accompanied by a live frontend banner (`all providers cooling down, shortest reset in ...`) and auto-retries when cooldown ends.
+  - **Streaming Chat via WebSocket**: Token streaming (`chat:chunk`) and function calls (`chat:tool_call`) over the `/ws` hub with cancellation support (`chat:cancel`).
+  - **Context Sliding Window & Untrusted Wrapping**: Pins system prompt at index 0, slides older turns out, prunes tool outputs to 1,200 tokens, and wraps external untrusted content in `<untrusted_external_content>` tags.
+  - **Strict Key Redaction**: Provider API keys, tokens, and secrets are scrubbed from structlog and uvicorn access/error logs.
 - **Hardened SQLite Storage**: Configured with `WAL` journal mode, `PRAGMA foreign_keys = ON`, busy timeouts, and Alembic batch migrations.
 - **Automated Retention**: 7-day WebP screenshot retention, 30-day downsampled system metrics, and log rotation to keep your PC storage lean.
 
