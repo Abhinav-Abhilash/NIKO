@@ -42,3 +42,18 @@ def test_rate_limiter_backoff_cap() -> None:
     remaining = limiter.get_lockout_remaining(user)
     assert remaining <= LoginRateLimiter.MAX_BACKOFF_SECONDS
     assert remaining > 55.0  # Just set to 60s
+
+
+def test_rate_limiter_max_entries_eviction() -> None:
+    # Setup small limiter with max 5 entries
+    limiter = LoginRateLimiter(reset_seconds=10, max_entries=5)
+
+    for i in range(10):
+        limiter.record_failure(f"random_user_{i}")
+
+    # History size must never exceed max_entries
+    assert len(limiter._history) <= 5
+    # Most recently added entries must be present
+    assert "random_user_9" in limiter._history
+    # Earliest entry should have been evicted
+    assert "random_user_0" not in limiter._history
