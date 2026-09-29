@@ -143,6 +143,10 @@ The default `BLOCKED` tier is not a hard wall. The user can enable an opt-in **E
 4. **Path-With-Spaces Resilience**:
    - Fully resilient to directory paths containing spaces (e.g. `e:\NIKO AI\`) using standard Python `pathlib.Path` objects and quoted subprocess arguments.
 
+### C. Secret Isolation & Zero-Secret Codebase Rule
+1. **Zero Hardcoded Secrets**: Codebase files, test files, and utility scripts (`scripts/init_env.py`) must never embed or default to literal secret keys or tokens. All API keys and secrets are read strictly from `.env` or injected via environment variables.
+2. **Pre-Commit Secret Scanning**: Protected by `detect-secrets` baseline and automated secret leak guard tests (`test_secret_leak_guard.py`) running in local tests and GitHub Actions CI.
+
 ---
 
 ## 6. Event Flow & Bounded Event Bus
