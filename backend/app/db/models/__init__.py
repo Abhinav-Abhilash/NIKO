@@ -170,7 +170,7 @@ class LLMProviderModel(Base, UUIDMixin, TimestampMixin):
 
     name: Mapped[str] = mapped_column(
         String(50), unique=True, index=True, nullable=False
-    )  # gemini, groq, openrouter, ollama
+    )  # gemini, groq, openrouter
     encrypted_api_key: Mapped[str | None] = mapped_column(Text, nullable=True)
     default_model: Mapped[str] = mapped_column(String(100), nullable=False)
     priority: Mapped[int] = mapped_column(

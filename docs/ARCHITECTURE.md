@@ -110,10 +110,7 @@ The default `BLOCKED` tier is not a hard wall. The user can enable an opt-in **E
    - Primary: **Google Gemini** (generous free tier quotas).
    - Instant Fallback: **Groq** (free, high-speed Llama models if Gemini hits 429/quota limits).
    - Tertiary Backup: **OpenRouter** (free-tier models).
-   - Offline Backup: **Local Ollama** (offline/private).
-3. **Sensitive Content Toggle**:
-   - Routing sensitive content to local-only Ollama is an **optional user toggle** in settings, not a forced constraint.
-4. **Decoupled Model Config**:
+3. **Decoupled Model Config**:
    - Model IDs, context limits, and rate thresholds live in the database and configuration, not hardcoded in application logic.
 
 ---
@@ -378,8 +375,7 @@ e:\NIKO AI\
 │   │   │   ├── orchestrator.py # Fallback & Token Routing
 │   │   │   ├── gemini.py    # Google Gemini implementation
 │   │   │   ├── groq.py      # Groq implementation
-│   │   │   ├── openrouter.py# OpenRouter implementation
-│   │   │   └── ollama.py    # Local Ollama implementation
+│   │   │   └── openrouter.py# OpenRouter implementation
 │   │   ├── skills\          # Skill framework & implementations
 │   │   │   ├── base.py      # SkillManifest & BaseSkill
 │   │   │   ├── registry.py  # Dynamic discovery & lookup

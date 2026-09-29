@@ -93,12 +93,6 @@ async def setup_initial_owner(
             "priority": 3,
             "key": settings.INITIAL_OPENROUTER_API_KEY,
         },
-        {
-            "name": "ollama",
-            "default_model": "llama3.2:1b",
-            "priority": 4,
-            "key": None,
-        },
     ]
 
     for seed in provider_seeds:
