@@ -1,6 +1,8 @@
 import asyncio
-import time
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
+import functools
+import time
 from typing import Any, TypeVar
 
 from backend.app.core.logging import get_logger
@@ -8,6 +10,29 @@ from backend.app.skills.base import BaseSkill, SkillContext, SkillExecutor, Skil
 
 logger = get_logger("local_executor")
 T = TypeVar("T")
+
+# Dedicated bounded worker thread pool for synchronous PC automation tasks (e.g., COM, psutil)
+_DEFAULT_MAX_WORKERS = 4
+_worker_pool: ThreadPoolExecutor | None = None
+
+
+def get_worker_thread_pool(max_workers: int = _DEFAULT_MAX_WORKERS) -> ThreadPoolExecutor:
+    """Return singleton bounded ThreadPoolExecutor, preventing unbounded OS thread allocation."""
+    global _worker_pool
+    if _worker_pool is None:
+        _worker_pool = ThreadPoolExecutor(
+            max_workers=max_workers,
+            thread_name_prefix="niko-worker",
+        )
+    return _worker_pool
+
+
+def shutdown_worker_thread_pool() -> None:
+    """Cleanly shut down the bounded worker thread pool."""
+    global _worker_pool
+    if _worker_pool is not None:
+        _worker_pool.shutdown(wait=False)
+        _worker_pool = None
 
 
 class LocalExecutor(SkillExecutor):
@@ -107,7 +132,12 @@ class LocalExecutor(SkillExecutor):
                 pass
             raise TimeoutError(f"Command '{cmd[0]}' timed out after {timeout}s and was terminated.") from None
 
-    @staticmethod
-    async def run_in_thread(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
-        """Run blocking or synchronous Windows calls (e.g. COM automation, psutil) in a worker thread."""
-        return await asyncio.to_thread(func, *args, **kwargs)
+    @classmethod
+    async def run_in_thread(cls, func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
+        """Run blocking or synchronous Windows calls in a dedicated bounded worker thread pool."""
+        loop = asyncio.get_running_loop()
+        pool = get_worker_thread_pool()
+        if kwargs:
+            call = functools.partial(func, *args, **kwargs)
+            return await loop.run_in_executor(pool, call)
+        return await loop.run_in_executor(pool, func, *args)
