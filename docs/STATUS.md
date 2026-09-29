@@ -15,6 +15,6 @@ Current Milestone: **Milestone 4 - Multi-Provider LLM & Chat**
 - [x] c. WebSocket chat streaming (`chat:chunk`, `chat:tool_call`, cancellation)
 - [x] d. Quota-exhaustion deferred queue + cooldown banner + automatic retry
 - [x] e. Tests, CHANGELOG, README, and ADR for model roles and fallback
-- [ ] f. Final CI verification & push
+- [x] f. Final CI verification & push
 
-Next Step: **Task f - Push to origin/main and verify GitHub Actions CI**
+Next Step: **Milestone 4 Complete - Ready for Milestone 5 (Electron Desktop Shell & UI)**
