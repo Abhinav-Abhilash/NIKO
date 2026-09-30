@@ -30,7 +30,6 @@ def disable_background_workers_for_ws_tests() -> Generator[None, None, None]:
 def test_ws_chat_streaming_chunks() -> None:
     """Verify chat streaming delivers chat:chunk and chat:done events over the WS hub."""
     app = create_app()
-    client = TestClient(app)
     settings = get_settings()
 
     valid_token = create_jwt_token(
@@ -46,6 +45,7 @@ def test_ws_chat_streaming_chunks() -> None:
         yield StreamChunk(content="NIKO!")
 
     with (
+        TestClient(app) as client,
         patch("backend.app.llm.orchestrator.LLMOrchestrator.chat_stream", side_effect=mock_stream_chunks),
         client.websocket_connect(
             f"/ws?token={valid_token}", headers={"origin": "http://localhost:5173"}
@@ -78,7 +78,6 @@ def test_ws_chat_streaming_chunks() -> None:
 def test_ws_chat_streaming_tool_call() -> None:
     """Verify chat streaming emits chat:tool_call when an LLM invokes a skill."""
     app = create_app()
-    client = TestClient(app)
     settings = get_settings()
 
     valid_token = create_jwt_token(
@@ -112,6 +111,7 @@ def test_ws_chat_streaming_tool_call() -> None:
         return SkillResult(success=True, data={"time": "12:00:00"})
 
     with (
+        TestClient(app) as client,
         patch("backend.app.llm.orchestrator.LLMOrchestrator.chat_stream", side_effect=mock_stream_with_tool),
         patch("backend.app.services.skill_service.SkillService.execute_skill", side_effect=mock_execute_skill),
         client.websocket_connect(
@@ -145,7 +145,6 @@ def test_ws_chat_streaming_tool_call() -> None:
 def test_ws_chat_cancellation() -> None:
     """Verify chat streaming can be cancelled on demand via chat:cancel."""
     app = create_app()
-    client = TestClient(app)
     settings = get_settings()
 
     valid_token = create_jwt_token(
@@ -161,6 +160,7 @@ def test_ws_chat_cancellation() -> None:
         yield StreamChunk(content="Never reached")
 
     with (
+        TestClient(app) as client,
         patch("backend.app.llm.orchestrator.LLMOrchestrator.chat_stream", side_effect=mock_slow_stream),
         client.websocket_connect(
             f"/ws?token={valid_token}", headers={"origin": "http://localhost:5173"}
@@ -196,7 +196,6 @@ def test_ws_chat_cancellation() -> None:
 def test_ws_chat_cooldown_banner_on_exhaustion() -> None:
     """Verify chat streaming emits chat:cooldown_banner when all providers are exhausted."""
     app = create_app()
-    client = TestClient(app)
     settings = get_settings()
 
     valid_token = create_jwt_token(
@@ -215,6 +214,7 @@ def test_ws_chat_cooldown_banner_on_exhaustion() -> None:
         )
 
     with (
+        TestClient(app) as client,
         patch("backend.app.llm.orchestrator.LLMOrchestrator.chat_stream", side_effect=mock_exhausted_stream),
         client.websocket_connect(
             f"/ws?token={valid_token}", headers={"origin": "http://localhost:5173"}

@@ -27,7 +27,6 @@ class EventBus:
         self.maxsize = maxsize
         self._subscribers: dict[str, set[asyncio.Queue[Event]]] = {}
         self._global_subscribers: set[asyncio.Queue[Event]] = set()
-        self._lock = asyncio.Lock()
 
     def has_subscribers(self, topic: str | None = None) -> bool:
         """Return True if there is at least one active subscriber for the given topic or globally."""
@@ -46,14 +45,13 @@ class EventBus:
         """Publish an event to all subscribers of the topic and global subscribers."""
         event = Event(topic=topic, event_type=event_type, payload=payload)
 
-        async with self._lock:
-            # Target topic queues
-            topic_queues = self._subscribers.get(topic, set()).copy()
-            # Compound topic:event_type queues (e.g. approval:resolved, chat:tool_call)
-            compound_key = f"{topic}:{event_type}"
-            compound_queues = self._subscribers.get(compound_key, set()).copy()
-            # Global queues (all topics)
-            global_queues = self._global_subscribers.copy()
+        # Target topic queues
+        topic_queues = self._subscribers.get(topic, set()).copy()
+        # Compound topic:event_type queues (e.g. approval:resolved, chat:tool_call)
+        compound_key = f"{topic}:{event_type}"
+        compound_queues = self._subscribers.get(compound_key, set()).copy()
+        # Global queues (all topics)
+        global_queues = self._global_subscribers.copy()
 
         all_queues = topic_queues.union(compound_queues).union(global_queues)
         if not all_queues:
@@ -84,26 +82,24 @@ class EventBus:
         """
         q: asyncio.Queue[Event] = asyncio.Queue(maxsize=client_queue_size)
 
-        async with self._lock:
-            if topic is None:
-                self._global_subscribers.add(q)
-            else:
-                if topic not in self._subscribers:
-                    self._subscribers[topic] = set()
-                self._subscribers[topic].add(q)
+        if topic is None:
+            self._global_subscribers.add(q)
+        else:
+            if topic not in self._subscribers:
+                self._subscribers[topic] = set()
+            self._subscribers[topic].add(q)
 
         try:
             while True:
                 event = await q.get()
                 yield event
         finally:
-            async with self._lock:
-                if topic is None:
-                    self._global_subscribers.discard(q)
-                elif topic in self._subscribers:
-                    self._subscribers[topic].discard(q)
-                    if not self._subscribers[topic]:
-                        del self._subscribers[topic]
+            if topic is None:
+                self._global_subscribers.discard(q)
+            elif topic in self._subscribers:
+                self._subscribers[topic].discard(q)
+                if not self._subscribers[topic]:
+                    del self._subscribers[topic]
 
 
 # Global singleton instance

@@ -39,6 +39,7 @@ dev = [
     "ruff>=0.6.0",
     "mypy>=1.11.0",
     "detect-secrets>=1.5.0",
+    "pytest-timeout>=2.4.0",
 ]
 
 [tool.ruff]
@@ -97,6 +98,7 @@ ignore_missing_imports = true
 asyncio_mode = "auto"
 testpaths = ["backend/tests"]
 pythonpath = ["."]
+timeout = 15
 filterwarnings = [
     "ignore:.*Using `httpx` with `starlette.testclient` is deprecated.*",
     "ignore:.*StarletteDeprecationWarning.*",

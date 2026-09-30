@@ -154,6 +154,7 @@ async def websocket_hub(
                 role = chat_data.get("role")
                 elevated_mode = bool(chat_data.get("elevated_mode", False))
 
+                done_payload = None
                 chat_service = ChatService(db=db)
                 async for ev in chat_service.stream_chat(
                     conversation_id=conv_id,
@@ -206,22 +207,24 @@ async def websocket_hub(
                         }
                         await websocket.send_json(payload)
                     elif ev_type == "done":
-                        payload = {
+                        done_payload = {
                             "type": "chat:done",
                             "request_id": req_id,
                             "conversation_id": conv_id,
                             "response": ev.get("response"),
                         }
-                        await websocket.send_json(payload)
-                        await event_bus.publish("chat", "done", {**payload, "origin_ws_id": id(websocket)})
+                # Ensure all DB changes are committed and session is clean BEFORE signaling done to client
                 await db.commit()
+                if done_payload:
+                    await websocket.send_json(done_payload)
+                    await event_bus.publish("chat", "done", {**done_payload, "origin_ws_id": id(websocket)})
+
         except asyncio.CancelledError:
             logger.info("Chat streaming task cancelled", request_id=req_id)
             from backend.app.llm.deferred_queue import deferred_queue
-            await deferred_queue.cancel(req_id)
             with contextlib.suppress(Exception):
-                await websocket.send_json({"type": "chat:cancelled", "request_id": req_id})
-            await event_bus.publish("chat", "cancelled", {"request_id": req_id, "origin_ws_id": id(websocket)})
+                await deferred_queue.cancel(req_id)
+            raise
         except AllProvidersExhaustedError:
             from backend.app.llm.deferred_queue import DeferredChatRequest, deferred_queue
             target_role = role or "chat"
@@ -365,7 +368,13 @@ async def websocket_hub(
         logger.warning("WebSocket exception terminated connection", error=str(exc))
     finally:
         for t in list(active_chat_tasks.values()):
-            t.cancel()
+            if not t.done():
+                t.cancel()
+        if active_chat_tasks:
+            with contextlib.suppress(Exception, asyncio.CancelledError):
+                await asyncio.gather(*active_chat_tasks.values(), return_exceptions=True)
+        active_chat_tasks.clear()
+
         forwarder_task.cancel()
-        with contextlib.suppress(asyncio.CancelledError):
+        with contextlib.suppress(asyncio.CancelledError, Exception):
             await forwarder_task

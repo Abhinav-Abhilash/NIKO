@@ -25,24 +25,23 @@ def test_is_allowed_origin_unit() -> None:
 
 def test_websocket_accepts_authorized_origin() -> None:
     app = create_app()
-    client = TestClient(app)
-
-    with client.websocket_connect("/ws", headers={"origin": "http://localhost:5173"}) as websocket:
-        websocket.send_json({"type": "ping", "timestamp": 123456})
-        response = websocket.receive_json()
-        assert response["type"] == "pong"
-        assert response["timestamp"] == 123456
+    with TestClient(app) as client:
+        with client.websocket_connect("/ws", headers={"origin": "http://localhost:5173"}) as websocket:
+            websocket.send_json({"type": "ping", "timestamp": 123456})
+            response = websocket.receive_json()
+            assert response["type"] == "pong"
+            assert response["timestamp"] == 123456
 
 
 def test_websocket_rejects_unauthorized_origin() -> None:
     app = create_app()
-    client = TestClient(app)
-
-    with (
-        pytest.raises(WebSocketDisconnect) as exc_info,
-        client.websocket_connect("/ws", headers={"origin": "http://attacker-site.com"}),
-    ):
-        pass
+    with TestClient(app) as client:
+        with (
+            pytest.raises(WebSocketDisconnect) as exc_info,
+            client.websocket_connect("/ws", headers={"origin": "http://attacker-site.com"}),
+        ):
+            pass
 
     # 1008 is WS_POLICY_VIOLATION
     assert exc_info.value.code == 1008
+
