@@ -33,6 +33,12 @@ NIKO is a private, single-owner AI assistant running entirely on your local mach
   - **Streaming Chat via WebSocket**: Token streaming (`chat:chunk`) and function calls (`chat:tool_call`) over the `/ws` hub with cancellation support (`chat:cancel`).
   - **Context Sliding Window & Untrusted Wrapping**: Pins system prompt at index 0, slides older turns out, prunes tool outputs to 1,200 tokens, and wraps external untrusted content in `<untrusted_external_content>` tags.
   - **Strict Key Redaction**: Provider API keys, tokens, and secrets are scrubbed from structlog and uvicorn access/error logs.
+- **Desktop Overlay Shell & Headless Wiring Architecture**:
+  - **Tauri v2 Desktop Shell (`src-tauri/`)**: Frameless, transparent, always-on-top overlay with Windows 11 Acrylic / Mica effects, system tray controls, and low RAM footprint (<50MB).
+  - **Global Hotkey & Auto-focus**: Summoned instantly via `Ctrl+Space`, auto-focuses the input, and auto-dismisses on `Escape` or window blur.
+  - **Headless Contract (`frontend/src/hooks/`)**: Full separation of behavior from presentation via typed hooks (`useOverlay`, `useChatStream`, `useApprovals`, `useOrbState`, `useProviderStatus`) documented in `docs/UI_CONTRACT.md`.
+  - **Single-Use Approvals**: 30-second countdown with keyboard shortcuts (`Enter` to approve, `Esc` to deny) and persistence settings (`session`, `always`).
+  - **Flow Design Import Pipeline**: Drop design exports into `frontend/design-import/` with theme values centralized in `frontend/src/tokens.ts`.
 - **Hardened SQLite Storage**: Configured with `WAL` journal mode, `PRAGMA foreign_keys = ON`, busy timeouts, and Alembic batch migrations.
 - **Automated Retention**: 7-day WebP screenshot retention, 30-day downsampled system metrics, and log rotation to keep your PC storage lean.
 

@@ -137,11 +137,12 @@ export class ApiService {
 
   public static async respondToApproval(
     approvalId: string,
-    decision: 'approved' | 'rejected'
+    decision: 'approve' | 'deny' | 'approved' | 'rejected'
   ): Promise<{ status: string }> {
+    const normalizedDecision = (decision === 'approve' || decision === 'approved') ? 'approve' : 'deny';
     return this.request<{ status: string }>(`/approvals/${approvalId}/respond`, {
       method: 'POST',
-      body: JSON.stringify({ decision }),
+      body: JSON.stringify({ decision: normalizedDecision }),
     });
   }
 

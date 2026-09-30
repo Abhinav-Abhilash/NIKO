@@ -6,7 +6,8 @@
   html, body {
     margin: 0;
     padding: 0;
-    background-color: #0c0e11;
+    background: transparent !important;
+    background-color: transparent !important;
     color: #e2e2e6;
     height: 100%;
     overflow: hidden;
@@ -15,6 +16,8 @@
   #root {
     height: 100%;
     width: 100%;
+    background: transparent !important;
+    background-color: transparent !important;
   }
 
   /* Custom subtle scrollbar */

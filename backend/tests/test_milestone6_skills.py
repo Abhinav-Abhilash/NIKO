@@ -9,7 +9,6 @@ import pytest
 from httpx import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
 from backend.app.core.exceptions import ValidationFailedError
 from backend.app.db.models import Reminder, User
 from backend.app.services.reminder_service import ReminderService
@@ -218,7 +217,7 @@ async def test_screenshot_skill_hides_and_restores_overlay(tmp_path: Any) -> Non
 
     published_events = []
 
-    async def subscriber():
+    async def subscriber() -> None:
         async for event in event_bus.subscribe("overlay"):
             published_events.append(event)
             if len(published_events) >= 2:

@@ -6,6 +6,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.0] - Desktop Overlay Shell & Headless Wiring Architecture
+
+### Added
+- **Desktop Overlay Shell (Tauri v2)**:
+  - Frameless, transparent, always-on-top overlay window with Windows 11 Acrylic / Mica compositing (`src-tauri/`).
+  - System tray icon with instant menus: Open Overlay, Dashboard Window, Settings, and Quit.
+  - Global hotkey toggle (`Ctrl+Space`) with conflict resolution.
+  - Automatic backend child process supervision: checks `127.0.0.1:8000`, spawns local uvicorn instance on launch, and cleans up on exit.
+  - Single-instance lock focusing the existing overlay window if re-launched.
+  - Fully transparent page background (`background: transparent !important`).
+- **Headless Hooks & Store Layer (`frontend/src/hooks/`)**:
+  - `useOverlay`: Controls window visibility, mode (`compact` | `expanded` | `approval`), auto-hide on blur, input focus, and Escape dismiss.
+  - `useChatStream`: Manages token streaming (`chat:chunk`), function call execution cards (`chat:tool_call`), and stream aborts (`chat:cancel`).
+  - `useApprovals`: Implements 30s auto-canceling countdown, `Enter` to approve, `Esc` to deny, and persistence modes (`once`, `session`, `always`). Auto-summons overlay on arrival.
+  - `useOrbState`: Reactive state machine tracking operator states (`idle` | `thinking` | `acting` | `confirm`).
+  - `useProviderStatus`: Real-time multi-provider cooldown banner and shortest reset monitoring.
+- **Unstyled Placeholder UI**:
+  - `PlaceholderOverlay`: Minimal, unstyled DOM component proving complete end-to-end functionality without hardcoded visual styles or colors.
+  - Visual design import pipeline: `frontend/design-import/` and theme token definitions in `frontend/src/tokens.ts`.
+- **Security & Origin Protection**:
+  - Registered Tauri shell origins (`tauri://localhost`, `http://tauri.localhost`, `https://tauri.localhost`, `localhost:1420`) in `CORS_ORIGINS` and `WS_ALLOWED_ORIGINS`.
+  - Updated `ScreenshotSkill` to broadcast `overlay:hide` before frame capture and `overlay:show` after capture to avoid UI recursion.
+  - Full automated test suite for hooks, approval keyboard navigation, and overlay lifecycle (33 frontend tests passing).
+
 ## [0.6.0] - Milestone 6: Native Skills & OS Automation
 
 ### Added
