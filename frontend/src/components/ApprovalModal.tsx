@@ -14,11 +14,16 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
   onReject,
   onClose,
 }) => {
-  const [secondsLeft, setSecondsLeft] = useState<number>(request?.timeoutSeconds || 30);
+  const [secondsLeft, setSecondsLeft] = useState<number>(() => request?.timeoutSeconds || 30);
+  const [currentReqId, setCurrentReqId] = useState<string | null>(() => request?.id || null);
+
+  if (request && request.id !== currentReqId) {
+    setCurrentReqId(request.id);
+    setSecondsLeft(request.timeoutSeconds || 30);
+  }
 
   useEffect(() => {
     if (!request) return;
-    setSecondsLeft(request.timeoutSeconds || 30);
 
     const timer = setInterval(() => {
       setSecondsLeft((prev) => {

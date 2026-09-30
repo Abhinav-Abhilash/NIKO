@@ -2,14 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { ApiService } from '../services/api';
 import type { AuditLogEntry } from '../types';
 
-export const AuditView: React.FC = () => {
-  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const mockLogs: AuditLogEntry[] = [
+const getMockLogs = (): AuditLogEntry[] => {
+  const now = Date.now();
+  return [
     {
       id: 'aud_9841',
-      timestamp: new Date(Date.now() - 60000).toISOString(),
+      timestamp: new Date(now - 60000).toISOString(),
       action: 'CHAT_STREAM_COMPLETE',
       actor: 'operator_primary',
       resource: 'llm:groq/llama-3.3-70b',
@@ -19,7 +17,7 @@ export const AuditView: React.FC = () => {
     },
     {
       id: 'aud_9840',
-      timestamp: new Date(Date.now() - 180000).toISOString(),
+      timestamp: new Date(now - 180000).toISOString(),
       action: 'SKILL_EXECUTION_DISPATCH',
       actor: 'agent_core',
       resource: 'skill:datetime',
@@ -29,7 +27,7 @@ export const AuditView: React.FC = () => {
     },
     {
       id: 'aud_9839',
-      timestamp: new Date(Date.now() - 360000).toISOString(),
+      timestamp: new Date(now - 360000).toISOString(),
       action: 'RATE_LIMIT_COOLDOWN_ENGAGED',
       actor: 'cooldown_tracker',
       resource: 'provider:gemini',
@@ -38,26 +36,50 @@ export const AuditView: React.FC = () => {
       details: { reason: 'predictive_cooldown', reset_seconds: 60 },
     },
   ];
+};
 
-  useEffect(() => {
-    loadLogs();
-  }, []);
+export const AuditView: React.FC = () => {
+  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const loadLogs = async () => {
-    setIsLoading(true);
+  const loadLogs = React.useCallback(async () => {
     try {
       const data = await ApiService.getAuditLogs();
       if (data && data.length > 0) {
         setLogs(data);
       } else {
-        setLogs(mockLogs);
+        setLogs(getMockLogs());
       }
     } catch {
-      setLogs(mockLogs);
+      setLogs(getMockLogs());
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    ApiService.getAuditLogs()
+      .then((data) => {
+        if (!active) return;
+        if (data && data.length > 0) {
+          setLogs(data);
+        } else {
+          setLogs(getMockLogs());
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setLogs(getMockLogs());
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className="flex-1 overflow-y-auto p-gutter-md flex flex-col gap-6 max-w-6xl mx-auto w-full">

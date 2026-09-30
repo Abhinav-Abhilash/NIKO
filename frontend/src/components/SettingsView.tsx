@@ -25,13 +25,10 @@ export const SettingsView: React.FC = () => {
   const [activeRole, setActiveRole] = useState<'chat' | 'fast' | 'reasoning'>('chat');
 
   useEffect(() => {
-    loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
-    try {
-      const data = await ApiService.getModelRoles();
-      if (data && Object.keys(data).length > 0) {
+    let active = true;
+    ApiService.getModelRoles()
+      .then((data) => {
+        if (!active || !data || Object.keys(data).length === 0) return;
         const formatted: Record<string, ModelTarget[]> = {};
         for (const [role, val] of Object.entries(data)) {
           if (val && Array.isArray((val as ModelRoleMapping).targets)) {
@@ -41,11 +38,15 @@ export const SettingsView: React.FC = () => {
         if (Object.keys(formatted).length > 0) {
           setRoleMappings(formatted);
         }
-      }
-    } catch (err) {
-      console.warn('Could not load custom model roles from backend:', err);
-    }
-  };
+      })
+      .catch((err) => {
+        console.warn('Could not load custom model roles from backend:', err);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleSave = async () => {
     try {

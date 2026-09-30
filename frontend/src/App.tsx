@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ApprovalModal } from './components/ApprovalModal';
 import { AuditView } from './components/AuditView';
 import { ChatCockpit } from './components/ChatCockpit';
@@ -62,7 +62,7 @@ export const App: React.FC = () => {
   }, [theme]);
 
   // Check current session
-  const checkSession = async () => {
+  const checkSession = useCallback(async () => {
     try {
       const me = await ApiService.getMe();
       if (me && me.username) {
@@ -73,10 +73,26 @@ export const App: React.FC = () => {
     } catch {
       setCurrentUser(null);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    checkSession();
+    let active = true;
+    ApiService.getMe()
+      .then((me) => {
+        if (!active) return;
+        if (me && me.username) {
+          setCurrentUser({ username: me.username, role: me.role });
+        } else {
+          setCurrentUser(null);
+        }
+      })
+      .catch(() => {
+        if (active) setCurrentUser(null);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Initialize WebSocket & Event Listeners
@@ -255,6 +271,20 @@ export const App: React.FC = () => {
     return () => clearInterval(timer);
   }, [cooldownBanner]);
 
+  const handleApprovalResponse = useCallback(async (approvalId: string, decision: 'approved' | 'rejected') => {
+    try {
+      await ApiService.respondToApproval(approvalId, decision);
+      toastService.info(
+        'Approval Sent',
+        `Action was ${decision === 'approved' ? 'approved for execution' : 'denied'}.`
+      );
+    } catch (err: any) {
+      toastService.error('Dispatch Failed', err.message || 'Could not dispatch approval decision.');
+    } finally {
+      setCurrentApproval(null);
+    }
+  }, []);
+
   // Global Keyboard Shortcuts (⌘K, ⌘1-6, ?, Y/N for approvals)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -301,7 +331,7 @@ export const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentApproval]);
+  }, [currentApproval, handleApprovalResponse]);
 
   const handleSendMessage = (content: string, role = 'chat', elevatedMode = false) => {
     const reqId = `req_${Date.now()}`;
@@ -331,20 +361,6 @@ export const App: React.FC = () => {
       toastService.info('Cancelled', 'Inference stream aborted.');
     }
     setIsStreaming(false);
-  };
-
-  const handleApprovalResponse = async (approvalId: string, decision: 'approved' | 'rejected') => {
-    try {
-      await ApiService.respondToApproval(approvalId, decision);
-      toastService.info(
-        'Approval Sent',
-        `Action was ${decision === 'approved' ? 'approved for execution' : 'denied'}.`
-      );
-    } catch (err: any) {
-      toastService.error('Dispatch Failed', err.message || 'Could not dispatch approval decision.');
-    } finally {
-      setCurrentApproval(null);
-    }
   };
 
   return (

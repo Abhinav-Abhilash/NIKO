@@ -123,6 +123,7 @@ class DeferredQueue:
                     self._queue.pop(i)
                     if req.future and not req.future.done():
                         req.future.cancel()
+                    self._wake_event.set()
                     if not self._queue:
                         await self.clear_cooldown_banner()
                     return True
@@ -166,7 +167,11 @@ class DeferredQueue:
                     await self.emit_cooldown_banner(current_req.role, shortest_reset)
                     wait_time = max(self.retry_interval_min, min(shortest_reset, 15.0))
                     try:
-                        await asyncio.sleep(wait_time)
+                        # Interruptible sleep using wait_for
+                        await asyncio.wait_for(self._wake_event.wait(), timeout=wait_time)
+                        self._wake_event.clear()
+                    except TimeoutError:
+                        pass
                     except asyncio.CancelledError:
                         break
 

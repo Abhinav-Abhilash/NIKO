@@ -3,60 +3,55 @@ import { ApiService } from '../services/api';
 import { toastService } from '../services/toast';
 import type { SkillItem } from '../types';
 
+// Default fallback skills if backend is fresh
+const defaultSkills: SkillItem[] = [
+  {
+    id: 'datetime',
+    name: 'datetime',
+    description: 'Fetch current system time, UTC timestamps, and localized clock values.',
+    category: 'System',
+    enabled: true,
+    riskLevel: 'low',
+    requiresApproval: false,
+    timeoutSeconds: 5,
+  },
+  {
+    id: 'run_subprocess',
+    name: 'run_subprocess',
+    description: 'Execute shell commands and local CLI scripts with timeout enforcement.',
+    category: 'Execution',
+    enabled: true,
+    riskLevel: 'high',
+    requiresApproval: true,
+    timeoutSeconds: 30,
+  },
+  {
+    id: 'read_file',
+    name: 'read_file',
+    description: 'Read contents from local workspace files with strict boundary controls.',
+    category: 'Filesystem',
+    enabled: true,
+    riskLevel: 'low',
+    requiresApproval: false,
+    timeoutSeconds: 10,
+  },
+  {
+    id: 'write_file',
+    name: 'write_file',
+    description: 'Create or update local workspace files with undo window support.',
+    category: 'Filesystem',
+    enabled: true,
+    riskLevel: 'medium',
+    requiresApproval: true,
+    timeoutSeconds: 15,
+  },
+];
+
 export const SkillsView: React.FC = () => {
   const [skills, setSkills] = useState<SkillItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Default fallback skills if backend is fresh
-  const defaultSkills: SkillItem[] = [
-    {
-      id: 'datetime',
-      name: 'datetime',
-      description: 'Fetch current system time, UTC timestamps, and localized clock values.',
-      category: 'System',
-      enabled: true,
-      riskLevel: 'low',
-      requiresApproval: false,
-      timeoutSeconds: 5,
-    },
-    {
-      id: 'run_subprocess',
-      name: 'run_subprocess',
-      description: 'Execute shell commands and local CLI scripts with timeout enforcement.',
-      category: 'Execution',
-      enabled: true,
-      riskLevel: 'high',
-      requiresApproval: true,
-      timeoutSeconds: 30,
-    },
-    {
-      id: 'read_file',
-      name: 'read_file',
-      description: 'Read contents from local workspace files with strict boundary controls.',
-      category: 'Filesystem',
-      enabled: true,
-      riskLevel: 'low',
-      requiresApproval: false,
-      timeoutSeconds: 10,
-    },
-    {
-      id: 'write_file',
-      name: 'write_file',
-      description: 'Create or update local workspace files with undo window support.',
-      category: 'Filesystem',
-      enabled: true,
-      riskLevel: 'medium',
-      requiresApproval: true,
-      timeoutSeconds: 15,
-    },
-  ];
-
-  useEffect(() => {
-    loadSkills();
-  }, []);
-
-  const loadSkills = async () => {
-    setIsLoading(true);
+  const loadSkills = React.useCallback(async () => {
     try {
       const data = await ApiService.getSkills();
       if (data && data.length > 0) {
@@ -69,7 +64,31 @@ export const SkillsView: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    ApiService.getSkills()
+      .then((data) => {
+        if (!active) return;
+        if (data && data.length > 0) {
+          setSkills(data);
+        } else {
+          setSkills(defaultSkills);
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setSkills(defaultSkills);
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleToggle = async (skillId: string, currentEnabled: boolean) => {
     const nextState = !currentEnabled;

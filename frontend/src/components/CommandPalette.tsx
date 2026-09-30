@@ -118,9 +118,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     a.category.toLowerCase().includes(search.toLowerCase())
   );
 
-  useEffect(() => {
+  const [prevSearch, setPrevSearch] = useState(search);
+
+  if (search !== prevSearch) {
+    setPrevSearch(search);
     setSelectedIndex(0);
-  }, [search]);
+  }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
