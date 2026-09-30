@@ -53,8 +53,9 @@ class ScreenshotSkill(BaseSkill):
         )
 
     async def execute(self, arguments: dict[str, Any], _context: SkillContext) -> SkillResult:
-        monitor_idx = int(arguments.get("monitor_index") if arguments.get("monitor_index") is not None else 1)
-        save_to_disk = bool(arguments.get("save_to_disk") if arguments.get("save_to_disk") is not None else True)
+        raw_idx = arguments.get("monitor_index")
+        monitor_idx = int(raw_idx) if raw_idx is not None else 1
+        save_to_disk = bool(arguments.get("save_to_disk", True))
         include_thumbnail = bool(arguments.get("include_thumbnail_base64") or False)
 
         def _capture() -> dict[str, Any]:

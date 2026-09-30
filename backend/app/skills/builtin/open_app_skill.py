@@ -81,14 +81,14 @@ class OpenAppSkill(BaseSkill):
 
         # Non-blocking launch in background
         cmd = [str(target_exe), *raw_args]
-        
+
         # Use asyncio / subprocess without shell=True to guarantee argument isolation
         def _launch() -> int | None:
             # On Windows, DETACHED_PROCESS / CREATE_NEW_PROCESS_GROUP can be used if available
             creationflags = 0
             if os.name == "nt":
                 creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
-            
+
             proc = subprocess.Popen(
                 cmd,
                 creationflags=creationflags,

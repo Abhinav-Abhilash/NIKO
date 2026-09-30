@@ -1,12 +1,11 @@
 import asyncio
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Generator
 from datetime import timedelta
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, patch
 
 from backend.app.config import get_settings
 from backend.app.core.security import create_jwt_token
@@ -16,7 +15,7 @@ from backend.app.main import create_app
 
 
 @pytest.fixture(autouse=True)
-def disable_background_workers_for_ws_tests():
+def disable_background_workers_for_ws_tests() -> Generator[None, None, None]:
     with (
         patch("backend.app.services.metrics_service.MetricsService.start_collector", new_callable=AsyncMock),
         patch("backend.app.services.metrics_service.MetricsService.stop_collector", new_callable=AsyncMock),

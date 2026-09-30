@@ -89,6 +89,7 @@ module = [
     "mss.*",
     "PIL.*",
     "psutil.*",
+    "comtypes.*",
 ]
 ignore_missing_imports = true
 

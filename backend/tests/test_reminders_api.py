@@ -1,5 +1,4 @@
 from datetime import UTC, datetime, timedelta
-from typing import Any
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -7,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.config import get_settings
 from backend.app.core.security import create_jwt_token
-from backend.app.db.models import Reminder, User
+from backend.app.db.models import User
 from backend.app.main import create_app
 
 

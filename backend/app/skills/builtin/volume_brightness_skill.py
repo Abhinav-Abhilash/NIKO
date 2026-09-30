@@ -63,9 +63,10 @@ class VolumeBrightnessSkill(BaseSkill):
         level = arguments.get("level")
         display_index = int(arguments.get("display_index") or 0)
 
-        if action in ("set_volume", "set_brightness"):
-            if level is None or not (0 <= int(level) <= 100):
-                raise ValidationFailedError(f"Action '{action}' requires a valid 'level' between 0 and 100.")
+        if action in ("set_volume", "set_brightness") and (
+            level is None or not (0 <= int(level) <= 100)
+        ):
+            raise ValidationFailedError(f"Action '{action}' requires a valid 'level' between 0 and 100.")
 
         res = await asyncio.to_thread(self._handle_action_sync, action, level, display_index)
         if "error" in res:

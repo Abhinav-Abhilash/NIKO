@@ -1,4 +1,4 @@
-import asyncio
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -8,8 +8,7 @@ import pytest
 from httpx import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.core.events import get_event_bus
-from backend.app.core.exceptions import NotFoundError, ValidationFailedError
+from backend.app.core.exceptions import ValidationFailedError
 from backend.app.db.models import Reminder, User
 from backend.app.services.reminder_service import ReminderService
 from backend.app.skills.base import SkillContext
@@ -291,7 +290,7 @@ async def test_reminder_service_crud_and_background_firing(db_session: AsyncSess
 
     # Mock session factory for background worker method
     @asynccontextmanager
-    async def mock_session_factory():
+    async def mock_session_factory() -> AsyncIterator[AsyncSession]:
         yield db_session
 
     service.session_factory = mock_session_factory  # type: ignore[assignment]

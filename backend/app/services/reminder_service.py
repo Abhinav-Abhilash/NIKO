@@ -1,7 +1,6 @@
 import asyncio
 import contextlib
-from datetime import UTC, datetime, timedelta
-from typing import Any
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
