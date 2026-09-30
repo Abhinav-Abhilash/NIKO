@@ -1,4 +1,5 @@
 import hmac
+import json
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -87,10 +88,12 @@ class ApprovalService:
         decision: str,
         user_id: str,
         current_arguments: dict[str, Any] | None = None,
+        execute_on_approval: bool = False,
     ) -> Approval:
         """
         Respond to an approval request ('approve' or 'deny').
         Validates unexpired state, single-use transition, and argument hash integrity.
+        When execute_on_approval is True and decision is 'approve', runs the approved skill.
         """
         decision_clean = decision.strip().lower()
         if decision_clean not in ("approve", "deny"):
@@ -123,6 +126,42 @@ class ApprovalService:
         if resolved.tool_call:
             resolved.tool_call.status = "running" if target_status == "approved" else "rejected"
 
+        # Execute approved skill if requested
+        if target_status == "approved" and execute_on_approval and resolved.tool_call:
+            from backend.app.services.skill_service import SkillService
+            from backend.app.skills.base import SkillContext
+
+            skill_name = resolved.tool_call.skill_name
+            try:
+                args = json.loads(resolved.tool_call.arguments_json)
+            except Exception:
+                args = {}
+
+            skill_service = SkillService(self.db)
+            ctx = SkillContext(
+                request_id=f"approval_{resolved.id}_{skill_name}",
+                user_id=user_id,
+                provenance="direct",
+            )
+            try:
+                skill_result = await skill_service.execute_skill(
+                    name=skill_name,
+                    arguments=args,
+                    context=ctx,
+                    elevated_mode=True,
+                )
+                if skill_result.success:
+                    resolved.tool_call.status = "completed"
+                    resolved.tool_call.result_json = json.dumps(skill_result.data or {})
+                else:
+                    resolved.tool_call.status = "failed"
+                    resolved.tool_call.result_json = json.dumps({"error": skill_result.error})
+            except Exception as exc:
+                logger.error("Approved skill execution error", skill_name=skill_name, error=str(exc))
+                resolved.tool_call.status = "failed"
+                resolved.tool_call.result_json = json.dumps({"error": str(exc)})
+            await self.db.flush()
+
         logger.info(
             "Approval decision recorded",
             approval_id=resolved.id,
@@ -147,10 +186,22 @@ class ApprovalService:
             payload={
                 "tool_call_id": resolved.tool_call_id,
                 "approval_id": resolved.id,
-                "status": "running" if target_status == "approved" else "rejected",
+                "status": resolved.tool_call.status if resolved.tool_call else ("running" if target_status == "approved" else "rejected"),
                 "decision": target_status,
             },
         )
+
+        if target_status == "approved" and execute_on_approval and resolved.tool_call:
+            await self.event_bus.publish(
+                topic="chat",
+                event_type="tool_result",
+                payload={
+                    "tool_call_id": resolved.tool_call_id,
+                    "name": resolved.tool_call.skill_name,
+                    "result": json.loads(resolved.tool_call.result_json) if resolved.tool_call.result_json else {},
+                    "status": resolved.tool_call.status,
+                },
+            )
 
         return resolved
 

@@ -57,7 +57,7 @@ class SkillGuard:
         manifest: SkillManifest,
         context: SkillContext,
         stored_config: SkillConfig | None = None,
-        elevated_mode: bool = False,  # noqa: ARG004 (BLOCKED skills are strictly forbidden under all modes)
+        elevated_mode: bool = False,
     ) -> GuardDecision:
         # Determine effective tier and autonomy policy (allowing DB settings and context overrides)
         effective_tier: SkillTier = (
@@ -87,7 +87,18 @@ class SkillGuard:
                 reason=f"Skill '{manifest.name}' is in BLOCKED tier and cannot be executed.",
             )
 
-        # 2. Provenance Rule: Actions proposed after reading untrusted external data
+        # 2. Elevated mode / explicitly approved: authorized for immediate execution
+        if elevated_mode:
+            return GuardDecision(
+                execute_immediately=True,
+                requires_approval=False,
+                requires_toast_undo=False,
+                effective_tier=effective_tier,
+                effective_autonomy=effective_autonomy,
+                reason="Execution authorized via elevated owner mode / user approval.",
+            )
+
+        # 3. Provenance Rule: Actions proposed after reading untrusted external data
         if context.provenance == "external_untrusted":
             logger.info(
                 "Evaluating external untrusted action",

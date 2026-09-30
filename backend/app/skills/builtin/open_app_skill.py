@@ -22,7 +22,7 @@ class OpenAppSkill(BaseSkill):
             name="open_app",
             description="Launch or activate an allowlisted application on the Windows host machine.",
             default_tier="CONFIRM",
-            default_autonomy="auto+log",
+            default_autonomy="ask",
             timeout_seconds=15,
             parameters_schema={
                 "type": "object",

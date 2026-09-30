@@ -170,6 +170,15 @@ class SkillService:
         """
         Evaluate guard rules, handle approvals, execute skill, and record audit trail.
         """
+        if not self.registry.has(name):
+            await self.initialize_builtin_skills()
+
+        if not self.registry.has(name):
+            return SkillResult(
+                success=False,
+                error=f"Skill '{name}' is not registered.",
+            )
+
         skill = self.registry.get(name)
         db_cfg = await self.get_skill_config(name)
 

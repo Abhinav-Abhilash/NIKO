@@ -29,7 +29,7 @@ async def test_open_app_skill_manifest() -> None:
     skill = OpenAppSkill()
     assert skill.manifest.name == "open_app"
     assert skill.manifest.default_tier == "CONFIRM"
-    assert skill.manifest.default_autonomy == "auto+log"
+    assert skill.manifest.default_autonomy == "ask"
 
 
 @pytest.mark.asyncio

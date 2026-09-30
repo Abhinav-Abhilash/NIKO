@@ -102,5 +102,6 @@ async def respond_to_approval(
         decision=body.decision,
         user_id=current_user.id,
         current_arguments=body.arguments,
+        execute_on_approval=True,
     )
     return ApprovalResponse.from_orm_model(resolved)

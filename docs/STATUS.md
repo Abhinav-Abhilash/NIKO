@@ -1,7 +1,25 @@
 # NIKO Project Status
 
-Current Architecture State: **Desktop Overlay Shell & Headless Wiring Architecture (COMPLETE)**
-Current Roadmap Phase: **PHASE 1: Thin End-to-End Slice (Ready to Execute)**
+Current Architecture State: **Phase 1: Thin End-to-End Slice (COMPLETE)**
+Current Roadmap Phase: **PHASE 2: Long-Term Memory (FTS5 SQLite, remember/recall/forget/list_memories)**
+
+## Phase 1 Status: Thin End-to-End Slice (DONE)
+
+- [x] **Autonomous Safe Tools (Turn 1)**:
+  - User query `"what time is it and how's my CPU"` invokes real `datetime` and `system_stats` skills (`SAFE` tier).
+  - Multi-tool calls dispatched concurrently, output pruned to avoid token bloat, and metrics streamed back to user.
+- [x] **Human-in-the-Loop Confirmation & Pinned Application Launch (Turn 2)**:
+  - User query `"open notepad"` invokes `open_app` skill (`CONFIRM` tier, default autonomy: `ask`).
+  - Execution paused; 30-second TTL approval request issued with cryptographic SHA-256 `args_hash`.
+  - User decision (`Enter` keyboard shortcut or clicking `Approve`) calls `POST /api/v1/approvals/{id}/respond`.
+  - Backend executes `open_app` under `elevated_mode=True`, strictly validates against `DEFAULT_APP_ALLOWLIST` (`C:\Windows\System32\notepad.exe`), launches application, and writes audit record to SQLite `command_logs`.
+- [x] **Automated End-to-End Verification**:
+  - `backend/tests/test_e2e_thin_slice.py`: Full multi-turn WebSocket integration test with deterministic `FakeLLMProvider`.
+  - Asserts tool execution, state progression, argument hashing, approval interception, and launch execution.
+  - 134 backend tests passing (`100%`).
+  - 33 frontend Vitest tests passing (`100%`).
+- [x] **Demonstration Guide**:
+  - `docs/DEMO.md`: Exact manual reproduction steps and automated verification instructions for operator.
 
 ## Architectural Redesign Status: Desktop Overlay Shell & Headless Wiring (DONE)
 
@@ -31,19 +49,16 @@ Current Roadmap Phase: **PHASE 1: Thin End-to-End Slice (Ready to Execute)**
   - System tray icon with instant menus: Open Overlay, Dashboard Window, Settings, and Quit.
   - Windows 11 Mica / Acrylic effects via `window-vibrancy`.
   - Verified clean compilation with `cargo check` (0 errors, 0 warnings).
-- [x] **Automated Test Coverage**:
-  - 133 backend unit and integration tests passing (`100%`).
-  - 33 frontend Vitest unit tests passing across all 9 test suites (`100%`).
-  - Frontend production build clean (`tsc -b && vite build` passing in ~3.6s).
 
 ## Milestone Progress Summary
 
-### Completed Milestones:
+### Completed Milestones & Phases:
 - [x] **Milestone 1 - Foundation, Security & Scaffolding**
 - [x] **Milestone 2 - Auth, Permissions & WebSocket Hub**
 - [x] **Milestone 3 - Skill Engine & Guard**
 - [x] **Milestone 4 - Multi-Provider LLM & Chat**
 - [x] **Milestone 5 - UI Redesign: Desktop Overlay Shell + Headless Wiring**
 - [x] **Milestone 6 - Native Skills & OS Automation**
+- [x] **Phase 1 - Thin End-to-End Slice**
 
-Next Phase: **PHASE 1: Thin End-to-End Slice** (proving "what time is it and how's my CPU" and "open notepad" approval flow end-to-end with automated fake LLM test and `docs/DEMO.md`).
+Next Phase: **PHASE 2: Long-Term Memory** (FTS5 SQLite, skills: remember/recall/forget/list_memories, anti-poisoning, secret scanner refusal, 5 memories + profile injection).
