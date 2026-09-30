@@ -6,12 +6,26 @@ from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
+from unittest.mock import AsyncMock, patch
 
 from backend.app.config import get_settings
 from backend.app.core.security import create_jwt_token
 from backend.app.llm.exceptions import AllProvidersExhaustedError
 from backend.app.llm.types import NormalizedToolCall, StreamChunk
 from backend.app.main import create_app
+
+
+@pytest.fixture(autouse=True)
+def disable_background_workers_for_ws_tests():
+    with (
+        patch("backend.app.services.metrics_service.MetricsService.start_collector", new_callable=AsyncMock),
+        patch("backend.app.services.metrics_service.MetricsService.stop_collector", new_callable=AsyncMock),
+        patch("backend.app.services.reminder_service.ReminderService.start_background_worker", new_callable=AsyncMock),
+        patch("backend.app.services.reminder_service.ReminderService.stop_background_worker", new_callable=AsyncMock),
+        patch("backend.app.llm.deferred_queue.DeferredQueue.start_worker"),
+        patch("backend.app.llm.deferred_queue.DeferredQueue.stop_worker"),
+    ):
+        yield
 
 
 def test_ws_chat_streaming_chunks() -> None:
@@ -93,8 +107,14 @@ def test_ws_chat_streaming_tool_call() -> None:
         else:
             yield StreamChunk(content="The current time was fetched.")
 
+    from backend.app.skills.base import SkillResult
+
+    async def mock_execute_skill(name: str, arguments: dict[str, Any], context: Any, elevated_mode: bool = False) -> SkillResult:
+        return SkillResult(success=True, data={"time": "12:00:00"})
+
     with (
         patch("backend.app.llm.orchestrator.LLMOrchestrator.chat_stream", side_effect=mock_stream_with_tool),
+        patch("backend.app.services.skill_service.SkillService.execute_skill", side_effect=mock_execute_skill),
         client.websocket_connect(
             f"/ws?token={valid_token}", headers={"origin": "http://localhost:5173"}
         ) as ws,

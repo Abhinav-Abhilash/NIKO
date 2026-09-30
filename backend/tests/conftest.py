@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.pool import NullPool
 
 from backend.app.config import Settings, get_settings
 from backend.app.db.base import Base
@@ -49,7 +50,7 @@ def test_settings() -> Settings:
 
 @pytest.fixture(scope="session")
 async def test_engine(test_settings: Settings) -> AsyncGenerator[AsyncEngine, None]:
-    engine = create_async_engine(test_settings.DATABASE_URL, future=True)
+    engine = create_async_engine(test_settings.DATABASE_URL, future=True, poolclass=NullPool)
     configure_sqlite_pragmas(engine)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

@@ -393,6 +393,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reminders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Reminders
+         * @description List reminders for the authenticated operator.
+         */
+        get: operations["list_reminders_api_v1_reminders_get"];
+        put?: never;
+        /**
+         * Create Reminder
+         * @description Create a new scheduled reminder.
+         */
+        post: operations["create_reminder_api_v1_reminders_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reminders/{reminder_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Cancel Reminder
+         * @description Cancel an active scheduled reminder.
+         */
+        delete: operations["cancel_reminder_api_v1_reminders__reminder_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -541,6 +585,42 @@ export interface components {
             code?: components["schemas"]["RoleModelTarget"][];
             /** Search */
             search?: components["schemas"]["RoleModelTarget"][];
+        };
+        /** ReminderCreateRequest */
+        ReminderCreateRequest: {
+            /**
+             * Title
+             * @description Title or topic of reminder
+             */
+            title: string;
+            /**
+             * Description
+             * @description Optional description
+             */
+            description?: string | null;
+            /**
+             * Trigger At
+             * Format: date-time
+             * @description UTC or ISO 8601 trigger datetime
+             */
+            trigger_at: string;
+        };
+        /** ReminderResponse */
+        ReminderResponse: {
+            /** Id */
+            id: string;
+            /** User Id */
+            user_id: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string | null;
+            /** Trigger At */
+            trigger_at: string;
+            /** Status */
+            status: string;
+            /** Created At */
+            created_at: string;
         };
         /** RoleModelTarget */
         RoleModelTarget: {
@@ -1403,6 +1483,113 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_reminders_api_v1_reminders_get: {
+        parameters: {
+            query?: {
+                status?: "scheduled" | "fired" | "cancelled" | "all";
+            };
+            header?: {
+                Authorization?: string | null;
+            };
+            path?: never;
+            cookie?: {
+                niko_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReminderResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_reminder_api_v1_reminders_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path?: never;
+            cookie?: {
+                niko_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReminderCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReminderResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_reminder_api_v1_reminders__reminder_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path: {
+                reminder_id: string;
+            };
+            cookie?: {
+                niko_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReminderResponse"];
                 };
             };
             /** @description Validation Error */

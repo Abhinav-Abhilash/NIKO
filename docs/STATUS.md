@@ -38,4 +38,10 @@ Current Milestone: **Milestone 5 - Autonomous AI Cockpit (Frontend Complete & Ha
   - OpenAPI generated TypeScript client (`openapi-typescript` + `scripts/export_openapi.py`)
   - 100% Vitest unit tests passing (12/12 tests) and Vite production build clean
 
-Next Milestone: **Milestone 6 - Remaining Native Skills & OS Automation**
+- [x] **Milestone 6 - Remaining Native Skills & OS Automation**
+  - Built-in OS Skills: `OpenAppSkill` (with command injection guard), `RemindersSkill`, `ScreenshotSkill`, `VolumeBrightnessSkill`, `WebSearchSkill`, `YouTubePlaySkill`, `DateTimeSkill`, `SystemStatsSkill`
+  - Async Reminders Service (`ReminderService`) with background loop and WebSocket `/ws` broadcast
+  - Reminders REST API (`/api/v1/reminders`) with full CRUD support
+  - 100% test coverage across OS skills, security constraints, and background scheduling (132/132 backend tests passing)
+
+Next Milestone: **Milestone 7 - Production Readiness, Packaging & Self-Hosting**

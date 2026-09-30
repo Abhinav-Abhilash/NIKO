@@ -6,6 +6,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0] - Milestone 6: Native Skills & OS Automation
+
+### Added
+- **Built-in OS Native Skills**:
+  - `OpenAppSkill`: Application launching with command injection validation, shell character escaping (`&|;><$\` etc.), and path traversal blocks.
+  - `RemindersSkill`: Local natural reminder creation and querying via `ReminderService`.
+  - `ScreenshotSkill`: Screen capture utility saving timestamped frames to local storage.
+  - `VolumeBrightnessSkill`: Windows system audio and display brightness controls via PowerShell subprocess wrappers.
+  - `WebSearchSkill`: External web query retrieval with untrusted provenance tagging and 1200-token result pruning.
+  - `YouTubePlaySkill`: Safe browser media launcher opening YouTube queries in default browser.
+  - `DateTimeSkill` and `SystemStatsSkill`: Local system time, CPU, memory, and disk telemetry.
+- **Background Reminders Service & REST API**:
+  - `ReminderService` async background loop polling for pending reminders and dispatching `reminder:triggered` events over `EventBus` and `/ws`.
+  - Full REST API (`/api/v1/reminders`) for listing, creating, snoozing, and canceling reminders.
+- **Skill Engine Integration**:
+  - Registered all native skills in `SkillService` with tiering, timeouts, and undo window support.
+  - Comprehensive unit test suite with 100% pass rate (132/132 backend tests).
+
+## [0.5.0] - Milestone 5: UI Frontend Cockpit & Real-time Telemetry
+
+### Added
+- **React 19 Frontend Cockpit**:
+  - High-performance dashboard built with React 19, TypeScript, and Tailwind CSS matching Google Stitch specifications.
+  - Signature Animated Concentric SVG Reactor Core (`CockpitCore.tsx`) visualizing streaming and thinking states.
+  - Real-time WebSocket streaming client with 15s heartbeats, exponential backoff reconnects, and message dispatch.
+  - Human-in-the-Loop (HITL) approval modal with 30s auto-cancel timeout.
+  - Reactive toast notification system with 5-second undo window for safe untrusted action reversion.
+  - Global Command Palette (`⌘K`) and Keyboard Shortcuts Reference (`?` / `⌘/`).
+  - Persisted draggable telemetry dashboard with provider matrix and system resource gauges.
+  - Fully typed OpenAPI client auto-generated with `openapi-typescript`.
+
 ## [0.4.0] - Milestone 4: Multi-Provider LLM Orchestration, Streaming Chat & Quota Resilience
 
 ### Added
