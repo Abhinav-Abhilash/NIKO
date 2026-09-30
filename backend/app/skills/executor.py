@@ -127,8 +127,8 @@ class LocalExecutor(SkillExecutor):
         except TimeoutError:
             try:
                 proc.kill()
-                await proc.wait()
-            except ProcessLookupError:
+                await asyncio.wait_for(proc.wait(), timeout=2.0)
+            except (ProcessLookupError, TimeoutError, Exception):
                 pass
             raise TimeoutError(f"Command '{cmd[0]}' timed out after {timeout}s and was terminated.") from None
 

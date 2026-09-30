@@ -45,43 +45,52 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
         host=settings.HOST,
         port=settings.PORT,
     )
-    metrics_service = get_metrics_service(session_factory=get_session_maker())
-    await metrics_service.start_collector()
+    metrics_service = None
+    reminder_service = None
 
-    reminder_service = get_reminder_service()
-    await reminder_service.start_background_worker()
+    if settings.APP_ENV != "test":
+        metrics_service = get_metrics_service(session_factory=get_session_maker())
+        await metrics_service.start_collector()
 
-    # Discover models asynchronously at startup from each provider's list endpoint
-    import asyncio
+        reminder_service = get_reminder_service()
+        await reminder_service.start_background_worker()
 
-    from backend.app.llm.discovery import model_discovery
-    from backend.app.repositories.settings_repository import SettingsRepository
+        # Discover models asynchronously at startup from each provider's list endpoint
+        import asyncio
 
-    async def _startup_discovery() -> None:
-        try:
-            session_maker = get_session_maker()
-            async with session_maker() as db:
-                repo = SettingsRepository(db)
-                keys = await repo.get_decrypted_provider_keys(settings.ENCRYPTION_KEY)
-                if "gemini" not in keys and settings.INITIAL_GEMINI_API_KEY:
-                    keys["gemini"] = settings.INITIAL_GEMINI_API_KEY
-                if "groq" not in keys and settings.INITIAL_GROQ_API_KEY:
-                    keys["groq"] = settings.INITIAL_GROQ_API_KEY
-                if "openrouter" not in keys and settings.INITIAL_OPENROUTER_API_KEY:
-                    keys["openrouter"] = settings.INITIAL_OPENROUTER_API_KEY
-                await model_discovery.refresh_all(keys)
-        except Exception as e:
-            logger.warning("Startup model discovery encounter issue", error=str(e))
+        from backend.app.llm.discovery import model_discovery
+        from backend.app.repositories.settings_repository import SettingsRepository
 
-    asyncio.create_task(_startup_discovery())
+        async def _startup_discovery() -> None:
+            try:
+                session_maker = get_session_maker()
+                async with session_maker() as db:
+                    repo = SettingsRepository(db)
+                    keys = await repo.get_decrypted_provider_keys(settings.ENCRYPTION_KEY)
+                    if "gemini" not in keys and settings.INITIAL_GEMINI_API_KEY:
+                        keys["gemini"] = settings.INITIAL_GEMINI_API_KEY
+                    if "groq" not in keys and settings.INITIAL_GROQ_API_KEY:
+                        keys["groq"] = settings.INITIAL_GROQ_API_KEY
+                    if "openrouter" not in keys and settings.INITIAL_OPENROUTER_API_KEY:
+                        keys["openrouter"] = settings.INITIAL_OPENROUTER_API_KEY
+                    await model_discovery.refresh_all(keys)
+            except Exception as e:
+                logger.warning("Startup model discovery encounter issue", error=str(e))
 
-    from backend.app.llm.deferred_queue import deferred_queue
-    deferred_queue.start_worker()
+        asyncio.create_task(_startup_discovery())
+
+        from backend.app.llm.deferred_queue import deferred_queue
+        deferred_queue.start_worker()
 
     yield
-    deferred_queue.stop_worker()
-    await reminder_service.stop_background_worker()
-    await metrics_service.stop_collector()
+
+    if settings.APP_ENV != "test":
+        from backend.app.llm.deferred_queue import deferred_queue
+        deferred_queue.stop_worker()
+        if reminder_service:
+            await reminder_service.stop_background_worker()
+        if metrics_service:
+            await metrics_service.stop_collector()
     logger.info("NIKO backend shutting down")
 
 
