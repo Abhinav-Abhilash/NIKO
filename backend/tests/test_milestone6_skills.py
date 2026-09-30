@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
@@ -7,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from httpx import Response
 from sqlalchemy.ext.asyncio import AsyncSession
+
 
 from backend.app.core.exceptions import ValidationFailedError
 from backend.app.db.models import Reminder, User
@@ -204,6 +206,47 @@ async def test_screenshot_skill_execution(tmp_path: Any) -> None:
         assert result.data["height"] == 100
         assert result.data["file_path"] is not None
         assert result.data["thumbnail_base64"] is not None
+
+
+@pytest.mark.asyncio
+async def test_screenshot_skill_hides_and_restores_overlay(tmp_path: Any) -> None:
+    """Verify ScreenshotSkill broadcasts overlay:hide before capture and overlay:show after."""
+    from backend.app.core.events import get_event_bus
+    skill = ScreenshotSkill()
+    ctx = SkillContext(request_id="req_screen_overlay", provenance="direct")
+    event_bus = get_event_bus()
+
+    published_events = []
+
+    async def subscriber():
+        async for event in event_bus.subscribe("overlay"):
+            published_events.append(event)
+            if len(published_events) >= 2:
+                break
+
+    sub_task = asyncio.create_task(subscriber())
+    await asyncio.sleep(0.01)
+
+    with (
+        patch("backend.app.skills.builtin.screenshot_skill.SCREENSHOTS_DIR", tmp_path),
+        patch("mss.mss") as mock_mss_cls,
+    ):
+        mock_sct = MagicMock()
+        mock_sct.monitors = [{"left": 0, "top": 0, "width": 800, "height": 600}, {"left": 0, "top": 0, "width": 800, "height": 600}]
+        mock_grab = MagicMock()
+        mock_grab.size = (50, 50)
+        mock_grab.bgra = b"\x00" * (50 * 50 * 4)
+        mock_sct.grab.return_value = mock_grab
+        mock_mss_cls.return_value.__enter__.return_value = mock_sct
+
+        result = await skill.execute({"monitor_index": 1}, ctx)
+        assert result.success is True
+
+    await asyncio.wait_for(sub_task, timeout=2.0)
+    assert len(published_events) == 2
+    assert published_events[0].event_type == "hide"
+    assert published_events[1].event_type == "show"
+
 
 
 # ---------------------------------------------------------------------------

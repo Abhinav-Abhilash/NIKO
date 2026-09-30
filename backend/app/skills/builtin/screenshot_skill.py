@@ -110,9 +110,21 @@ class ScreenshotSkill(BaseSkill):
                     "thumbnail_base64": thumbnail_b64,
                 }
 
-        res = await asyncio.to_thread(_capture)
+        from backend.app.core.events import get_event_bus
+        event_bus = get_event_bus()
+        has_overlay = event_bus.has_subscribers("overlay")
+        if has_overlay:
+            await event_bus.publish("overlay", "hide", {"source": "screenshot", "timeout_ms": 500})
+            await asyncio.sleep(0.1)
+
+        try:
+            res = await asyncio.to_thread(_capture)
+        finally:
+            if has_overlay:
+                await event_bus.publish("overlay", "show", {"source": "screenshot"})
 
         if "error" in res:
             return SkillResult(success=False, error=res["error"])
 
         return SkillResult(success=True, data=res)
+

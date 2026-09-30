@@ -43,8 +43,24 @@ class Settings(BaseSettings):
 
     # Network Isolation
     TRUSTED_HOSTS: list[str] = ["127.0.0.1", "localhost", "testserver"]
-    CORS_ORIGINS: list[str] = ["http://127.0.0.1:5173", "http://localhost:5173"]
-    WS_ALLOWED_ORIGINS: list[str] = ["http://127.0.0.1:5173", "http://localhost:5173"]
+    CORS_ORIGINS: list[str] = [
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+        "http://127.0.0.1:1420",
+        "http://localhost:1420",
+        "tauri://localhost",
+        "http://tauri.localhost",
+        "https://tauri.localhost",
+    ]
+    WS_ALLOWED_ORIGINS: list[str] = [
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+        "http://127.0.0.1:1420",
+        "http://localhost:1420",
+        "tauri://localhost",
+        "http://tauri.localhost",
+        "https://tauri.localhost",
+    ]
 
     # Storage Paths & Retention
     STORAGE_DIR: Path = Path("storage")
