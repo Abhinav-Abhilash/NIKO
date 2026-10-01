@@ -1,3 +1,4 @@
+from backend.app.skills.builtin.clipboard_skill import ClipboardSkill
 from backend.app.skills.builtin.datetime_skill import DateTimeSkill
 from backend.app.skills.builtin.memory_skills import (
     ForgetSkill,
@@ -15,6 +16,7 @@ from backend.app.skills.builtin.web_search_skill import WebSearchSkill
 from backend.app.skills.builtin.youtube_play_skill import YouTubePlaySkill
 
 __all__ = [
+    "ClipboardSkill",
     "DateTimeSkill",
     "ForgetSkill",
     "ListMemoriesSkill",
@@ -29,4 +31,5 @@ __all__ = [
     "WebSearchSkill",
     "YouTubePlaySkill",
 ]
+
 

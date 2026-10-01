@@ -12,7 +12,9 @@ from backend.app.db.models import SkillConfig, ToolCall
 from backend.app.services.approval_service import ApprovalService
 from backend.app.services.audit_service import AuditService
 from backend.app.skills.base import AutonomyPolicy, SkillContext, SkillExecutor, SkillResult
+from backend.app.skills.builtin.clipboard_skill import ClipboardSkill
 from backend.app.skills.builtin.datetime_skill import DateTimeSkill
+
 from backend.app.skills.builtin.memory_skills import (
     ForgetSkill,
     ListMemoriesSkill,
@@ -69,8 +71,10 @@ class SkillService:
     async def initialize_builtin_skills(self) -> None:
         """Register built-in skills and sync default configurations into SQLite."""
         builtin_skill_instances = [
+            ClipboardSkill(),
             DateTimeSkill(),
             SystemStatsSkill(),
+
             OpenAppSkill(),
             WebSearchSkill(),
             YouTubePlaySkill(),
