@@ -14,7 +14,7 @@ from backend.app.core.logging import get_logger
 from backend.app.core.security import decode_jwt_token
 from backend.app.llm.exceptions import AllProvidersExhaustedError
 from backend.app.services.sentence_divider import SentenceDivider
-from backend.app.services.voice_service import VoiceBargeInEngine
+from backend.app.services.voice_service import NikoVoiceSynthesizer, VoiceBargeInEngine
 
 logger = get_logger("websocket")
 router = APIRouter(tags=["WebSocket Hub"])
@@ -91,6 +91,7 @@ async def websocket_hub(
     event_bus = get_event_bus()
     active_chat_tasks: dict[str, asyncio.Task[None]] = {}
     voice_engine = VoiceBargeInEngine(event_bus=event_bus)
+    voice_synthesizer = NikoVoiceSynthesizer(voice="en-US-AnaNeural", pitch="+45Hz", rate="+8%")
 
     async def event_forwarder() -> None:
         """Stream events from EventBus out to the WebSocket client."""
@@ -187,11 +188,18 @@ async def websocket_hub(
                         # Stream sentence boundaries for TTS (<500ms TTFA)
                         sentences = sentence_divider.feed(chunk_text)
                         for sent in sentences:
+                            audio_b64 = ""
+                            try:
+                                audio_b64 = await voice_synthesizer.synthesize_base64(sent)
+                            except Exception as e:
+                                logger.debug("Neural voice synthesis fallback", error=str(e))
+
                             tts_payload = {
                                 "type": "voice:tts_chunk",
                                 "request_id": req_id,
                                 "conversation_id": conv_id,
                                 "sentence": sent,
+                                "audio_base64": audio_b64,
                             }
                             await websocket.send_json(tts_payload)
                             await event_bus.publish("voice", "tts_chunk", {**tts_payload, "origin_ws_id": id(websocket)})
@@ -230,11 +238,18 @@ async def websocket_hub(
                     elif ev_type == "done":
                         # Flush remaining sentence text for TTS
                         for remaining_sent in sentence_divider.flush():
+                            audio_b64 = ""
+                            try:
+                                audio_b64 = await voice_synthesizer.synthesize_base64(remaining_sent)
+                            except Exception as e:
+                                logger.debug("Neural voice synthesis fallback", error=str(e))
+
                             tts_payload = {
                                 "type": "voice:tts_chunk",
                                 "request_id": req_id,
                                 "conversation_id": conv_id,
                                 "sentence": remaining_sent,
+                                "audio_base64": audio_b64,
                             }
                             await websocket.send_json(tts_payload)
                             await event_bus.publish("voice", "tts_chunk", {**tts_payload, "origin_ws_id": id(websocket)})
