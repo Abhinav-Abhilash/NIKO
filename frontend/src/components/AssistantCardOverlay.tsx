@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useChatStream, useVoiceEngine, useApprovals, useOrbState, useOverlay } from '../hooks';
 import { tokens } from '../tokens';
-import { CharacterAvatar } from './CharacterAvatar';
+import { PetCompanion } from './PetCompanion';
 import { useCharacterState } from '../hooks/useCharacterState';
 
 export interface AssistantCardOverlayProps {
@@ -76,23 +76,22 @@ export const AssistantCardOverlay: React.FC<AssistantCardOverlayProps> = ({
   // If user switched to pure floating embodied character mode
   if (overlay.mode === 'pet') {
     return (
-      <CharacterAvatar
-        semanticState={charState.semanticState}
-        posture={charState.posture}
-        emotion={charState.emotion}
-        position={charState.position}
-        gaze={charState.gaze}
-        isDragging={charState.isDragging}
-        isBlinking={charState.isBlinking}
-        mouthOpen={charState.mouthOpen}
+      <PetCompanion
+        orbState={orb.orbState}
         isListening={voice.isListening}
         isSpeaking={voice.isSpeaking}
+        isStreaming={chat.isStreaming}
+        audioLevel={voice.audioLevel}
         activeSpeechSnippet={chat.streamingContent || chat.messages[chat.messages.length - 1]?.content}
-        onPointerDown={charState.startDrag}
-        onPointerMove={charState.onDrag}
-        onPointerUp={(e) => charState.endDrag(e, () => overlay.setMode('compact'))}
+        hasPendingApproval={approvals.hasPendingApproval}
+        pendingApproval={approvals.pendingApproval}
+        remainingSeconds={approvals.remainingSeconds}
+        onApprove={approvals.approve}
+        onDeny={approvals.deny}
+        activeToolCallsCount={chat.activeToolCalls.length}
+        error={chat.error}
+        onExpand={() => overlay.setMode('compact')}
         onToggleVoice={voice.toggleListening}
-        onOpenCardHUD={() => overlay.setMode('compact')}
       />
     );
   }

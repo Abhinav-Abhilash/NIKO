@@ -51,9 +51,19 @@ export const PlaceholderOverlay: React.FC = () => {
         orbState={orb.orbState}
         isListening={voice.isListening}
         isSpeaking={voice.isSpeaking}
+        isStreaming={chat.isStreaming}
         isBargeInActive={voice.isBargeInActive}
         audioLevel={voice.audioLevel}
-        activeSpeechSnippet={voice.currentSentence || undefined}
+        activeSpeechSnippet={voice.currentSentence || chat.streamingContent || chat.messages[chat.messages.length - 1]?.content || undefined}
+        hasPendingApproval={approvals.hasPendingApproval}
+        pendingApproval={approvals.pendingApproval}
+        remainingSeconds={approvals.remainingSeconds}
+        onApprove={approvals.approve}
+        onDeny={approvals.deny}
+        activeToolCallsCount={chat.activeToolCalls.length}
+        isCoolingDown={providers.isCoolingDown}
+        cooldownMessage={providers.cooldownMessage}
+        error={chat.error}
         onExpand={() => overlay.setMode('compact')}
         onToggleVoice={voice.toggleListening}
         onBargeIn={voice.triggerBargeIn}
