@@ -3,29 +3,20 @@
 Current Architecture State: **Release v0.3.0: Extensibility, Shadow Undo & Local Document Q&A (COMPLETE)**
 Current Roadmap Phase: **ALL PLANNED PHASES COMPLETE - PRODUCTION READY**
 
-## Release v0.3.0 Status: Extensibility, Shadow Undo & Local Document Q&A (DONE)
+## Release v0.3.0 Status: Extensibility, Shadow Undo & Local Document Q&A (DONE - MERGED TO MAIN)
 
-- [x] **Sandboxed MCP Client Engine (Model Context Protocol)**:
-  - Asynchronous JSON-RPC 2.0 stdio/SSE client protocol engine (`backend/app/services/mcp_service.py`).
-  - Dynamic tool schema translation mapping MCP `inputSchema` into OpenAI-compatible `SkillManifest` parameter definitions.
-  - Strict security tiering with `CONFIRM` gate / `ApprovalService` approval modals and execution timeout sandboxing (15s hard limit).
-  - MCP Server configuration management (`storage/mcp_servers.json`) with auto-start and dynamic skill registration.
-  - Full REST API (`/api/v1/mcp/servers`, `/api/v1/mcp/tools`) for registering, starting, stopping, and enumerating MCP servers.
-- [x] **Reversible Action Shadow-Copy & Extended Undo Engine**:
-  - `ShadowCopyService`: Automatic pre-action shadow staging in `storage/undo_staging/<snapshot_id>/` before file deletions or destructive mutations (`backend/app/services/shadow_copy_service.py`).
-  - `UndoSkill` (`backend/app/skills/builtin/undo_skill.py`): Reversible action rollback with "undo that" natural language invocation.
-  - Multi-step snapshot manifest tracking original paths, SHA-256 integrity hashes, and file metadata.
-  - Automatic expiration janitor capping staging storage at 500MB and purging snapshots older than 24 hours.
-  - REST API (`/api/v1/undo/snapshots`, `/api/v1/undo/revert`).
-- [x] **Local Document Q&A & Ingestion (SQLite FTS5 + RAG)**:
-  - Document extraction pipeline (`backend/app/services/document_service.py`) for PDF, Markdown, text, and code files.
-  - Sliding-window token/character chunking with 200-character overlap.
-  - Relational database schema with SQLite FTS5 virtual table `document_chunks_fts` using Porter stemmer tokenizer and auto-sync triggers.
-  - `DocumentSearchSkill` (`backend/app/skills/builtin/document_search_skill.py`): BM25-ranked full-text keyword retrieval across indexed user documents.
-  - REST API (`/api/v1/documents`, `/api/v1/documents/ingest`, `/api/v1/documents/search`).
+- [x] **Fast-Forward Merge to Main**:
+  - `release/v0.3.0` cleanly fast-forward merged into `main` (`commit 5577656`).
+  - Strict CI pipeline configured across `main`, `release/**`, and pull requests in `.github/workflows/ci.yml`.
+  - Full static analysis pass: `mypy backend` clean (0 errors across 154 files), `ruff check .` clean (0 errors).
+- [x] **Zero-Cost Neural Anime Speech Synthesizer**:
+  - Edge Neural TTS integration (`ja-JP-NanamiNeural` modulated to English, +45Hz pitch, +10% rate) with Base64 audio streaming over WebSocket.
+- [x] **Embodied Chibi Character & Voice Lip-Sync**:
+  - Procedural React SVG avatar with real-time mouth flap aperture scaling (`0.2` - `1.0`), state synchronization, and live speech bubble captions.
 - [x] **Verification**:
-  - 216 backend tests passing (`100%`).
-  - 43 frontend Vitest tests passing (`100%`).
+  - 218 backend pytest tests passing (`100%`).
+  - 56 frontend Vitest tests passing (`100%`).
+  - Secret scan: 0 secrets detected.
 
 ## Release v0.2.0 Status: Companion, Voice & Productivity Suite (DONE)
 
