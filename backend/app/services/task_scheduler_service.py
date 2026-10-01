@@ -433,7 +433,20 @@ class TaskSchedulerService:
             )
             result = {"success": True, "dispatched": "chat_prompt"}
 
+        elif task.action_type == "backup":
+            from backend.app.services.backup_service import BackupService
+            backup_service = BackupService()
+            backup_res = backup_service.create_backup()
+            result = {"success": True, "backup": backup_res}
+
+        elif task.action_type == "maintenance":
+            from backend.app.services.janitor_service import JanitorService
+            janitor = JanitorService()
+            maint_res = janitor.run_maintenance_cycle()
+            result = {"success": True, "maintenance": maint_res}
+
         return result
+
 
     async def check_and_run_due_tasks(self) -> int:
         """Poll and execute all currently due scheduled tasks."""

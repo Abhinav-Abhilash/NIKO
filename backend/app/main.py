@@ -18,6 +18,7 @@ from backend.app.api.v1.reminders import router as reminders_router
 from backend.app.api.v1.schedules import router as schedules_router
 from backend.app.api.v1.settings import router as settings_router
 from backend.app.api.v1.skills import router as skills_router
+from backend.app.api.v1.storage import router as storage_router
 from backend.app.api.v1.websocket import router as ws_router
 from backend.app.config import get_settings
 from backend.app.core.exceptions import register_exception_handlers
@@ -232,6 +233,7 @@ def create_app() -> FastAPI:
     app.include_router(reminders_router, prefix="/api/v1")
     app.include_router(memories_router, prefix="/api/v1")
     app.include_router(schedules_router, prefix="/api/v1")
+    app.include_router(storage_router, prefix="/api/v1")
     app.include_router(ws_router)
 
     return app
