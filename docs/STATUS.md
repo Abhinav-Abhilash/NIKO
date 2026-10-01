@@ -1,7 +1,30 @@
 # NIKO Project Status
 
-Current Architecture State: **Phase 2: Long-Term Memory (COMPLETE)**
-Current Roadmap Phase: **PHASE 3: Proactive Engine & System Refinements**
+Current Architecture State: **Release v0.2.0: Companion & Voice Suite (COMPLETE)**
+Current Roadmap Phase: **RELEASE v0.3.0: Extensibility & Advanced Agency**
+
+## Release v0.2.0 Status: Companion, Voice & Productivity Suite (DONE)
+
+- [x] **Full-Duplex Voice & Real-time Barge-In Engine**:
+  - `VoiceActivityDetector`: Real-time RMS speech energy detection with dynamic background noise floor tracking (`backend/app/services/voice_service.py`).
+  - `VoiceBargeInEngine`: Full-duplex interruption engine immediately cancelling active LLM generation streams and dispatching `<100ms` audio buffer flush on user speech.
+  - `SentenceDivider`: Low-latency streaming sentence chunker emitting `voice:tts_chunk` events with `<500ms` Time-To-First-Audio (`backend/app/services/sentence_divider.py`).
+  - WebSocket Voice Protocol (`voice:audio`, `voice:barge_in`, `voice:state`, `voice:tts_chunk`).
+  - Frontend Voice Hook (`frontend/src/hooks/useVoiceEngine.ts`) with AudioContext analyzer, browser SpeechRecognition, and live audio energy meter.
+- [x] **Pet / Floating Companion HUD Overlay Mode**:
+  - Interactive, draggable floating companion widget (`frontend/src/components/PetCompanion.tsx`).
+  - Reactive cybernetic reticle and core reactor states (`idle`, `thinking`, `acting`, `confirm`, `barge-in`).
+  - Real-time audio waveform scaling, quick-mic toggle, position persistence in `localStorage`, and click-to-expand HUD transition.
+  - Overlay mode integration: `pet` mode togglable via HUD button or hook.
+- [x] **Tier A Productivity & Companion Skills Suite**:
+  - `ClipboardSkill`: Safe clipboard writes and `CONFIRM`-gated clipboard reads via Win32 ctypes API (`backend/app/skills/builtin/clipboard_skill.py`).
+  - `FileFinderSkill`: Fast asynchronous search with directory pruning (`.venv`, `.git`, `node_modules`, `AppData`) and approved user folder security boundaries (`backend/app/skills/builtin/file_finder_skill.py`).
+  - `DiskCleanerSkill`: System storage usage breakdown and temporary cache cleanup.
+  - `NotesSkill`: Persistent SQLite + FTS5 task/note creation, listing, completion, and full-text keyword retrieval.
+  - `MediaControlSkill` & `WindowControlSkill`: Native Windows media controls and window minimize/focus operations.
+- [x] **Verification**:
+  - 205 backend tests passing (`100%`).
+  - 43 frontend Vitest tests passing (`100%`).
 
 ## Phase 2 Status: Long-Term Memory (DONE)
 

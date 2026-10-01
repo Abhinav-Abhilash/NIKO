@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-export type OverlayMode = 'compact' | 'expanded' | 'approval';
+export type OverlayMode = 'compact' | 'expanded' | 'approval' | 'pet';
 
 export interface OverlayState {
   isVisible: boolean;
@@ -14,6 +14,7 @@ export interface OverlayActions {
   hide: () => void;
   toggle: () => void;
   setMode: (mode: OverlayMode) => void;
+  togglePet: () => void;
   setAutoHideOnBlur: (enabled: boolean) => void;
   setActiveMonitor: (monitor: string | null) => void;
   focusInput: () => void;
@@ -80,6 +81,10 @@ export function useOverlay(initialVisible = true, initialMode: OverlayMode = 'co
     setModeState(newMode);
   }, []);
 
+  const togglePet = useCallback(() => {
+    setModeState((current) => (current === 'pet' ? 'compact' : 'pet'));
+  }, []);
+
   // Global Escape key listener (when no modal has called preventDefault)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -113,6 +118,7 @@ export function useOverlay(initialVisible = true, initialMode: OverlayMode = 'co
     hide,
     toggle,
     setMode,
+    togglePet,
     setAutoHideOnBlur,
     setActiveMonitor,
     focusInput,

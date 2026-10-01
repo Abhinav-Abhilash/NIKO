@@ -3,3 +3,4 @@ export * from './useChatStream';
 export * from './useApprovals';
 export * from './useOrbState';
 export * from './useProviderStatus';
+export * from './useVoiceEngine';

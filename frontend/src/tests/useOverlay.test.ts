@@ -67,4 +67,19 @@ describe('useOverlay hook', () => {
     });
     expect(result.current.isVisible).toBe(false);
   });
+
+  it('supports pet mode toggling', () => {
+    const { result } = renderHook(() => useOverlay(true, 'compact'));
+    expect(result.current.mode).toBe('compact');
+
+    act(() => {
+      result.current.togglePet();
+    });
+    expect(result.current.mode).toBe('pet');
+
+    act(() => {
+      result.current.togglePet();
+    });
+    expect(result.current.mode).toBe('compact');
+  });
 });

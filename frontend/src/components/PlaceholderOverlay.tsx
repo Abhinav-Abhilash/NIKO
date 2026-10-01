@@ -5,8 +5,10 @@ import {
   useApprovals,
   useOrbState,
   useProviderStatus,
+  useVoiceEngine,
 } from '../hooks';
 import { tokens } from '../tokens';
+import { PetCompanion } from './PetCompanion';
 
 /**
  * Cyberpunk / Windows 11 Acrylic HUD Overlay.
@@ -16,6 +18,11 @@ import { tokens } from '../tokens';
 export const PlaceholderOverlay: React.FC = () => {
   const overlay = useOverlay(true, 'compact');
   const chat = useChatStream();
+  const voice = useVoiceEngine({
+    onSpeechRecognized: (transcript) => {
+      chat.sendMessage(transcript);
+    },
+  });
   const approvals = useApprovals({
     onApprovalArrive: () => {
       overlay.show('approval');
@@ -35,6 +42,21 @@ export const PlaceholderOverlay: React.FC = () => {
       <div id="niko-overlay-hidden" style={{ display: 'none' }}>
         {/* Render paused while hidden */}
       </div>
+    );
+  }
+
+  if (overlay.mode === 'pet') {
+    return (
+      <PetCompanion
+        orbState={orb.orbState}
+        isListening={voice.isListening}
+        isSpeaking={voice.isSpeaking}
+        isBargeInActive={voice.isBargeInActive}
+        audioLevel={voice.audioLevel}
+        onExpand={() => overlay.setMode('compact')}
+        onToggleVoice={voice.toggleListening}
+        onBargeIn={voice.triggerBargeIn}
+      />
     );
   }
 
@@ -169,6 +191,59 @@ export const PlaceholderOverlay: React.FC = () => {
 
         {/* Window & View Control Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Full-Duplex Voice Toggle */}
+          <button
+            type="button"
+            onClick={voice.toggleListening}
+            style={{
+              background: voice.isListening ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255, 255, 255, 0.06)',
+              color: voice.isListening ? '#38bdf8' : tokens.colors.textSecondary,
+              border: `1px solid ${voice.isListening ? '#0284c7' : 'rgba(255, 255, 255, 0.1)'}`,
+              borderRadius: tokens.radii.sm,
+              padding: '4px 10px',
+              fontSize: '11px',
+              fontFamily: tokens.typography.fontMono,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              transition: 'all 0.15s ease',
+            }}
+            title={voice.isListening ? 'Mute Full-Duplex Voice' : 'Enable Full-Duplex Voice (VAD & Barge-In)'}
+          >
+            <span
+              style={{
+                display: 'inline-block',
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: voice.isListening ? '#38bdf8' : 'rgba(255,255,255,0.4)',
+                boxShadow: voice.isListening ? '0 0 6px #38bdf8' : 'none',
+              }}
+            />
+            {voice.isListening ? 'Voice ON' : 'Voice'}
+          </button>
+
+          {/* Floating Pet Mode Toggle */}
+          <button
+            type="button"
+            onClick={() => overlay.setMode('pet')}
+            style={{
+              background: 'rgba(168, 85, 247, 0.12)',
+              color: '#c084fc',
+              border: '1px solid rgba(168, 85, 247, 0.3)',
+              borderRadius: tokens.radii.sm,
+              padding: '4px 10px',
+              fontSize: '11px',
+              fontFamily: tokens.typography.fontMono,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+            title="Switch to Floating Desktop Pet Companion Mode"
+          >
+            Pet HUD
+          </button>
+
           <button
             type="button"
             onClick={() => overlay.setMode(overlay.mode === 'compact' ? 'expanded' : 'compact')}

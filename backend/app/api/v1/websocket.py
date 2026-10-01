@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import contextlib
 import json
 from datetime import UTC, datetime
@@ -12,6 +13,8 @@ from backend.app.core.exceptions import AuthenticationError
 from backend.app.core.logging import get_logger
 from backend.app.core.security import decode_jwt_token
 from backend.app.llm.exceptions import AllProvidersExhaustedError
+from backend.app.services.sentence_divider import SentenceDivider
+from backend.app.services.voice_service import VoiceBargeInEngine
 
 logger = get_logger("websocket")
 router = APIRouter(tags=["WebSocket Hub"])
@@ -87,6 +90,7 @@ async def websocket_hub(
     subscribed_topics: set[str] = set()
     event_bus = get_event_bus()
     active_chat_tasks: dict[str, asyncio.Task[None]] = {}
+    voice_engine = VoiceBargeInEngine(event_bus=event_bus)
 
     async def event_forwarder() -> None:
         """Stream events from EventBus out to the WebSocket client."""
@@ -156,6 +160,9 @@ async def websocket_hub(
 
                 done_payload = None
                 chat_service = ChatService(db=db)
+                sentence_divider = SentenceDivider(min_sentence_length=15)
+                voice_engine.set_assistant_state(is_speaking=True, generation_task=asyncio.current_task())
+
                 async for ev in chat_service.stream_chat(
                     conversation_id=conv_id,
                     user_id=user_id,
@@ -167,14 +174,28 @@ async def websocket_hub(
                 ):
                     ev_type = ev.get("type")
                     if ev_type == "chunk":
+                        chunk_text = ev.get("content", "")
                         payload = {
                             "type": "chat:chunk",
                             "request_id": req_id,
                             "conversation_id": conv_id,
-                            "chunk": ev.get("content", ""),
+                            "chunk": chunk_text,
                         }
                         await websocket.send_json(payload)
                         await event_bus.publish("chat", "chunk", {**payload, "origin_ws_id": id(websocket)})
+
+                        # Stream sentence boundaries for TTS (<500ms TTFA)
+                        sentences = sentence_divider.feed(chunk_text)
+                        for sent in sentences:
+                            tts_payload = {
+                                "type": "voice:tts_chunk",
+                                "request_id": req_id,
+                                "conversation_id": conv_id,
+                                "sentence": sent,
+                            }
+                            await websocket.send_json(tts_payload)
+                            await event_bus.publish("voice", "tts_chunk", {**tts_payload, "origin_ws_id": id(websocket)})
+
                     elif ev_type == "tool_call":
                         payload = {
                             "type": "chat:tool_call",
@@ -207,6 +228,17 @@ async def websocket_hub(
                         }
                         await websocket.send_json(payload)
                     elif ev_type == "done":
+                        # Flush remaining sentence text for TTS
+                        for remaining_sent in sentence_divider.flush():
+                            tts_payload = {
+                                "type": "voice:tts_chunk",
+                                "request_id": req_id,
+                                "conversation_id": conv_id,
+                                "sentence": remaining_sent,
+                            }
+                            await websocket.send_json(tts_payload)
+                            await event_bus.publish("voice", "tts_chunk", {**tts_payload, "origin_ws_id": id(websocket)})
+
                         done_payload = {
                             "type": "chat:done",
                             "request_id": req_id,
@@ -216,6 +248,7 @@ async def websocket_hub(
                 # Ensure all DB changes are committed and session is clean BEFORE signaling done to client
                 await db.commit()
                 if done_payload:
+                    voice_engine.set_assistant_state(is_speaking=False, generation_task=None)
                     await websocket.send_json(done_payload)
                     await event_bus.publish("chat", "done", {**done_payload, "origin_ws_id": id(websocket)})
 
@@ -353,6 +386,53 @@ async def websocket_hub(
                     await websocket.send_json({"type": "chat:cancel_ack", "cancelled_all": True})
                 else:
                     await websocket.send_json({"type": "chat:cancel_ack", "status": "none_active"})
+
+            elif msg_type == "voice:audio":
+                # User microphone audio frame (PCM16 linear audio chunk encoded in Base64)
+                audio_b64 = data.get("audio_data") or data.get("pcm_base64") or ""
+                req_id = data.get("request_id")
+                pcm_bytes = b""
+                if audio_b64:
+                    with contextlib.suppress(Exception):
+                        pcm_bytes = base64.b64decode(audio_b64)
+
+                vad_res = await voice_engine.handle_audio_frame(pcm_bytes, request_id=req_id)
+                if vad_res.get("barge_in_triggered"):
+                    # Cancel any running chat stream tasks immediately
+                    for _r_id, t in list(active_chat_tasks.items()):
+                        t.cancel()
+                    await websocket.send_json({
+                        "type": "voice:barge_in_ack",
+                        "request_id": req_id,
+                        "action": "flush_audio_queue",
+                    })
+                else:
+                    await websocket.send_json({
+                        "type": "voice:vad_status",
+                        "event": vad_res.get("event"),
+                        "rms": vad_res.get("rms"),
+                        "is_speaking": vad_res.get("is_speaking"),
+                    })
+
+            elif msg_type in ("voice:barge_in", "voice:interrupt"):
+                # Explicit barge-in event from client VAD
+                req_id = data.get("request_id")
+                for _r_id, t in list(active_chat_tasks.items()):
+                    t.cancel()
+                await voice_engine.trigger_barge_in(request_id=req_id)
+                await websocket.send_json({
+                    "type": "voice:barge_in_ack",
+                    "request_id": req_id,
+                    "action": "flush_audio_queue",
+                })
+
+            elif msg_type == "voice:state":
+                is_speaking = bool(data.get("is_speaking", False))
+                voice_engine.set_assistant_state(is_speaking=is_speaking)
+                await websocket.send_json({
+                    "type": "voice:state_ack",
+                    "assistant_speaking": is_speaking,
+                })
 
             else:
                 await websocket.send_json(

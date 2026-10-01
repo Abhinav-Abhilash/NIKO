@@ -1,9 +1,25 @@
+import asyncio
 import os
 from pathlib import Path
 from typing import Any
 
 from backend.app.core.exceptions import ValidationFailedError
 from backend.app.skills.base import BaseSkill, SkillContext, SkillManifest, SkillResult
+
+IGNORED_DIRS = {
+    ".git",
+    ".venv",
+    "venv",
+    "node_modules",
+    "__pycache__",
+    "AppData",
+    ".cache",
+    "target",
+    "dist",
+    "build",
+    "$RECYCLE.BIN",
+    "System Volume Information",
+}
 
 
 def get_approved_roots() -> list[Path]:
@@ -29,6 +45,69 @@ def is_path_approved(target_path: Path, approved_roots: list[Path]) -> bool:
         except ValueError:
             continue
     return False
+
+
+def _walk_directory_files(
+    roots: list[Path],
+    max_depth: int = 4,
+):
+    for root in roots:
+        root_str = str(root)
+        for dirpath, dirnames, filenames in os.walk(root_str):
+            # Prune ignored directories in-place
+            dirnames[:] = [d for d in dirnames if d not in IGNORED_DIRS and not d.startswith(".")]
+
+            # Check depth relative to root
+            try:
+                rel_parts = Path(dirpath).relative_to(root).parts
+                if len(rel_parts) >= max_depth:
+                    dirnames.clear()
+            except Exception:
+                pass
+
+            for f in filenames:
+                yield Path(dirpath) / f
+
+
+def _search_files_by_name(roots: list[Path], query: str, max_results: int) -> list[dict[str, Any]]:
+    matches = []
+    q_lower = query.lower()
+    for p in _walk_directory_files(roots):
+        if q_lower in p.name.lower():
+            try:
+                st = p.stat()
+                matches.append({
+                    "path": str(p),
+                    "filename": p.name,
+                    "size_bytes": st.st_size,
+                })
+                if len(matches) >= max_results:
+                    break
+            except Exception:
+                continue
+    return matches
+
+
+def _search_files_by_content(roots: list[Path], query: str, max_results: int) -> list[dict[str, Any]]:
+    matches = []
+    q_lower = query.lower()
+    for p in _walk_directory_files(roots):
+        try:
+            st = p.stat()
+            if st.st_size > 2 * 1024 * 1024:  # 2MB limit per file
+                continue
+            text = p.read_text(encoding="utf-8", errors="ignore")
+            if q_lower in text.lower():
+                matches.append({
+                    "path": str(p),
+                    "filename": p.name,
+                    "size_bytes": st.st_size,
+                })
+                if len(matches) >= max_results:
+                    break
+        except Exception:
+            continue
+    return matches
 
 
 class FileFinderSkill(BaseSkill):
@@ -86,23 +165,7 @@ class FileFinderSkill(BaseSkill):
                 raise ValidationFailedError("Parameter 'query' is required for search_name action.")
 
             max_results = min(int(arguments.get("max_results") or 20), 50)
-            matches = []
-
-            for root in approved_roots:
-                try:
-                    for p in root.rglob(f"*{query}*"):
-                        if p.is_file():
-                            matches.append({
-                                "path": str(p),
-                                "filename": p.name,
-                                "size_bytes": p.stat().st_size,
-                            })
-                            if len(matches) >= max_results:
-                                break
-                except Exception:
-                    continue
-                if len(matches) >= max_results:
-                    break
+            matches = await asyncio.to_thread(_search_files_by_name, approved_roots, query, max_results)
 
             return SkillResult(
                 success=True,
@@ -120,28 +183,7 @@ class FileFinderSkill(BaseSkill):
                 raise ValidationFailedError("Parameter 'query' is required for search_content action.")
 
             max_results = min(int(arguments.get("max_results") or 20), 50)
-            matches = []
-
-            for root in approved_roots:
-                try:
-                    for p in root.rglob("*"):
-                        if p.is_file() and p.stat().st_size < 5 * 1024 * 1024:  # 5MB limit
-                            try:
-                                text = p.read_text(encoding="utf-8", errors="ignore")
-                                if query.lower() in text.lower():
-                                    matches.append({
-                                        "path": str(p),
-                                        "filename": p.name,
-                                        "size_bytes": p.stat().st_size,
-                                    })
-                                    if len(matches) >= max_results:
-                                        break
-                            except Exception:
-                                continue
-                except Exception:
-                    continue
-                if len(matches) >= max_results:
-                    break
+            matches = await asyncio.to_thread(_search_files_by_content, approved_roots, query, max_results)
 
             return SkillResult(
                 success=True,
@@ -176,7 +218,6 @@ class FileFinderSkill(BaseSkill):
                 success=True,
                 data={"action": "open", "file_path": str(target_path), "status": "opened"},
             )
-
 
         else:
             raise ValidationFailedError(f"Unsupported file_finder action: '{action}'")
