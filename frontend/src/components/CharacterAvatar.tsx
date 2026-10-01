@@ -61,6 +61,8 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
         return tokens.colors.coreActing;
       case 'ASSISTANT_NEEDS_PERMISSION':
         return tokens.colors.coreConfirm;
+      case 'ASSISTANT_COOLING_DOWN':
+        return '#94A3B8';
       case 'ASSISTANT_SUCCESS':
         return tokens.colors.success;
       case 'ASSISTANT_ERROR':
@@ -103,6 +105,7 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
         width: '130px',
         height: '160px',
         zIndex: 99999,
+        pointerEvents: 'auto',
         cursor: isDragging ? 'grabbing' : 'grab',
         userSelect: 'none',
         touchAction: 'none',

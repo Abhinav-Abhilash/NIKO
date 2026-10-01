@@ -17,7 +17,8 @@ export type AssistantSemanticState =
   | 'ASSISTANT_WAITING'
   | 'ASSISTANT_SUCCESS'
   | 'ASSISTANT_ERROR'
-  | 'ASSISTANT_NEEDS_PERMISSION';
+  | 'ASSISTANT_NEEDS_PERMISSION'
+  | 'ASSISTANT_COOLING_DOWN';
 
 export type CharacterPosture =
   | 'STANDING'

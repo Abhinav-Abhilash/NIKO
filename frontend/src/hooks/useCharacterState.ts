@@ -17,6 +17,9 @@ export interface UseCharacterStateParams {
   hasPendingApproval: boolean;
   activeToolCallsCount: number;
   lastToolStatus?: 'success' | 'error' | null;
+  isCoolingDown?: boolean;
+  cooldownMessage?: string | null;
+  error?: string | null;
   audioLevel?: number;
   initialX?: number;
   initialY?: number;
@@ -48,6 +51,8 @@ export function useCharacterState({
   hasPendingApproval,
   activeToolCallsCount,
   lastToolStatus,
+  isCoolingDown = false,
+  error = null,
   audioLevel = 0,
   initialX,
   initialY,
@@ -74,62 +79,35 @@ export function useCharacterState({
   });
   const hasMovedRef = useRef(false);
 
-  // Inactivity & override states
-  const [inactivityState, setInactivityState] = useState<'ACTIVE' | 'BORED' | 'SLEEPY' | 'SLEEPING'>('ACTIVE');
+  // Reaction overrides and eye blinking
   const [overrideEmotion, setOverrideEmotion] = useState<{ emotion: CharacterEmotion; expiresAt: number } | null>(null);
   const [isBlinking, setIsBlinking] = useState(false);
   const [gaze, setGaze] = useState<CharacterGaze>({ lookX: 0, lookY: 0 });
   const [isLanding, setIsLanding] = useState(false);
 
-  const lastActivityRef = useRef<number>(Date.now());
-
-  // Derive semantic AI state from inputs
+  // Derive semantic AI state strictly from real inputs (no fake timers)
   let semanticState: AssistantSemanticState = 'ASSISTANT_IDLE';
-  if (hasPendingApproval) {
+  if (hasPendingApproval || orbState === 'confirm') {
     semanticState = 'ASSISTANT_NEEDS_PERMISSION';
-  } else if (activeToolCallsCount > 0) {
+  } else if (Boolean(error) || lastToolStatus === 'error') {
+    semanticState = 'ASSISTANT_ERROR';
+  } else if (isCoolingDown) {
+    semanticState = 'ASSISTANT_COOLING_DOWN';
+  } else if (activeToolCallsCount > 0 || orbState === 'acting') {
     semanticState = 'ASSISTANT_WORKING';
-  } else if (isListening) {
-    semanticState = 'ASSISTANT_LISTENING';
   } else if (isSpeaking) {
     semanticState = 'ASSISTANT_SPEAKING';
+  } else if (isListening) {
+    semanticState = 'ASSISTANT_LISTENING';
   } else if (isStreaming || orbState === 'thinking') {
     semanticState = 'ASSISTANT_THINKING';
-  } else if (orbState === 'acting') {
-    semanticState = 'ASSISTANT_PROCESSING';
   } else if (lastToolStatus === 'success') {
     semanticState = 'ASSISTANT_SUCCESS';
-  } else if (lastToolStatus === 'error') {
-    semanticState = 'ASSISTANT_ERROR';
+  } else {
+    semanticState = 'ASSISTANT_IDLE';
   }
 
-  // Activity tracking: any AI state change or voice/stream resets inactivity
-  useEffect(() => {
-    if (semanticState !== 'ASSISTANT_IDLE') {
-      lastActivityRef.current = Date.now();
-      setInactivityState('ACTIVE');
-    }
-  }, [semanticState]);
-
-  // Periodic inactivity timer
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (semanticState !== 'ASSISTANT_IDLE' || isDragging) return;
-      const idleTime = Date.now() - lastActivityRef.current;
-      if (idleTime > 60000) {
-        setInactivityState('SLEEPING');
-      } else if (idleTime > 30000) {
-        setInactivityState('SLEEPY');
-      } else if (idleTime > 15000) {
-        setInactivityState('BORED');
-      } else {
-        setInactivityState('ACTIVE');
-      }
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [semanticState, isDragging]);
-
-  // Natural Blinking Cycle
+  // Natural Blinking Cycle (visual micro-animation, doesn't alter character state)
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
     const runBlink = () => {
@@ -144,12 +122,9 @@ export function useCharacterState({
     return () => clearTimeout(timeoutId);
   }, []);
 
-  // Cursor Tracking for gaze (subtle attention)
+  // Cursor Tracking for gaze (subtle attention towards user cursor)
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      lastActivityRef.current = Date.now();
-      if (inactivityState === 'SLEEPING') return;
-
       const charCenterX = position.x + 60;
       const charCenterY = position.y + 70;
       const dx = e.clientX - charCenterX;
@@ -168,9 +143,9 @@ export function useCharacterState({
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [position, inactivityState]);
+  }, [position]);
 
-  // Derive Character Posture & Emotion
+  // Derive Character Posture & Emotion directly from real state
   let posture: CharacterPosture = 'STANDING';
   let emotion: CharacterEmotion = 'NEUTRAL';
   let environmentState: EnvironmentState = 'DESKTOP';
@@ -184,51 +159,43 @@ export function useCharacterState({
     emotion = 'HAPPY';
   } else {
     switch (semanticState) {
+      case 'ASSISTANT_NEEDS_PERMISSION':
+        posture = 'STANDING';
+        emotion = 'SURPRISED';
+        break;
+      case 'ASSISTANT_ERROR':
+        posture = 'STANDING';
+        emotion = 'SAD';
+        break;
+      case 'ASSISTANT_COOLING_DOWN':
+        posture = 'SITTING';
+        emotion = 'SLEEPY';
+        break;
+      case 'ASSISTANT_WORKING':
+        posture = 'SITTING';
+        emotion = 'NEUTRAL';
+        break;
+      case 'ASSISTANT_SPEAKING':
+        posture = 'STANDING';
+        emotion = 'HAPPY';
+        break;
       case 'ASSISTANT_LISTENING':
         posture = 'STANDING';
         emotion = 'CURIOUS';
         environmentState = 'CURSOR_NEAR';
         break;
       case 'ASSISTANT_THINKING':
-      case 'ASSISTANT_PROCESSING':
         posture = 'STANDING';
         emotion = 'CONFUSED';
-        break;
-      case 'ASSISTANT_SPEAKING':
-        posture = 'STANDING';
-        emotion = 'HAPPY';
-        break;
-      case 'ASSISTANT_WORKING':
-        posture = 'SITTING';
-        emotion = 'NEUTRAL';
-        break;
-      case 'ASSISTANT_NEEDS_PERMISSION':
-        posture = 'STANDING';
-        emotion = 'SURPRISED';
         break;
       case 'ASSISTANT_SUCCESS':
         posture = 'JUMPING';
         emotion = 'EXCITED';
         break;
-      case 'ASSISTANT_ERROR':
-        posture = 'STANDING';
-        emotion = 'SAD';
-        break;
       case 'ASSISTANT_IDLE':
       default:
-        if (inactivityState === 'SLEEPING') {
-          posture = 'SLEEPING';
-          emotion = 'SLEEPY';
-        } else if (inactivityState === 'SLEEPY') {
-          posture = 'SITTING';
-          emotion = 'SLEEPY';
-        } else if (inactivityState === 'BORED') {
-          posture = 'SITTING';
-          emotion = 'BORED';
-        } else {
-          posture = 'STANDING';
-          emotion = 'NEUTRAL';
-        }
+        posture = 'STANDING';
+        emotion = 'NEUTRAL';
         break;
     }
   }
@@ -302,8 +269,6 @@ export function useCharacterState({
   }, []);
 
   const wakeUp = useCallback(() => {
-    lastActivityRef.current = Date.now();
-    setInactivityState('ACTIVE');
     setOverrideEmotion({ emotion: 'SURPRISED', expiresAt: Date.now() + 1500 });
   }, []);
 
