@@ -206,6 +206,11 @@ class SkillService:
             elevated_mode=elevated_mode,
         )
 
+        # Pre-validate and canonicalize arguments for open_app before staging approval or execution
+        if name == "open_app":
+            from backend.app.core.security import canonicalize_open_app_arguments
+            arguments = canonicalize_open_app_arguments(arguments)
+
         # 2. Check if human approval is required
         if decision.requires_approval:
             # Need to stage approval request
@@ -243,6 +248,8 @@ class SkillService:
                     "args_hash": approval.args_hash,
                     "reason": decision.reason,
                     "expires_at": approval.expires_at.isoformat(),
+                    "skill_name": name,
+                    "arguments": arguments,
                 },
             )
 

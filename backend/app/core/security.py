@@ -2,6 +2,8 @@ import hashlib
 import ipaddress
 import json
 import os
+import re
+import shutil
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -118,7 +120,35 @@ def get_default_trusted_windows_dirs() -> list[Path]:
     return trusted
 
 
-DISALLOWED_APP_EXTENSIONS = {".cmd", ".bat", ".vbs", ".ps1", ".sh", ".com"}
+DISALLOWED_APP_EXTENSIONS: frozenset[str] = frozenset({
+    ".cmd", ".bat", ".vbs", ".ps1", ".sh", ".com", ".hta", ".scr", ".pif"
+})
+
+DENIED_LIVING_OFF_THE_LAND_BINARIES: frozenset[str] = frozenset({
+    "cmd",
+    "powershell",
+    "pwsh",
+    "wscript",
+    "cscript",
+    "mshta",
+    "rundll32",
+    "regsvr32",
+    "certutil",
+    "bitsadmin",
+    "msiexec",
+    "wmic",
+    "schtasks",
+    "reg",
+    "sc",
+    "net",
+    "bash",
+    "sh",
+    "csh",
+    "zsh",
+    "conhost",
+})
+
+FORBIDDEN_ARG_CHARS_REGEX: re.Pattern[str] = re.compile(r"[&|;<>\^`$%\r\n]")
 
 
 DEFAULT_APP_ALLOWLIST: dict[str, str] = {
@@ -139,33 +169,38 @@ def get_default_pinned_allowlist() -> list[Path]:
     return pinned
 
 
-def validate_open_app_path(
-    target_path_str: str,
+def validate_open_app_arguments(arguments: list[str]) -> list[str]:
+    """
+    Validate command-line arguments for application launch.
+    - Ensures arguments is a list of strings.
+    - Strictly rejects shell metacharacters: [&|;<>^`$%\r\n]
+    - Rejects null bytes.
+    """
+    if not isinstance(arguments, list):
+        raise ValidationFailedError("Arguments parameter must be a list of strings.")
+
+    validated: list[str] = []
+    for idx, arg in enumerate(arguments):
+        if not isinstance(arg, str):
+            raise ValidationFailedError(f"Argument at index {idx} must be a string, got {type(arg).__name__}.")
+        if "\x00" in arg:
+            raise ValidationFailedError(f"Argument at index {idx} contains forbidden null byte.")
+        match = FORBIDDEN_ARG_CHARS_REGEX.search(arg)
+        if match:
+            raise ValidationFailedError(
+                f"Argument '{arg}' contains forbidden shell metacharacter '{match.group()}'. "
+                "Shell injection metacharacters [&|;<>^`$%\r\n] are blocked."
+            )
+        validated.append(arg)
+    return validated
+
+
+def is_app_allowlisted(
+    target_path: Path,
     allowlist: list[Path] | dict[str, Path | str] | None = None,
-) -> Path:
-    """
-    Validate and pin an exact executable path for the open_app skill.
-    - Resolves symlinks and canonicalizes the path (Path.resolve).
-    - Prevents script wrapper launches (e.g., Code.exe directly, not code.cmd).
-    - Strictly validates against an exact pinned path allowlist (user-editable).
-    - Fully handles paths containing spaces.
-    """
-    if not target_path_str.strip():
-        raise ValidationFailedError("Executable path cannot be empty.")
-
-    target_path = Path(target_path_str).resolve()
-
-    # Block script wrappers and indirect command files
-    ext = target_path.suffix.lower()
-    if ext in DISALLOWED_APP_EXTENSIONS:
-        raise ValidationFailedError(
-            f"Direct execution of script wrapper '{ext}' is forbidden. Launch the primary binary (e.g. .exe) directly."
-        )
-
-    if not target_path.exists():
-        raise ValidationFailedError(f"Target executable does not exist: {target_path}")
-
-    # Build canonical pinned allowlist
+) -> bool:
+    """Return True if the target path matches an explicitly pinned allowlist entry."""
+    resolved = target_path.resolve()
     pinned_paths: list[Path] = []
     if allowlist is not None:
         if isinstance(allowlist, dict):
@@ -173,19 +208,191 @@ def validate_open_app_path(
                 pinned_paths.append(Path(val).resolve())
         else:
             for p in allowlist:
-                pinned_paths.append(p.resolve())
+                pinned_paths.append(Path(p).resolve())
     else:
         pinned_paths = get_default_pinned_allowlist()
 
-    # Exact path comparison
-    for allowed_path in pinned_paths:
+    return any(resolved == p for p in pinned_paths)
+
+
+def validate_open_app_path(
+    target_path_str: str,
+    allowlist: list[Path] | dict[str, Path | str] | None = None,
+) -> Path:
+    """
+    Validate and pin an exact executable path for the open_app skill.
+    - Resolves symlinks and canonicalizes the path (Path.resolve).
+    - Prevents script wrapper launches (e.g. .cmd, .bat, .ps1, etc.).
+    - Strictly denies Living-off-the-Land Binaries (LOLBins) such as cmd, powershell, etc.
+    - Strictly blocks UNC network paths (\\\\server\\share).
+    - Strictly blocks NTFS Alternate Data Streams (ADS).
+    - Enforces path resides inside approved system folders (System32, Program Files, LocalAppData/Programs)
+      or matches an entry in the pinned application allowlist.
+    """
+    if not target_path_str or not target_path_str.strip():
+        raise ValidationFailedError("Executable path cannot be empty.")
+
+    clean_str = target_path_str.strip()
+
+    # Block UNC paths immediately
+    if clean_str.startswith(r"\\") or clean_str.startswith("//"):
+        raise ValidationFailedError(f"UNC network paths are forbidden: '{clean_str}'")
+
+    # Block Alternate Data Streams (ADS): check for colon after drive specification
+    drive_prefix_len = 2 if len(clean_str) >= 2 and clean_str[1] == ":" and clean_str[0].isalpha() else 0
+    if ":" in clean_str[drive_prefix_len:]:
+        raise ValidationFailedError(f"Alternate data streams (ADS) are forbidden: '{clean_str}'")
+
+    raw_path = Path(clean_str)
+
+    # Block script wrappers and indirect command files based on raw path suffix
+    if raw_path.suffix.lower() in DISALLOWED_APP_EXTENSIONS:
+        raise ValidationFailedError(
+            f"Direct execution of script wrapper '{raw_path.suffix.lower()}' is forbidden. Launch the primary binary (e.g. .exe) directly."
+        )
+
+    # Canonicalize and resolve symlinks
+    try:
+        target_path = raw_path.resolve()
+    except Exception as exc:
+        raise ValidationFailedError(f"Invalid executable path '{clean_str}': {exc}") from exc
+
+    # Post-canonicalization checks
+    target_str = str(target_path)
+    if target_str.startswith(r"\\") or target_str.startswith("//"):
+        raise ValidationFailedError(f"UNC network paths are forbidden: '{target_str}'")
+
+    resolved_drive_prefix_len = 2 if len(target_str) >= 2 and target_str[1] == ":" and target_str[0].isalpha() else 0
+    if ":" in target_str[resolved_drive_prefix_len:]:
+        raise ValidationFailedError(f"Alternate data streams (ADS) are forbidden: '{target_str}'")
+
+    ext = target_path.suffix.lower()
+    if ext in DISALLOWED_APP_EXTENSIONS:
+        raise ValidationFailedError(
+            f"Direct execution of script wrapper '{ext}' is forbidden. Launch the primary binary (e.g. .exe) directly."
+        )
+
+    # Deny LOLBins unconditionally (by stem name regardless of location or allowlist)
+    stem_lower = target_path.stem.lower()
+    if stem_lower in DENIED_LIVING_OFF_THE_LAND_BINARIES:
+        raise ValidationFailedError(
+            f"Execution of living-off-the-land binary '{target_path.name}' is strictly denied for security."
+        )
+
+    if not target_path.exists():
+        raise ValidationFailedError(f"Target executable does not exist: {target_path}")
+
+    # Build pinned allowlist paths
+    pinned_paths: list[Path] = []
+    if allowlist is not None:
+        if isinstance(allowlist, dict):
+            for val in allowlist.values():
+                pinned_paths.append(Path(val).resolve())
+        else:
+            for p in allowlist:
+                pinned_paths.append(Path(p).resolve())
+
+        for allowed_path in pinned_paths:
+            if target_path == allowed_path:
+                return target_path
+
+        raise ValidationFailedError(
+            f"Executable '{target_path}' is not in the pinned application allowlist. "
+            "Add this exact executable to your allowlist in Settings to authorize it."
+        )
+
+    # Default mode: check default pinned allowlist first
+    for allowed_path in get_default_pinned_allowlist():
         if target_path == allowed_path:
             return target_path
 
+    # Check approved system directories
+    for trusted_dir in get_default_trusted_windows_dirs():
+        try:
+            if target_path.is_relative_to(trusted_dir):
+                return target_path
+        except (ValueError, AttributeError):
+            continue
+
     raise ValidationFailedError(
-        f"Executable '{target_path}' is not in the pinned application allowlist. "
+        f"Executable '{target_path}' is not in the pinned application allowlist or approved system folders. "
         "Add this exact executable to your allowlist in Settings to authorize it."
     )
+
+
+def resolve_open_app_target(
+    app_name: str | None = None,
+    executable_path: str | None = None,
+    allowlist: list[Path] | dict[str, Path | str] | None = None,
+) -> tuple[Path, bool]:
+    """
+    Resolve and validate an application target either from app_name or executable_path.
+    Returns (resolved_path, is_allowlisted).
+    """
+    clean_app_name = (app_name or "").strip().lower()
+    clean_exe_path = (executable_path or "").strip()
+
+    if clean_exe_path:
+        target_path = validate_open_app_path(clean_exe_path, allowlist=allowlist)
+        allowlisted = is_app_allowlisted(target_path, allowlist=allowlist)
+        return target_path, allowlisted
+
+    if clean_app_name:
+        allowlist_dict = allowlist if isinstance(allowlist, dict) else DEFAULT_APP_ALLOWLIST
+        if clean_app_name in allowlist_dict:
+            target_path = validate_open_app_path(str(allowlist_dict[clean_app_name]), allowlist=allowlist)
+            return target_path, True
+
+        resolved = shutil.which(clean_app_name)
+        if resolved:
+            target_path = validate_open_app_path(resolved, allowlist=allowlist)
+            allowlisted = is_app_allowlisted(target_path, allowlist=allowlist)
+            return target_path, allowlisted
+
+        raise ValidationFailedError(
+            f"Application '{clean_app_name}' was not found in allowlist or system PATH."
+        )
+
+    raise ValidationFailedError("Either 'app_name' or 'executable_path' must be provided.")
+
+
+def canonicalize_open_app_arguments(
+    arguments: dict[str, Any],
+    allowlist: list[Path] | dict[str, Path | str] | None = None,
+) -> dict[str, Any]:
+    """
+    Canonicalize and pre-validate arguments for open_app skill execution / approval staging.
+    - Validates arguments structure and checks for shell metacharacters.
+    - Resolves executable target path canonicalized.
+    - Enforces that arguments can ONLY be passed to explicitly allowlisted applications.
+    - Returns normalized dictionary with resolved executable_path and arguments list.
+    """
+    app_name = (arguments.get("app_name") or "").strip().lower()
+    executable_path = (arguments.get("executable_path") or "").strip()
+    raw_args = arguments.get("arguments") or []
+
+    if not isinstance(raw_args, list) or not all(isinstance(a, str) for a in raw_args):
+        raise ValidationFailedError("Arguments parameter must be a list of strings.")
+
+    validated_args = validate_open_app_arguments(raw_args)
+
+    target_exe, is_allowlisted = resolve_open_app_target(
+        app_name=app_name,
+        executable_path=executable_path,
+        allowlist=allowlist,
+    )
+
+    if validated_args and not is_allowlisted:
+        raise ValidationFailedError(
+            f"Passing command-line arguments is restricted to explicitly allowlisted applications. "
+            f"'{target_exe.name}' is not in the allowlist."
+        )
+
+    return {
+        "app_name": app_name or target_exe.stem,
+        "executable_path": str(target_exe),
+        "arguments": validated_args,
+    }
 
 
 def validate_url(url_str: str, allow_private: bool = False) -> str:
