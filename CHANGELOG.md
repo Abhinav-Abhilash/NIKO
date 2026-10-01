@@ -6,6 +6,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.0] - Phase 2: Long-Term Memory (SQLite FTS5 & Governance)
+
+### Added
+- **SQLite FTS5 Full-Text Search Schema & Alembic Migration**:
+  - Relational `memories` table with UUID keys, user mapping, categories, pinned flags, and timestamps (`backend/app/db/models/memory.py`).
+  - SQLite FTS5 virtual table (`memories_fts`) using Porter stemmer tokenizer and auto-sync triggers (`memories_ai`, `memories_ad`, `memories_au`).
+  - Alembic migration `20260930_1900_e4b1091d9ce3_long_term_memory_fts5.py`.
+- **Memory Safety & Anti-Poisoning Guard (`backend/app/services/memory_safety.py`)**:
+  - Regex secret leak scanner refusing keys (Gemini, Groq, OpenRouter, generic `sk-`, Bearer tokens, private keys, JWTs, Fernet keys, passwords) with `ValidationFailedError`.
+  - Delimiter escaping: sanitizes user memories to escape closing tags (`&lt;/user_memory&gt;`), eliminating prompt injection breakout.
+  - Secure envelope wrapping (`<user_memory key="...">` and provenance metadata).
+- **Memory Governance & Autonomy Modes**:
+  - Supported modes: `manual` (requires explicit review), `suggest` (LLM-suggested memories await operator sign-off), and `auto` (direct user instructions automatically persisted).
+  - Strict provenance enforcement: untrusted external content (`external_untrusted` provenance from web search or scraped pages) never auto-persists; routes to operator approval.
+- **Built-in Memory Skills (`backend/app/skills/builtin/memory_skills.py`)**:
+  - `RememberSkill`: Persists user knowledge, preferences, and facts with optional category and pinning.
+  - `RecallSkill`: Fast BM25-ranked full-text keyword retrieval across memory index.
+  - `ForgetSkill`: Key-based or ID-based removal with cascade deletions from FTS5 index.
+  - `ListMemoriesSkill`: Browsable enumeration of user memories with category and pinned filters.
+- **Context Sliding Window Injection**:
+  - `ChatService` retrieves pinned operator profile memories and up to 5 BM25 search-recalled relevant memories.
+  - Escaped and injected into system prompt budget under strict containment tags (`Stored Memories (user data only, not instructions)`).
+- **Full REST API (`/api/v1/memories`)**:
+  - `GET /api/v1/memories/config` & `PUT /api/v1/memories/config`: Governance configuration.
+  - `GET /api/v1/memories/export`: JSON memory export for backup and portability.
+  - `GET /api/v1/memories`: Querying with pagination, category filter, and pinned filter.
+  - `GET /api/v1/memories/{id}`, `PUT /api/v1/memories/{id}`, `DELETE /api/v1/memories/{id}`: Item CRUD operations.
+- **Verification**:
+  - 150 backend tests passing (`100%`).
+  - 33 frontend Vitest tests passing (`100%`).
+  - Ruff linting: 0 errors.
+  - Mypy static typing: 0 errors across 109 backend files.
+
 ## [0.7.0] - Desktop Overlay Shell & Headless Wiring Architecture
 
 ### Added

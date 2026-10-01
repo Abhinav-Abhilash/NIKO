@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "test": "vitest run",
+    "test": "vitest run --pool=forks",
     "preview": "vite preview",
     "generate:api": "python ../scripts/export_openapi.py && openapi-typescript ../storage/openapi.json -o src/types/api.generated.ts"
   },

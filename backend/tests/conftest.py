@@ -1,3 +1,4 @@
+import contextlib
 import os
 import tempfile
 from collections.abc import AsyncGenerator
@@ -60,8 +61,11 @@ def test_settings() -> Settings:
 async def test_engine(test_settings: Settings) -> AsyncGenerator[AsyncEngine, None]:
     engine = create_async_engine(test_settings.DATABASE_URL, future=True, poolclass=NullPool)
     configure_sqlite_pragmas(engine)
+    from backend.app.db.models.memory import init_memory_fts5_schema
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(init_memory_fts5_schema)
     yield engine
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
@@ -70,9 +74,13 @@ async def test_engine(test_settings: Settings) -> AsyncGenerator[AsyncEngine, No
 
 @pytest.fixture(autouse=True)
 async def clean_db_tables(test_engine: AsyncEngine) -> AsyncGenerator[None, None]:
+    from sqlalchemy import text
+
     async with test_engine.begin() as conn:
         for table in reversed(Base.metadata.sorted_tables):
             await conn.execute(table.delete())
+        with contextlib.suppress(Exception):
+            await conn.execute(text("DELETE FROM memories_fts;"))
     yield
 
 

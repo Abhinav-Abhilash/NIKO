@@ -90,3 +90,23 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             raise
         finally:
             await session.close()
+
+
+def verify_fts5_support() -> bool:
+    """
+    Verify that SQLite FTS5 extension is compiled and available in the current environment.
+    Raises RuntimeError if FTS5 is missing.
+    """
+    import sqlite3
+
+    try:
+        conn = sqlite3.connect(":memory:")
+        conn.execute("CREATE VIRTUAL TABLE _fts5_probe USING fts5(x);")
+        conn.execute("DROP TABLE _fts5_probe;")
+        conn.close()
+        return True
+    except Exception as exc:
+        raise RuntimeError(
+            "SQLite FTS5 full-text search extension is not available in the current Python SQLite build."
+        ) from exc
+

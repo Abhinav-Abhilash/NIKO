@@ -23,6 +23,17 @@ config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 target_metadata = Base.metadata
 
 
+def include_object(
+    _object: object,
+    name: str | None,
+    type_: str,
+    _reflected: bool,
+    _compare_to: object,
+) -> bool:
+    """Exclude SQLite FTS5 virtual table and internal shadow tables from autogenerate."""
+    return not (type_ == "table" and name and (name == "memories_fts" or name.startswith("memories_fts_")))
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode with render_as_batch=True."""
     url = config.get_main_option("sqlalchemy.url")
@@ -32,6 +43,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         render_as_batch=True,
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -43,6 +55,7 @@ def do_run_migrations(connection: Connection) -> None:
         connection=connection,
         target_metadata=target_metadata,
         render_as_batch=True,
+        include_object=include_object,
     )
 
     with context.begin_transaction():

@@ -13,6 +13,12 @@ from backend.app.services.approval_service import ApprovalService
 from backend.app.services.audit_service import AuditService
 from backend.app.skills.base import AutonomyPolicy, SkillContext, SkillExecutor, SkillResult
 from backend.app.skills.builtin.datetime_skill import DateTimeSkill
+from backend.app.skills.builtin.memory_skills import (
+    ForgetSkill,
+    ListMemoriesSkill,
+    RecallSkill,
+    RememberSkill,
+)
 from backend.app.skills.builtin.open_app_skill import OpenAppSkill
 from backend.app.skills.builtin.reminders_skill import RemindersSkill
 from backend.app.skills.builtin.screenshot_skill import ScreenshotSkill
@@ -70,6 +76,10 @@ class SkillService:
             ScreenshotSkill(),
             VolumeBrightnessSkill(),
             RemindersSkill(),
+            RememberSkill(),
+            RecallSkill(),
+            ForgetSkill(),
+            ListMemoriesSkill(),
         ]
         for skill in builtin_skill_instances:
             if not self.registry.has(skill.manifest.name):

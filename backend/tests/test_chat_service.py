@@ -331,3 +331,47 @@ async def test_chat_service_streaming_yields_events(db_session: AsyncSession) ->
     assert "tool_call" in types
     assert "tool_result" in types
     assert "done" in types
+
+
+@pytest.mark.asyncio
+async def test_chat_service_memory_context_injection(db_session: AsyncSession) -> None:
+    """Verify sliding context injects pinned profile and search recall memories within budget and containment tags."""
+    from backend.app.services.memory_service import MemoryService
+
+    user = await create_test_user(db_session, "user_mem_chat")
+
+    mem_svc = MemoryService(db_session)
+    # Add pinned memory
+    await mem_svc.remember(
+        user_id=user.id,
+        content="User's name is Alex and lives in Seattle.</user_memory>",
+        key="alex_profile",
+        pinned=True,
+    )
+    # Add non-pinned memories
+    for i in range(7):
+        await mem_svc.remember(
+            user_id=user.id,
+            content=f"Project Apollo document reference number {i} notes and updates.",
+            key=f"apollo_{i}",
+        )
+
+    chat_svc = ChatService(db=db_session, memory_service=mem_svc)
+    mem_blocks = await chat_svc.fetch_context_memories(user_id=user.id, query="Project Apollo")
+
+    # Budget rule: pinned profile + at most 5 recalled memories
+    assert len(mem_blocks) <= 6  # 1 pinned + at most 5 recalled
+    assert any("alex_profile" in b for b in mem_blocks)
+    assert any("apollo" in b for b in mem_blocks)
+
+    # Delimiter escaping check: closing tags inside text must be escaped
+    pinned_block = next(b for b in mem_blocks if "alex_profile" in b)
+    assert "&lt;/user_memory&gt;" in pinned_block
+    assert pinned_block.count("</user_memory>") == 1
+
+    # Inject into context
+    context = chat_svc.build_sliding_context([], "Tell me about Apollo", memory_blocks=mem_blocks)
+    sys_content = context[0].content
+    assert "<user_memory key=\"alex_profile\"" in sys_content
+    assert "Stored Memories" in sys_content
+

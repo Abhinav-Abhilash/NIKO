@@ -25,8 +25,11 @@ def test_tracked_files_contain_no_secrets() -> None:
     tracked_files = [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
     for file_rel in tracked_files:
-        # Ignore test files that might test regex pattern matching itself
-        if file_rel == "backend/tests/test_secret_leak_guard.py":
+        # Ignore test files that test secret detection pattern matching
+        if file_rel in (
+            "backend/tests/test_secret_leak_guard.py",
+            "backend/tests/test_memory_safety.py",
+        ):
             continue
 
         file_path = repo_root / file_rel

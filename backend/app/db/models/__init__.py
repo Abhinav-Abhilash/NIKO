@@ -234,3 +234,25 @@ class StorageReport(Base, UUIDMixin):
     created_at: Mapped[datetime] = mapped_column(
         UTCDateTime, default=get_utc_now, nullable=False
     )
+
+
+# Long-term memory model
+from backend.app.db.models.memory import Memory  # noqa: E402
+
+__all__ = [
+    "Approval",
+    "Base",
+    "CommandLog",
+    "Conversation",
+    "LLMProviderModel",
+    "Memory",
+    "Message",
+    "Reminder",
+    "Session",
+    "Setting",
+    "SkillConfig",
+    "StorageReport",
+    "SystemMetric",
+    "ToolCall",
+    "User",
+]
