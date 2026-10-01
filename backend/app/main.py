@@ -54,6 +54,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     )
     metrics_service = None
     reminder_service = None
+    task_scheduler_service = None
 
     if settings.APP_ENV != "test":
         metrics_service = get_metrics_service(session_factory=get_session_maker())
@@ -61,6 +62,10 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
 
         reminder_service = get_reminder_service()
         await reminder_service.start_background_worker()
+
+        from backend.app.services.task_scheduler_service import get_task_scheduler_service
+        task_scheduler_service = get_task_scheduler_service(session_factory=get_session_maker())
+        await task_scheduler_service.start_background_worker()
 
         # Discover models asynchronously at startup from each provider's list endpoint
         import asyncio
@@ -94,6 +99,8 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     if settings.APP_ENV != "test":
         from backend.app.llm.deferred_queue import deferred_queue
         deferred_queue.stop_worker()
+        if task_scheduler_service:
+            await task_scheduler_service.stop_background_worker()
         if reminder_service:
             await reminder_service.stop_background_worker()
         if metrics_service:
