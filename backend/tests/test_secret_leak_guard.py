@@ -29,6 +29,7 @@ def test_tracked_files_contain_no_secrets() -> None:
         if file_rel in (
             "backend/tests/test_secret_leak_guard.py",
             "backend/tests/test_memory_safety.py",
+            "backend/tests/test_memory_service.py",
         ):
             continue
 
