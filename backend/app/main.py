@@ -91,6 +91,8 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
                     if "openrouter" not in keys and settings.INITIAL_OPENROUTER_API_KEY:
                         keys["openrouter"] = settings.INITIAL_OPENROUTER_API_KEY
                     await model_discovery.refresh_all(keys)
+                    from backend.app.llm.orchestrator import get_llm_orchestrator
+                    get_llm_orchestrator(provider_keys=keys)
             except Exception as e:
                 logger.warning("Startup model discovery encounter issue", error=str(e))
 
@@ -228,6 +230,7 @@ def create_app() -> FastAPI:
 
     # 5. Route Inclusions
     app.include_router(health_router)
+    app.include_router(health_router, prefix="/api/v1")
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(approvals_router, prefix="/api/v1")
     app.include_router(skills_router, prefix="/api/v1")

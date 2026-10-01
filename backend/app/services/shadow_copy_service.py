@@ -1,13 +1,12 @@
 import hashlib
 import json
-import os
 import shutil
 import time
 import uuid
 from pathlib import Path
 from typing import Any
 
-from backend.app.core.exceptions import NotFoundError, ValidationFailedError
+from backend.app.core.exceptions import NotFoundError
 from backend.app.core.logging import get_logger
 
 logger = get_logger("shadow_copy_service")

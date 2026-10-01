@@ -1,13 +1,11 @@
-import math
-import os
 import re
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import delete, select, text
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.core.exceptions import NotFoundError, ValidationFailedError
+from backend.app.core.exceptions import NotFoundError
 from backend.app.core.logging import get_logger
 from backend.app.db.models.document import Document, DocumentChunk, init_document_fts5_schema
 

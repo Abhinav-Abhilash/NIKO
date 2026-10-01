@@ -1,11 +1,11 @@
 import asyncio
+import contextlib
 import json
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
 
-from backend.app.core.exceptions import NotFoundError, ValidationFailedError
 from backend.app.core.logging import get_logger
 from backend.app.skills.base import BaseSkill, SkillContext, SkillManifest, SkillResult, SkillTier
 from backend.app.skills.registry import SkillRegistry, get_skill_registry
@@ -147,9 +147,9 @@ class MCPJsonRpcClient:
 
         try:
             return await asyncio.wait_for(future, timeout=timeout)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             self._pending_requests.pop(req_id, None)
-            raise TimeoutError(f"MCP request '{method}' to '{self.config.name}' timed out after {timeout}s.")
+            raise TimeoutError(f"MCP request '{method}' to '{self.config.name}' timed out after {timeout}s.") from None
 
     async def _send_notification(self, method: str, params: dict[str, Any]) -> None:
         """Send a fire-and-forget JSON-RPC notification."""
@@ -189,10 +189,8 @@ class MCPJsonRpcClient:
                 self.process.terminate()
                 await asyncio.wait_for(self.process.wait(), timeout=2.0)
             except Exception:
-                try:
+                with contextlib.suppress(Exception):
                     self.process.kill()
-                except Exception:
-                    pass
             self.process = None
 
 
