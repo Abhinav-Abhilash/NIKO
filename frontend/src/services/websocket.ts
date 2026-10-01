@@ -13,7 +13,7 @@ export class WebSocketClient {
 
   constructor() {
     const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsHost = import.meta.env.VITE_WS_HOST || 'localhost:7421';
+    const wsHost = import.meta.env.VITE_WS_HOST || 'localhost:8000';
     this.url = `${wsProto}//${wsHost}/ws`;
   }
 
