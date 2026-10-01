@@ -3,6 +3,7 @@ import type { OrbState } from '../hooks/useOrbState';
 import { CharacterAvatar } from './CharacterAvatar';
 import { useCharacterState } from '../hooks/useCharacterState';
 import { useApprovals, type PendingApproval, type ApprovalPersistence } from '../hooks/useApprovals';
+import { soundService } from '../services/soundService';
 
 export interface PetCompanionProps {
   orbState: OrbState;
@@ -77,15 +78,31 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
 
   const approvalCardRef = useRef<HTMLDivElement | null>(null);
 
-  // Auto-focus the approval prompt whenever an approval request arrives so Enter/Esc hotkeys immediately register
+  // Auto-focus the approval prompt and play approval cue whenever an approval request arrives (ducked if mic/TTS active)
   useEffect(() => {
     if (hasPendingApproval && pendingApproval) {
+      soundService.playSound('approval', { isListening, isSpeaking });
       const timer = setTimeout(() => {
         approvalCardRef.current?.focus();
       }, 20);
       return () => clearTimeout(timer);
     }
-  }, [hasPendingApproval, pendingApproval]);
+  }, [hasPendingApproval, pendingApproval, isListening, isSpeaking]);
+
+  const handlePetClick = () => {
+    soundService.playSound('click', { isListening, isSpeaking });
+    onExpand();
+  };
+
+  const handleApproveWithSound = (persistence: ApprovalPersistence = 'once') => {
+    soundService.playSound('click', { isListening, isSpeaking });
+    handleApprove(persistence);
+  };
+
+  const handleDenyWithSound = (reason = 'denied_by_user') => {
+    soundService.playSound('click', { isListening, isSpeaking });
+    handleDeny(reason);
+  };
 
   return (
     <div
@@ -113,9 +130,9 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
         activeSpeechSnippet={activeSpeechSnippet}
         onPointerDown={charState.startDrag}
         onPointerMove={charState.onDrag}
-        onPointerUp={(e) => charState.endDrag(e, onExpand)}
+        onPointerUp={(e) => charState.endDrag(e, handlePetClick)}
         onToggleVoice={onToggleVoice}
-        onOpenCardHUD={onExpand}
+        onOpenCardHUD={handlePetClick}
       />
 
       {/* Unreachable-Proof Approval Card Prompt (clickable, auto-focused, Enter/Esc keyboard accessible) */}
@@ -131,11 +148,11 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
-              handleApprove('once');
+              handleApproveWithSound('once');
             } else if (e.key === 'Escape') {
               e.preventDefault();
               e.stopPropagation();
-              handleDeny('denied_by_user');
+              handleDenyWithSound('denied_by_user');
             }
           }}
           style={{
@@ -212,7 +229,7 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
             <button
               type="button"
               data-testid="pet-deny-btn"
-              onClick={() => handleDeny('denied_by_user')}
+              onClick={() => handleDenyWithSound('denied_by_user')}
               style={{
                 padding: '6px 14px',
                 fontSize: '12px',
@@ -229,7 +246,7 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
             <button
               type="button"
               data-testid="pet-approve-btn"
-              onClick={() => handleApprove('once')}
+              onClick={() => handleApproveWithSound('once')}
               style={{
                 padding: '6px 16px',
                 fontSize: '12px',
