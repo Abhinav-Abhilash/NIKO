@@ -119,3 +119,198 @@ E:\NIKO AI
 ├── src-tauri/                # Native desktop shell wrapper (Rust / Cargo)
 └── storage/                  # Runtime database, voice audio references, undo snapshots
 ```
+
+---
+
+## 3. HOW IT WAS BUILT (THE DECISIONS)
+
+### Core Component Mechanisms
+
+* **Config and Secrets:** Managed via Pydantic Settings in `backend/app/config.py`. Sensitive values (`INITIAL_GEMINI_API_KEY`, `INITIAL_GROQ_API_KEY`, `INITIAL_OPENROUTER_API_KEY`, `JWT_SECRET_KEY`, `ENCRYPTION_KEY`, `SETUP_TOKEN`) are loaded from `.env` or system environment, registered in `core/logging.py` for global regex masking in logs, and stored in SQLite encrypted using Fernet symmetric cryptography with SHA-256 derived keys.
+* **Database & Migrations:** Built on SQLAlchemy 2.0 Async with `aiosqlite` driving `storage/niko.db`. WAL (Write-Ahead Logging) journal mode is enforced on connection. Migrations are managed via Alembic (`alembic/versions/`). SQLite FTS5 extension is verified at startup in `verify_fts5_support()`.
+* **Auth & Sessions:** JWT authentication using HS256 algorithm with 15-minute access token expiry and rotating refresh tokens (7-day TTL). Refresh tokens are hashed via SHA-256 before storage in the `sessions` table. Passwords use Argon2id with 64MB memory cost and 3 iterations (`core/security.py`).
+* **Approvals & Args Hash:** Human-In-The-Loop requests generate cryptographic SHA-256 argument hashes (`args_hash = hashlib.sha256(json.dumps(args, sort_keys=True).encode()).hexdigest()`) stored in `approval_requests`. When an approval response arrives, the args are re-hashed to verify that arguments were not tampered with between generation and execution.
+* **EventBus:** In-process async pub/sub bus (`backend/app/core/events.py`) supporting wildcard topics (`*`), request correlation IDs, and non-blocking asyncio queues. Dispatches IPC and internal state events between services without tight coupling.
+* **WebSocket Hub:** Connection hub (`backend/app/api/v1/websocket.py`) supporting ping/pong heartbeats (30s interval), channel subscriptions (`chat`, `voice`, `approvals`, `system`), authorized origin filtering (`WS_ALLOWED_ORIGINS`), and dual-protocol JSON message multiplexing.
+* **Skill Framework & Executor:** Base skill class (`backend/app/skills/base.py`) defining manifests, argument schemas (Pydantic), security tiers (`SAFE`, `CONFIRM`, `BLOCKED`), and timeout limits. `LocalExecutor` runs tools with isolated subprocess timeouts, capturing stdout/stderr and returning structured `SkillResult` envelopes.
+* **Provenance Guard & Autonomy:** `SkillGuard` intercepts all skill invocation requests. Direct user requests follow configured autonomy policies (`auto`, `ask`, `auto+log`). Untrusted or external content (from web scrape, clipboard, or third-party documents) is strictly constrained: state-altering tools require approval regardless of autonomy settings (`test_skill_guard_provenance.py`).
+* **Metrics Service:** Background daemon (`services/metrics_service.py`) sampling CPU utilization, RAM usage, storage volume capacity, and ping latency every 5 seconds, persisted to `system_metrics` table with 24-hour retention pruning.
+* **LLM Providers:** Abstract interface (`llm/base.py`) with specialized adapters for **Google Gemini** (`llm/providers/gemini.py`), **Groq** (`llm/providers/groq.py`), and **OpenRouter** (`llm/providers/openrouter.py`). Normalizes function calling, streaming chunks, and token usage headers.
+* **Orchestrator:** Multi-provider fallback router (`llm/orchestrator.py`). Dispatches requests along configured role fallback chains (`primary` $\to$ `secondary` $\to$ `tertiary`), automatically skipping cooled-down or rate-limited models.
+* **Cooldown & Pruning:** `PredictiveCooldownTracker` tracks TPM/RPM consumption across sliding windows. Engages temporary cooldown at 90% quota saturation or upon receiving upstream HTTP 429 headers. `prune_tool_output()` bounds historical tool result payloads to 2,000 characters to prevent context window explosion.
+* **ChatService:** Orchestrates the conversational agent lifecycle: fetches context messages, invokes LLM with active skill schemas, parses tool calls, evaluates autonomy guard permissions, and yields structured streaming events.
+* **Settings API:** REST endpoints (`/api/v1/settings/*`) allowing runtime role model re-mapping, hotkey customization, and provider API key submission (encrypted before write).
+* **Startup Tasks:** Executed in FastAPI `lifespan`: initializes database directories, verifies FTS5 support, starts background collectors (metrics, reminders, scheduled tasks), seeds provider keys into the LLM orchestrator, and executes model discovery.
+
+---
+
+### Top 10 Architectural Decisions & Alternatives Rejected
+
+1. **Local Edge Neural TTS vs. ElevenLabs Instant Cloning:**
+   * *Decision:* Used `edge-tts` (Microsoft Neural voices: `ja-JP-NanamiNeural` modulated to English with +45Hz pitch) running in <300ms locally.
+   * *Alternative Rejected:* ElevenLabs Instant Voice Cloning.
+   * *Rationale:* ElevenLabs Free Tier strictly paywalls instant cloning (`HTTP 400 can_not_use_instant_voice_cloning`). Edge-TTS operates with zero recurring costs, zero cloud tokens, and negligible CPU footprint without CUDA dependencies.
+2. **SQLite FTS5 vs. ChromaDB / External Vector DB:**
+   * *Decision:* Built episodic memory and document retrieval directly on SQLite FTS5 with BM25 ranking and token trigram tokenizers.
+   * *Alternative Rejected:* ChromaDB / Qdrant / Pinecone.
+   * *Rationale:* Eliminates heavy PyTorch/ONNX runtime overhead (>500MB RAM), runs single-file embedded on host with sub-10ms search latency, and introduces zero external database processes.
+3. **Pure SVG Procedural Character Avatar vs. Live2D / Spine:**
+   * *Decision:* Implemented procedural React SVG chibi avatar with dynamic coordinate mouth apertures and posture transforms.
+   * *Alternative Rejected:* Live2D Cubism SDK or Spine 2D WebGL.
+   * *Rationale:* Live2D requires proprietary licenses and large WebGL canvas memory footprints (~150MB). Pure SVG weighs <25KB, consumes <1% CPU, supports crisp arbitrary DPI scaling, and integrates directly with React DOM state without Canvas context loss.
+4. **Predictive Rate Limiting vs. Reactive Retry Loops:**
+   * *Decision:* Track sliding token/request consumption locally and throttle at 90% capacity.
+   * *Alternative Rejected:* Blind exponential backoff on HTTP 429 errors.
+   * *Rationale:* Reactive retries cause sluggish 10-30s UI stalls during streaming and exhaust rate limits faster. Predictive routing fails over instantly (<50ms) to the next provider before errors occur.
+5. **Human-In-The-Loop Args Cryptographic Hash vs. Simple Approval IDs:**
+   * *Decision:* Required `args_hash = sha256(json.dumps(args))` in approval verification.
+   * *Alternative Rejected:* Trusting the frontend approval payload by ID alone.
+   * *Rationale:* Prevents privilege escalation and prompt injection attacks where an attacker alters tool parameters between approval generation and user confirmation.
+6. **Zero-Local LLM / Pure Free Cloud Routing vs. Ollama Local Models:**
+   * *Decision:* Strictly route reasoning through verified free-tier cloud endpoints (Gemini, Groq, OpenRouter).
+   * *Alternative Rejected:* Local Ollama 7B/8B models.
+   * *Rationale:* The host environment operates on integrated AMD Radeon graphics (no dedicated VRAM). Running local quantizations would consume 6GB+ RAM and yield sluggish 4-8 tokens/sec, crippling the assistant experience.
+7. **FastAPI + Asyncio Daemon vs. Electron Monolith:**
+   * *Decision:* Decoupled lightweight Python FastAPI backend with Tauri Rust desktop shell.
+   * *Alternative Rejected:* Monolithic Electron Node.js runtime.
+   * *Rationale:* Electron consumes 300MB+ idle RAM. Tauri + FastAPI backend consumes ~100MB RAM combined and provides native Windows OS API bindings (Win32 API, PowerShell) cleanly via Python.
+8. **Subprocess Isolation with Execution Timeouts vs. In-Process Python Exec:**
+   * *Decision:* Spawn external tool execution via isolated subprocesses with 5-30s timeouts.
+   * *Alternative Rejected:* In-process `exec()` / `eval()`.
+   * *Rationale:* Prevents tool bugs or infinite loops from freezing the assistant daemon event loop or corrupting interpreter memory.
+9. **Ephemeral Undo Shadow Copy vs. Git-backed File Versioning:**
+   * *Decision:* Implemented `ShadowCopyService` caching previous file revisions in `storage/undo_staging/` with 5-second undo toast windows and 24-hour cleanup.
+   * *Alternative Rejected:* Initializing hidden Git repositories inside user folders.
+   * *Rationale:* Transparent, non-intrusive, and supports arbitrary system directories without littering user directories with `.git` metadata.
+10. **Dual HUD Overlays (Pet Companion + Bottom HUD Card) Sharing React State vs. Independent Windows:**
+    * *Decision:* Unified overlay state machine where Pet Avatar and Card HUD share the same WebSocket hook contexts.
+    * *Alternative Rejected:* Multiple separate browser windows with `BroadcastChannel` IPC.
+    * *Rationale:* Prevents audio queue desynchronization, double-speaking bugs, and WebSocket connection explosion.
+
+---
+
+## 4. INTERFACES
+
+### API Route Catalog
+
+| Method | Path | Auth Required | CSRF / Origin Guard | Description |
+|:---|:---|:---:|:---:|:---|
+| `GET` | `/health` | No | Origin Header Checked | Health status and disk space check |
+| `GET` | `/api/v1/health` | No | Origin Header Checked | API v1 prefixed health endpoint |
+| `POST` | `/api/v1/auth/setup` | No (Setup Token) | Strict Origin + Token | Initial admin onboarding barrier |
+| `POST` | `/api/v1/auth/login` | No | Strict Origin | User login, issues HTTP-only JWT cookies |
+| `POST` | `/api/v1/auth/refresh` | Yes (Cookie) | Strict Origin + Family Check | Refresh token rotation |
+| `POST` | `/api/v1/auth/logout` | Yes (Token) | Strict Origin | Revokes current session |
+| `GET` | `/api/v1/auth/me` | Yes (Token) | Origin Checked | Returns current authenticated user profile |
+| `GET` | `/api/v1/approvals/pending` | Yes (Owner) | Origin Checked | Lists active HITL approval requests |
+| `GET` | `/api/v1/approvals/{id}` | Yes (Owner) | Origin Checked | Get specific approval details |
+| `POST` | `/api/v1/approvals/{id}/respond` | Yes (Owner) | Origin + CSRF Token Header | Approve or deny pending tool execution |
+| `GET` | `/api/v1/skills` | Yes (User) | Origin Checked | List all registered skills and configurations |
+| `PATCH` | `/api/v1/skills/{name}` | Yes (Owner) | Origin + CSRF Token Header | Update skill tier, autonomy, or enablement |
+| `POST` | `/api/v1/skills/{name}/execute` | Yes (Owner) | Origin + CSRF Token Header | Manually trigger skill execution |
+| `POST` | `/api/v1/skills/undo/{id}/cancel` | Yes (Owner) | Origin + CSRF Token Header | Abort execution during 5-second undo window |
+| `GET` | `/api/v1/documents` | Yes (User) | Origin Checked | List ingested documents and chunks |
+| `POST` | `/api/v1/documents` | Yes (User) | Origin + CSRF Token Header | Ingest and index local text or PDF document |
+| `POST` | `/api/v1/documents/query` | Yes (User) | Origin Checked | Search documents via FTS5 BM25 matching |
+| `GET` | `/api/v1/metrics/current` | Yes (User) | Origin Checked | Live CPU, RAM, storage, and latency metrics |
+| `GET` | `/api/v1/metrics/history` | Yes (User) | Origin Checked | 24-hour historical telemetry telemetry |
+| `POST` | `/api/v1/metrics/visibility` | Yes (User) | Origin + CSRF Token Header | Toggle metric widget display preferences |
+| `GET` | `/api/v1/settings/roles` | Yes (User) | Origin Checked | Get current role-to-model configuration |
+| `PUT` | `/api/v1/settings/roles` | Yes (Owner) | Origin + CSRF Token Header | Update role-to-model mappings |
+| `GET` | `/api/v1/settings/models/status` | Yes (User) | Origin Checked | Get live provider availability & cooldowns |
+| `POST` | `/api/v1/settings/models/refresh` | Yes (Owner) | Origin + CSRF Token Header | Force re-discovery of provider model endpoints |
+| `GET` | `/api/v1/reminders` | Yes (User) | Origin Checked | List user reminders |
+| `POST` | `/api/v1/reminders` | Yes (User) | Origin + CSRF Token Header | Create a new scheduled reminder |
+| `DELETE` | `/api/v1/reminders/{id}` | Yes (User) | Origin + CSRF Token Header | Delete a reminder |
+| `GET` | `/api/v1/memories` | Yes (User) | Origin Checked | List episodic memories |
+| `POST` | `/api/v1/memories/search` | Yes (User) | Origin Checked | FTS5 search across stored memories |
+| `GET` | `/api/v1/mcp/servers` | Yes (Owner) | Origin Checked | List registered MCP server configs |
+| `POST` | `/api/v1/mcp/servers` | Yes (Owner) | Origin + CSRF Token Header | Register new MCP server process |
+| `GET` | `/api/v1/schedules` | Yes (User) | Origin Checked | List recurring cron tasks |
+| `POST` | `/api/v1/schedules` | Yes (User) | Origin + CSRF Token Header | Create a new recurring cron schedule |
+| `GET` | `/api/v1/undo/snapshots` | Yes (Owner) | Origin Checked | List available shadow copy snapshots |
+| `POST` | `/api/v1/undo/restore` | Yes (Owner) | Origin + CSRF Token Header | Restore file from shadow copy snapshot |
+| `WS` | `/ws` | Query Param / Cookie | Origin Header Checked | Bidirectional WebSocket communication hub |
+
+---
+
+### WebSocket Message Types & Payload Schemas
+
+1. **`chat:message` (Client $\to$ Server):**
+   ```json
+   { "type": "chat:message", "content": "Open Spotify", "role": "chat", "elevated_mode": false }
+   ```
+2. **`chat:chunk` (Server $\to$ Client):**
+   ```json
+   { "type": "chat:chunk", "request_id": "req_1", "conversation_id": "conv_1", "chunk": "Opening..." }
+   ```
+3. **`voice:tts_chunk` (Server $\to$ Client):**
+   ```json
+   { "type": "voice:tts_chunk", "request_id": "req_1", "sentence": "Opening Spotify for you!", "audio_base64": "UklGR..." }
+   ```
+4. **`voice:barge_in` (Client $\to$ Server & Server $\to$ Client):**
+   ```json
+   { "type": "voice:barge_in", "action": "flush_audio_queue", "timestamp": 1727829000000 }
+   ```
+5. **`chat:tool_call` (Server $\to$ Client):**
+   ```json
+   { "type": "chat:tool_call", "request_id": "req_1", "name": "open_app", "arguments": { "app_name": "spotify" }, "tool_call_id": "call_1" }
+   ```
+6. **`chat:tool_result` (Server $\to$ Client):**
+   ```json
+   { "type": "chat:tool_result", "request_id": "req_1", "name": "open_app", "result": { "status": "launched" }, "status": "success" }
+   ```
+7. **`chat:approval_required` (Server $\to$ Client):**
+   ```json
+   { "type": "chat:approval_required", "request_id": "req_1", "approval": { "id": "app_1", "skill_name": "open_app", "arguments": { "app_name": "cmd.exe" }, "timeout_seconds": 30 } }
+   ```
+
+---
+
+### Registered Skills Specification (21 Built-in Tools)
+
+| Skill Name | Security Tier | Default Autonomy | Sandbox Timeout | Operational Status |
+|:---|:---:|:---:|:---:|:---:|
+| `clipboard` | `CONFIRM` | `ask` | 5s | **DONE** |
+| `datetime` | `SAFE` | `auto` | 5s | **DONE** |
+| `system_stats` | `SAFE` | `auto` | 10s | **DONE** |
+| `media_control` | `SAFE` | `auto` | 5s | **DONE** |
+| `window_control` | `CONFIRM` | `ask` | 5s | **DONE** |
+| `notes` | `SAFE` | `auto` | 10s | **DONE** |
+| `file_finder` | `SAFE` | `auto` | 20s | **DONE** |
+| `disk_cleaner` | `CONFIRM` | `ask` | 30s | **DONE** |
+| `open_app` | `CONFIRM` | `ask` | 15s | **DONE** |
+| `web_search` | `SAFE` | `auto` | 20s | **DONE** |
+| `youtube_play` | `CONFIRM` | `auto+log` | 15s | **DONE** |
+| `screenshot` | `SAFE` | `auto` | 15s | **DONE** |
+| `volume_brightness`| `CONFIRM` | `auto+log` | 10s | **DONE** |
+| `reminders` | `CONFIRM` | `auto+log` | 10s | **DONE** |
+| `schedule_task` | `CONFIRM` | `ask` | 15s | **DONE** |
+| `remember` | `SAFE` | `auto+log` | 10s | **DONE** |
+| `recall` | `SAFE` | `auto` | 5s | **DONE** |
+| `forget` | `CONFIRM` | `ask` | 5s | **DONE** |
+| `list_memories` | `SAFE` | `auto` | 5s | **DONE** |
+| `undo` | `CONFIRM` | `ask` | 15s | **DONE** |
+| `document_search` | `SAFE` | `auto` | 20s | **DONE** |
+
+---
+
+## 5. MODELS AND PROVIDERS
+
+### Verified Role-to-Model Registry
+
+| Role | Primary Target | Secondary Fallback | Tertiary Fallback | Context Budget |
+|:---|:---|:---|:---|:---:|
+| **`light`** | `gemini/gemini-2.0-flash-lite` | `groq/openai/gpt-oss-20b` | `groq/llama-3.1-8b-instant` | 4,000 tokens |
+| **`chat`** | `gemini/gemini-2.0-flash` | `groq/openai/gpt-oss-120b` | `groq/llama-3.3-70b-versatile` | 16,000 tokens |
+| **`code`** | `gemini/gemini-2.0-flash` | `groq/openai/gpt-oss-120b` | `openrouter/openrouter/free` | 32,000 tokens |
+| **`search`** | `gemini/gemini-2.0-flash-lite` | `groq/openai/gpt-oss-20b` | — | 8,000 tokens |
+
+### Runtime Model Discovery & Storage Mechanism
+1. **Dynamic Endpoint Validation:** On startup (`main.py` lifespan), `ModelDiscoveryService` invokes provider listing endpoints. Unavailable models are flagged in memory without failing startup.
+2. **Key Storage:** Provider keys (`gemini`, `groq`, `openrouter`) are submitted via settings API or loaded from `.env`, encrypted via Fernet, and saved in SQLite `system_settings` under key `provider_api_keys`.
+3. **Failover Execution Proof:**
+   In [test_llm_roles_and_fallback.py](file:///e:/NIKO%20AI/backend/tests/test_llm_roles_and_fallback.py#L48-L80):
+   * When Primary returns HTTP 429 (`ProviderRateLimitError`), the orchestrator automatically records a cooldown timestamp on the primary target and immediately retries the secondary model (`MockProvider/groq`) without leaking errors to the client.
+   * When all configured providers return 429 or 404, the orchestrator raises `AllProvidersExhaustedError`, triggering a cooldown banner on the client HUD.
+
