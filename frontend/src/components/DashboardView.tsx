@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import type { SystemMetrics } from '../types';
+import React, { useEffect, useState, useCallback } from 'react';
+import type { SystemMetrics, ScheduledTaskItem } from '../types';
+import { ApiService } from '../services/api';
+import { toastService } from '../services/toast';
 
 interface DashboardViewProps {
   metrics: SystemMetrics;
@@ -16,19 +18,66 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
   const defaultWidgets: WidgetConfig[] = [
     { id: 'telemetry_cards', title: 'Hardware & IPC Telemetry', visible: true },
     { id: 'provider_matrix', title: 'Provider Latency & Availability Matrix', visible: true },
+    { id: 'task_queue', title: 'Task Queue & Scheduled Hooks', visible: true },
     { id: 'engine_diagnostics', title: 'Agent Engine & Socket Health', visible: true },
   ];
 
   const [widgets, setWidgets] = useState<WidgetConfig[]>(() => {
     try {
       const saved = localStorage.getItem('niko_dashboard_widgets');
-      return saved ? JSON.parse(saved) : defaultWidgets;
+      if (saved) {
+        const parsed: WidgetConfig[] = JSON.parse(saved);
+        // Ensure new default widgets like task_queue are added if not present
+        const ids = new Set(parsed.map((w) => w.id));
+        const merged = [...parsed];
+        for (const dw of defaultWidgets) {
+          if (!ids.has(dw.id)) {
+            merged.push(dw);
+          }
+        }
+        return merged;
+      }
+      return defaultWidgets;
     } catch {
       return defaultWidgets;
     }
   });
 
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+
+  // Live state for widgets
+  const [modelStatus, setModelStatus] = useState<{ discovered: Record<string, any>; quotas: Record<string, any> }>({
+    discovered: {},
+    quotas: {},
+  });
+  const [scheduledTasks, setScheduledTasks] = useState<ScheduledTaskItem[]>([]);
+  const [healthStatus, setHealthStatus] = useState<{ status: string; uptime_seconds: number }>({
+    status: 'healthy',
+    uptime_seconds: 0,
+  });
+  const [loadingTasks, setLoadingTasks] = useState(false);
+
+  // Fetch live widget data
+  const fetchLiveData = useCallback(async () => {
+    try {
+      const [statusData, schedulesData, healthData] = await Promise.all([
+        ApiService.getModelsStatus(),
+        ApiService.getSchedules(),
+        ApiService.getHealth().catch(() => ({ status: 'unknown', uptime_seconds: 0 })),
+      ]);
+      setModelStatus(statusData);
+      setScheduledTasks(schedulesData);
+      setHealthStatus(healthData);
+    } catch (err: any) {
+      console.warn('Could not fetch all dashboard telemetry:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLiveData();
+    const interval = setInterval(fetchLiveData, 15000);
+    return () => clearInterval(interval);
+  }, [fetchLiveData]);
 
   useEffect(() => {
     localStorage.setItem('niko_dashboard_widgets', JSON.stringify(widgets));
@@ -63,6 +112,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
     setWidgets(defaultWidgets);
   };
 
+  const handleToggleTask = async (taskId: string, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+      await ApiService.toggleSchedule(taskId, newStatus);
+      toastService.success('Task Updated', `Task set to ${newStatus}.`);
+      fetchLiveData();
+    } catch (err: any) {
+      toastService.error('Update Failed', err.message || 'Could not update task.');
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      await ApiService.deleteSchedule(taskId);
+      toastService.info('Task Removed', 'Scheduled task was deleted.');
+      fetchLiveData();
+    } catch (err: any) {
+      toastService.error('Delete Failed', err.message || 'Could not delete task.');
+    }
+  };
+
+  const handleRefreshClick = () => {
+    onRefresh();
+    fetchLiveData();
+  };
+
   return (
     <div className="flex-1 overflow-y-auto p-gutter-md flex flex-col gap-6 max-w-6xl mx-auto w-full font-mono">
       {/* View Header */}
@@ -84,7 +159,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
             Reset Grid
           </button>
           <button
-            onClick={onRefresh}
+            onClick={handleRefreshClick}
             className="flex items-center gap-2 px-3 py-1.5 bg-primary-container text-on-primary-container font-bold rounded text-xs transition-colors shadow-[0_0_10px_rgba(255,176,32,0.3)]"
           >
             <span className="material-symbols-outlined text-sm">refresh</span>
@@ -145,7 +220,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
                     <div className="text-2xl font-bold text-on-surface">
                       {metrics.coreOnline ? 'ONLINE' : 'OFFLINE'}
                     </div>
-                    <div className="text-[11px] text-secondary">IPC Hub Active: 7421</div>
+                    <div className="text-[11px] text-secondary">
+                      Uptime: {Math.floor(healthStatus.uptime_seconds / 60)}m ({healthStatus.uptime_seconds}s)
+                    </div>
                   </div>
 
                   {/* CPU */}
@@ -201,7 +278,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
                       {metrics.pingMs} ms
                     </div>
                     <div className="text-[11px] text-on-surface-variant">
-                      Zero-hop local loopback
+                      Zero-hop local loopback (7421)
                     </div>
                   </div>
                 </div>
@@ -211,49 +288,142 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
               {widget.id === 'provider_matrix' && (
                 <div className="bg-surface-container-low p-5 rounded-xl border border-surface-variant/40 flex flex-col gap-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {/* Gemini Provider Card */}
                     <div className="p-3.5 bg-surface-container rounded-lg border border-surface-variant/40 flex flex-col gap-1">
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-bold text-on-surface">Google Gemini</span>
                         <span className="text-secondary font-bold text-[10px] px-1.5 py-0.5 bg-secondary/10 rounded">
-                          PRIMARY
+                          {modelStatus.quotas?.gemini?.cooling_down ? 'COOLDOWN' : 'ACTIVE / PRIMARY'}
                         </span>
                       </div>
-                      <div className="text-on-surface-variant text-[11px]">Model: gemini-2.0-flash</div>
+                      <div className="text-on-surface-variant text-[11px]">
+                        Model: {modelStatus.discovered?.gemini?.primary_model || 'gemini-2.0-flash'}
+                      </div>
                       <div className="text-primary-container text-xs font-semibold mt-1">
                         Est. TTFT: ~280ms
                       </div>
+                      {modelStatus.quotas?.gemini?.cooling_down && (
+                        <div className="text-[10px] text-warning mt-0.5">
+                          Reset in: {modelStatus.quotas.gemini.remaining_seconds}s
+                        </div>
+                      )}
                     </div>
 
+                    {/* Groq Cloud Card */}
                     <div className="p-3.5 bg-surface-container rounded-lg border border-surface-variant/40 flex flex-col gap-1">
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-bold text-on-surface">Groq Cloud</span>
                         <span className="text-secondary font-bold text-[10px] px-1.5 py-0.5 bg-secondary/10 rounded">
-                          FALLBACK #1
+                          {modelStatus.quotas?.groq?.cooling_down ? 'COOLDOWN' : 'STANDBY / LPU'}
                         </span>
                       </div>
-                      <div className="text-on-surface-variant text-[11px]">Model: llama-3.3-70b-versatile</div>
-                      <div className="text-primary-container text-xs font-semibold mt-1">
-                        Est. TTFT: ~120ms (LPU)
+                      <div className="text-on-surface-variant text-[11px]">
+                        Model: {modelStatus.discovered?.groq?.primary_model || 'llama-3.3-70b-versatile'}
                       </div>
+                      <div className="text-primary-container text-xs font-semibold mt-1">
+                        Est. TTFT: ~120ms (Ultra-Low Latency)
+                      </div>
+                      {modelStatus.quotas?.groq?.cooling_down && (
+                        <div className="text-[10px] text-warning mt-0.5">
+                          Reset in: {modelStatus.quotas.groq.remaining_seconds}s
+                        </div>
+                      )}
                     </div>
 
+                    {/* OpenRouter Card */}
                     <div className="p-3.5 bg-surface-container rounded-lg border border-surface-variant/40 flex flex-col gap-1">
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-bold text-on-surface">OpenRouter</span>
                         <span className="text-secondary font-bold text-[10px] px-1.5 py-0.5 bg-secondary/10 rounded">
-                          FALLBACK #2
+                          {modelStatus.quotas?.openrouter?.cooling_down ? 'COOLDOWN' : 'MULTI-ROUTER'}
                         </span>
                       </div>
-                      <div className="text-on-surface-variant text-[11px]">Model: qwen/qwen-2.5-coder-32b</div>
-                      <div className="text-primary-container text-xs font-semibold mt-1">
-                        Free Tier Standby
+                      <div className="text-on-surface-variant text-[11px]">
+                        Model: {modelStatus.discovered?.openrouter?.primary_model || 'qwen/qwen-2.5-coder-32b'}
                       </div>
+                      <div className="text-primary-container text-xs font-semibold mt-1">
+                        Auto-Routing & Free Standby
+                      </div>
+                      {modelStatus.quotas?.openrouter?.cooling_down && (
+                        <div className="text-[10px] text-warning mt-0.5">
+                          Reset in: {modelStatus.quotas.openrouter.remaining_seconds}s
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Widget 3: Engine Diagnostics */}
+              {/* Widget 3: Task Queue & Scheduled Hooks */}
+              {widget.id === 'task_queue' && (
+                <div className="bg-surface-container-low p-5 rounded-xl border border-surface-variant/40 flex flex-col gap-3">
+                  <div className="flex items-center justify-between text-xs text-on-surface-variant">
+                    <span>REGISTERED BACKGROUND AGENT HOOKS ({scheduledTasks.length})</span>
+                    <button
+                      type="button"
+                      onClick={fetchLiveData}
+                      className="text-primary-container hover:underline text-[11px]"
+                    >
+                      Refresh Queue
+                    </button>
+                  </div>
+
+                  {scheduledTasks.length === 0 ? (
+                    <div className="p-4 bg-surface-container rounded-lg border border-surface-variant/20 text-center text-xs text-on-surface-variant">
+                      No automated tasks scheduled. You can ask NIKO: <span className="text-primary">"Schedule system diagnostics daily at 8am"</span>.
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      {scheduledTasks.map((t) => (
+                        <div
+                          key={t.id}
+                          className="p-3 bg-surface-container rounded-lg border border-surface-variant/30 flex items-center justify-between gap-4 text-xs"
+                        >
+                          <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-on-surface truncate">{t.name}</span>
+                              <span
+                                className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                                  t.status === 'active'
+                                    ? 'bg-secondary/15 text-secondary'
+                                    : 'bg-surface-variant text-on-surface-variant'
+                                }`}
+                              >
+                                {t.status}
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-on-surface-variant mt-0.5 truncate">
+                              Type: {t.task_type} {t.cron_expression ? `(${t.cron_expression})` : ''} · Action: {t.action_type}
+                              {t.next_run_at && (
+                                <span> · Next run: {new Date(t.next_run_at).toLocaleTimeString()}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleTask(t.id, t.status)}
+                              className="px-2 py-1 bg-surface-container-high hover:bg-surface-variant text-on-surface rounded text-[11px] transition-colors"
+                            >
+                              {t.status === 'active' ? 'Pause' : 'Resume'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteTask(t.id)}
+                              className="px-2 py-1 bg-error/15 hover:bg-error/25 text-error rounded text-[11px] transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Widget 4: Engine Diagnostics */}
               {widget.id === 'engine_diagnostics' && (
                 <div className="bg-surface-container-low p-5 rounded-xl border border-surface-variant/40 flex flex-col gap-3 text-xs">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

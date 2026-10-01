@@ -158,4 +158,43 @@ export class ApiService {
       return [];
     }
   }
+
+  // -------------------------------------------------------------------
+  // Model Status & Quotas
+  // -------------------------------------------------------------------
+
+  public static async getModelsStatus(): Promise<{ discovered: Record<string, unknown>; quotas: Record<string, unknown> }> {
+    try {
+      return await this.request<{ discovered: Record<string, unknown>; quotas: Record<string, unknown> }>('/settings/models/status');
+    } catch {
+      return { discovered: {}, quotas: {} };
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // Scheduled Tasks (Task Queue)
+  // -------------------------------------------------------------------
+
+  public static async getSchedules(): Promise<any[]> {
+    try {
+      const data = await this.request<{ tasks: any[] }>('/schedules');
+      return data.tasks || [];
+    } catch {
+      return [];
+    }
+  }
+
+  public static async toggleSchedule(taskId: string, status: 'active' | 'paused'): Promise<void> {
+    await this.request(`/schedules/${taskId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  public static async deleteSchedule(taskId: string): Promise<void> {
+    await this.request(`/schedules/${taskId}`, {
+      method: 'DELETE',
+    });
+  }
 }
+

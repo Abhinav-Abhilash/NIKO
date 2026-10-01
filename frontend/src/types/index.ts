@@ -88,3 +88,22 @@ export interface AuditLogEntry {
   details?: Record<string, unknown>;
   hmacVerified: boolean;
 }
+
+export interface ScheduledTaskItem {
+  id: string;
+  name: string;
+  task_type: 'cron' | 'interval' | 'once';
+  action_type: 'skill' | 'notification' | 'agent_prompt';
+  action_payload: Record<string, unknown>;
+  cron_expression?: string | null;
+  interval_seconds?: number | null;
+  next_run_at?: string | null;
+  last_run_at?: string | null;
+  status: 'active' | 'paused' | 'completed' | 'failed';
+}
+
+export interface ModelStatusSummary {
+  discovered: Record<string, unknown>;
+  quotas: Record<string, unknown>;
+}
+
