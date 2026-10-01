@@ -11,7 +11,9 @@ from fastapi.responses import JSONResponse
 
 from backend.app.api.v1.approvals import router as approvals_router
 from backend.app.api.v1.auth import router as auth_router
+from backend.app.api.v1.documents import router as documents_router
 from backend.app.api.v1.health import router as health_router
+from backend.app.api.v1.mcp import router as mcp_router
 from backend.app.api.v1.memories import router as memories_router
 from backend.app.api.v1.metrics import router as metrics_router
 from backend.app.api.v1.reminders import router as reminders_router
@@ -19,6 +21,7 @@ from backend.app.api.v1.schedules import router as schedules_router
 from backend.app.api.v1.settings import router as settings_router
 from backend.app.api.v1.skills import router as skills_router
 from backend.app.api.v1.storage import router as storage_router
+from backend.app.api.v1.undo import router as undo_router
 from backend.app.api.v1.websocket import router as ws_router
 from backend.app.config import get_settings
 from backend.app.core.exceptions import register_exception_handlers
@@ -228,12 +231,15 @@ def create_app() -> FastAPI:
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(approvals_router, prefix="/api/v1")
     app.include_router(skills_router, prefix="/api/v1")
+    app.include_router(documents_router, prefix="/api/v1")
     app.include_router(metrics_router, prefix="/api/v1")
     app.include_router(settings_router, prefix="/api/v1")
     app.include_router(reminders_router, prefix="/api/v1")
     app.include_router(memories_router, prefix="/api/v1")
+    app.include_router(mcp_router, prefix="/api/v1")
     app.include_router(schedules_router, prefix="/api/v1")
     app.include_router(storage_router, prefix="/api/v1")
+    app.include_router(undo_router, prefix="/api/v1")
     app.include_router(ws_router)
 
     return app

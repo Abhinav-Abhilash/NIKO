@@ -239,7 +239,8 @@ class StorageReport(Base, UUIDMixin):
     )
 
 
-# Long-term memory model
+# Long-term memory and document models
+from backend.app.db.models.document import Document, DocumentChunk  # noqa: E402
 from backend.app.db.models.memory import Memory  # noqa: E402
 from backend.app.db.models.note import NoteItem  # noqa: E402
 from backend.app.db.models.scheduled_task import ScheduledTask  # noqa: E402
@@ -249,6 +250,8 @@ __all__ = [
     "Base",
     "CommandLog",
     "Conversation",
+    "Document",
+    "DocumentChunk",
     "LLMProviderModel",
     "Memory",
     "Message",

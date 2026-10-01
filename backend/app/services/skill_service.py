@@ -15,6 +15,7 @@ from backend.app.skills.base import AutonomyPolicy, SkillContext, SkillExecutor,
 from backend.app.skills.builtin.clipboard_skill import ClipboardSkill
 from backend.app.skills.builtin.datetime_skill import DateTimeSkill
 from backend.app.skills.builtin.disk_cleaner_skill import DiskCleanerSkill
+from backend.app.skills.builtin.document_search_skill import DocumentSearchSkill
 from backend.app.skills.builtin.file_finder_skill import FileFinderSkill
 from backend.app.skills.builtin.media_control_skill import MediaControlSkill
 from backend.app.skills.builtin.memory_skills import (
@@ -29,6 +30,7 @@ from backend.app.skills.builtin.reminders_skill import RemindersSkill
 from backend.app.skills.builtin.schedule_task_skill import ScheduleTaskSkill
 from backend.app.skills.builtin.screenshot_skill import ScreenshotSkill
 from backend.app.skills.builtin.system_stats_skill import SystemStatsSkill
+from backend.app.skills.builtin.undo_skill import UndoSkill
 from backend.app.skills.builtin.volume_brightness_skill import VolumeBrightnessSkill
 from backend.app.skills.builtin.web_search_skill import WebSearchSkill
 from backend.app.skills.builtin.window_control_skill import WindowControlSkill
@@ -95,6 +97,8 @@ class SkillService:
             RecallSkill(),
             ForgetSkill(),
             ListMemoriesSkill(),
+            UndoSkill(),
+            DocumentSearchSkill(),
         ]
         for skill in builtin_skill_instances:
             if not self.registry.has(skill.manifest.name):
