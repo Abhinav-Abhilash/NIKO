@@ -26,7 +26,7 @@ async def test_file_finder_open_unapproved_path() -> None:
 
     res = await skill.execute({"action": "open", "file_path": "C:\\Windows\\System32\\cmd.exe"}, ctx)
     assert res.success is False
-    assert "Access denied" in res.error
+    assert res.error is not None and "Access denied" in res.error
 
 
 @pytest.mark.asyncio

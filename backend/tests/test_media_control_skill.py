@@ -33,4 +33,4 @@ async def test_media_control_invalid_action() -> None:
 
     res = await skill.execute({"action": "unknown_action"}, ctx)
     assert res.success is False
-    assert "Unsupported media action" in res.error
+    assert res.error is not None and "Unsupported media action" in res.error

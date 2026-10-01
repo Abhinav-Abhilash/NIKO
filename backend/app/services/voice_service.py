@@ -188,9 +188,9 @@ class NikoVoiceSynthesizer:
 
         communicate = edge_tts.Communicate(
             text=clean_text,
-            voice=self.voice,
-            pitch=self.pitch,
-            rate=self.rate,
+            voice=self.voice or "ja-JP-NanamiNeural",
+            pitch=self.pitch or "+45Hz",
+            rate=self.rate or "+10%",
         )
 
         chunks: list[bytes] = []

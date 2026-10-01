@@ -42,4 +42,4 @@ async def test_clipboard_invalid_action() -> None:
 
     res = await skill.execute({"action": "invalid_op"}, ctx)
     assert res.success is False
-    assert "Unsupported clipboard action" in res.error
+    assert res.error is not None and "Unsupported clipboard action" in res.error

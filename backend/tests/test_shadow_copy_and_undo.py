@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 import pytest
 from httpx import AsyncClient
@@ -22,7 +23,7 @@ def shadow_service(tmp_path: Path) -> ShadowCopyService:
 
 
 @pytest.fixture
-async def owner_token_and_headers(db_session) -> dict[str, str]:
+async def owner_token_and_headers(db_session: Any) -> dict[str, str]:
     from datetime import timedelta
 
     from backend.app.config import get_settings

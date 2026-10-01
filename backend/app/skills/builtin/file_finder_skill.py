@@ -1,5 +1,6 @@
 import asyncio
 import os
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -50,7 +51,7 @@ def is_path_approved(target_path: Path, approved_roots: list[Path]) -> bool:
 def _walk_directory_files(
     roots: list[Path],
     max_depth: int = 4,
-):
+) -> Iterator[Path]:
     for root in roots:
         root_str = str(root)
         for dirpath, dirnames, filenames in os.walk(root_str):

@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 from httpx import AsyncClient
@@ -92,7 +93,7 @@ def mock_mcp_script(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-async def owner_token_and_headers(db_session) -> dict[str, str]:
+async def owner_token_and_headers(db_session: Any) -> dict[str, str]:
     from datetime import timedelta
 
     from backend.app.config import get_settings

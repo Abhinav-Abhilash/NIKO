@@ -22,9 +22,9 @@ def extract_text_from_file(file_path: Path) -> list[tuple[int | None, str]]:
     if ext == ".pdf":
         try:
             # Try pypdf if available
-            import pypdf
+            import pypdf  # type: ignore[import-not-found]
             reader = pypdf.PdfReader(str(file_path))
-            pages = []
+            pages: list[tuple[int | None, str]] = []
             for idx, page in enumerate(reader.pages):
                 page_text = page.extract_text() or ""
                 if page_text.strip():

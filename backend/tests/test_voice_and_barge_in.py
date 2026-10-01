@@ -1,4 +1,5 @@
 import asyncio
+from collections.abc import AsyncGenerator
 
 import pytest
 
@@ -49,7 +50,7 @@ def test_sentence_divider_abbreviations_and_numbers() -> None:
 
 @pytest.mark.asyncio
 async def test_split_stream_sentences_generator() -> None:
-    async def token_generator():
+    async def token_generator() -> AsyncGenerator[str, None]:
         tokens = ["Good ", "morning, ", "operator! ", "All ", "systems ", "are ", "operational.\n", "Ready."]
         for t in tokens:
             await asyncio.sleep(0.001)
@@ -92,7 +93,7 @@ async def test_voice_barge_in_engine() -> None:
 
     barge_in_called = False
 
-    def on_barge():
+    def on_barge() -> None:
         nonlocal barge_in_called
         barge_in_called = True
 

@@ -48,8 +48,7 @@ async def test_window_control_focus_nonexistent() -> None:
 
     res = await skill.execute({"action": "focus", "title": "NonExistentWindowTitle_9999"}, ctx)
     assert res.success is False
-    assert "No active window matching" in res.error
-
+    assert res.error is not None and "No active window matching" in res.error
 
 
 @pytest.mark.asyncio
@@ -59,4 +58,4 @@ async def test_window_control_invalid_action() -> None:
 
     res = await skill.execute({"action": "destroy"}, ctx)
     assert res.success is False
-    assert "Unsupported window action" in res.error
+    assert res.error is not None and "Unsupported window action" in res.error
