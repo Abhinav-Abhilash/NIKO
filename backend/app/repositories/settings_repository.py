@@ -53,3 +53,26 @@ class SettingsRepository:
                     decrypted = decrypt_secret(p.encrypted_api_key, encryption_key)
                     keys[p.name.lower()] = decrypted
         return keys
+
+    async def get_hotkey(self) -> str:
+        setting = await self.get_setting("shell_hotkey")
+        if setting and setting.value_json:
+            try:
+                data = json.loads(setting.value_json)
+                return str(data.get("hotkey", "Ctrl+Space"))
+            except Exception:
+                pass
+        return "Ctrl+Space"
+
+    async def save_hotkey(self, hotkey: str) -> Setting:
+        from pathlib import Path
+
+        json_val = json.dumps({"hotkey": hotkey})
+        setting = await self.set_setting("shell_hotkey", json_val, category="system")
+        try:
+            config_path = Path("storage/shell_config.json")
+            config_path.parent.mkdir(parents=True, exist_ok=True)
+            config_path.write_text(json_val, encoding="utf-8")
+        except Exception:
+            pass
+        return setting

@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends, Request
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.config import Settings, get_settings
@@ -13,6 +14,7 @@ from backend.app.llm.types import ModelRolesConfig
 from backend.app.repositories.settings_repository import SettingsRepository
 
 router = APIRouter(prefix="/settings", tags=["Settings & Model Roles"])
+
 
 
 @router.get("/roles", response_model=ModelRolesConfig)
@@ -79,3 +81,45 @@ async def get_models_status(
         "discovered": model_discovery.get_discovered_summary(),
         "quotas": cooldown_tracker.get_status(),
     }
+
+class HotkeyConfig(BaseModel):
+    hotkey: str = Field(default="Ctrl+Space", min_length=2, max_length=50)
+
+    @field_validator("hotkey")
+    @classmethod
+    def validate_hotkey(cls, v: str) -> str:
+        clean = v.strip()
+        parts = [p.strip() for p in clean.replace("-", "+").split("+") if p.strip()]
+        if not parts:
+            raise ValueError("Hotkey cannot be empty")
+        valid_modifiers = {"ctrl", "control", "alt", "shift", "super", "cmd", "command", "commandorcontrol"}
+        has_mod = any(p.lower() in valid_modifiers for p in parts[:-1]) or len(parts) >= 2
+        if not has_mod and len(parts) < 2:
+            raise ValueError("Hotkey must include a modifier key (e.g. Ctrl, Alt, Shift) or key combination")
+        return clean
+
+
+@router.get("/hotkey", response_model=HotkeyConfig)
+async def get_shell_hotkey(
+    _current_owner: User = Depends(get_current_owner),
+    db: AsyncSession = Depends(get_db),
+) -> HotkeyConfig:
+    """Retrieve the configured desktop overlay global hotkey."""
+    repo = SettingsRepository(db)
+    hotkey = await repo.get_hotkey()
+    return HotkeyConfig(hotkey=hotkey)
+
+
+@router.put("/hotkey", response_model=HotkeyConfig)
+async def update_shell_hotkey(
+    payload: HotkeyConfig,
+    _request: Request,
+    _current_owner: User = Depends(get_current_owner),
+    db: AsyncSession = Depends(get_db),
+) -> HotkeyConfig:
+    """Update the desktop overlay global hotkey and sync to storage/shell_config.json."""
+    repo = SettingsRepository(db)
+    await repo.save_hotkey(payload.hotkey)
+    await db.commit()
+    return payload
+

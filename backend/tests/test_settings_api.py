@@ -117,3 +117,53 @@ async def test_models_status_and_refresh(
         refresh_data = refresh_res.json()
         assert refresh_data["status"] == "refreshed"
         assert "discovered_models" in refresh_data
+
+
+@pytest.mark.asyncio
+async def test_get_and_put_shell_hotkey(
+    async_client: AsyncClient, owner_token_and_headers: dict[str, str]
+) -> None:
+    # 1. Get default hotkey
+    res = await async_client.get("/api/v1/settings/hotkey", headers=owner_token_and_headers)
+    assert res.status_code == 200
+    assert res.json()["hotkey"] == "Ctrl+Space"
+
+    # 2. Update to a new valid combination
+    put_res = await async_client.put(
+        "/api/v1/settings/hotkey",
+        headers=owner_token_and_headers,
+        json={"hotkey": "Alt+Space"},
+    )
+    assert put_res.status_code == 200
+    assert put_res.json()["hotkey"] == "Alt+Space"
+
+    # 3. Verify persistence
+    get_res2 = await async_client.get("/api/v1/settings/hotkey", headers=owner_token_and_headers)
+    assert get_res2.status_code == 200
+    assert get_res2.json()["hotkey"] == "Alt+Space"
+
+
+@pytest.mark.asyncio
+async def test_put_shell_hotkey_validation_and_security(
+    async_client: AsyncClient, owner_token_and_headers: dict[str, str]
+) -> None:
+    # 1. Empty hotkey rejected
+    res_empty = await async_client.put(
+        "/api/v1/settings/hotkey",
+        headers=owner_token_and_headers,
+        json={"hotkey": ""},
+    )
+    assert res_empty.status_code == 422
+
+    # 2. Single key without modifier rejected
+    res_single = await async_client.put(
+        "/api/v1/settings/hotkey",
+        headers=owner_token_and_headers,
+        json={"hotkey": "K"},
+    )
+    assert res_single.status_code == 422
+
+    # 3. Unauthorized request without auth header rejected
+    res_unauth = await async_client.get("/api/v1/settings/hotkey")
+    assert res_unauth.status_code in (401, 403)
+
