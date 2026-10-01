@@ -24,6 +24,7 @@ export interface ChatStreamState {
   messages: ChatMessageItem[];
   isStreaming: boolean;
   streamingRequestId: string | null;
+  streamingContent: string;
   activeToolCalls: ToolCallItem[];
   error: string | null;
 }
@@ -232,10 +233,16 @@ export function useChatStream(): UseChatStreamReturn {
     };
   }, []);
 
+  const streamingContent =
+    isStreaming && messages.length > 0 && messages[messages.length - 1].role === 'assistant'
+      ? messages[messages.length - 1].content
+      : '';
+
   return {
     messages,
     isStreaming,
     streamingRequestId,
+    streamingContent,
     activeToolCalls,
     error,
     sendMessage,
