@@ -192,3 +192,34 @@ Design files imported into `frontend/design-import/` must consume these hooks ra
 - Typography (font families, sizes, weights, line heights)
 - Spacing & Radii (padding, gap, border-radius tokens)
 - Elevation & Glow (shadows, neon reactor glow vectors)
+
+---
+
+## 7. Virtual Pet Companion & Real Character Telemetry Contract
+
+The virtual pet companion (`PetCompanion` and `CharacterAvatar`) reflects NIKO's live operational states derived strictly from real event bus topics and UI hooks.
+
+### Real State Machine & Emotion Mapping (Zero Fake Timers)
+Artificial inactivity timers that simulated boredom or sleep without real runtime events are prohibited. The pet transitions only in response to genuine backend and audio pipeline events:
+
+| Real State | Semantic State (`AssistantSemanticState`) | Posture (`CharacterPosture`) | Emotion (`CharacterEmotion`) | Telemetry Trigger / Event Topic | Payload Format |
+|---|---|---|---|---|---|
+| **Idle** | `ASSISTANT_IDLE` | `STANDING` | `NEUTRAL` | Default resting state; all streams idle, no active tools or cooldowns | `{ isIdle: true }` |
+| **Thinking** | `ASSISTANT_THINKING` | `STANDING` | `CONFUSED` | `chat:chunk`, stream in-flight, `useChatStream.isStreaming === true`, or `orbState === 'thinking'` | `{ request_id: string, chunk?: string }` |
+| **Acting** | `ASSISTANT_WORKING` | `SITTING` | `NEUTRAL` | `chat:tool_call`, `activeToolCalls.length > 0`, or `orbState === 'acting'` | `{ tool_call_id: string, name: string, arguments: Record<string, unknown> }` |
+| **Waiting for Approval** | `ASSISTANT_NEEDS_PERMISSION` | `STANDING` | `SURPRISED` | `approval:request` or `chat:approval_required`, `useApprovals.hasPendingApproval === true` | `{ approval_id: string, skill_name: string, arguments: Record<string, unknown>, timeout_seconds: number, provenance: string }` |
+| **Error** | `ASSISTANT_ERROR` | `STANDING` | `SAD` | `chat:error` or skill failure, `chat.error != null` | `{ message: string, code?: string }` |
+| **Providers Cooling Down** | `ASSISTANT_COOLING_DOWN` | `SITTING` | `SLEEPY` | `chat:cooldown_banner`, `useProviderStatus.isCoolingDown === true` | `{ role: string, shortest_reset_seconds: number, message: string }` |
+| **Speaking** | `ASSISTANT_SPEAKING` | `STANDING` | `HAPPY` | `useVoiceEngine.isSpeaking === true`; lipsync aperture driven by `audioLevel` | `{ audioLevel: number, sentence?: string }` |
+
+### Click-Through & Unreachable-Proof Approval Specification
+1. **Click-Through Desktop Layering**:
+   - The desktop pet overlay root container (`#niko-pet-companion-wrapper`) is styled with `pointer-events: none;` and fixed inset bounds `0`, allowing clicks on transparent screen areas to pass through to underlying OS windows.
+   - The interactive pet character (`#niko-embodied-character`) is styled with `pointer-events: auto;`, enabling dragging, position persistence, clicking to open HUD, and microphone toggle.
+2. **Approval Accessibility & Auto-Focus**:
+   - When an approval request arrives, `#niko-pet-approval-card` mounts with `pointer-events: auto;` and automatically receives focus (`tabIndex={0}`).
+   - An active 30-second countdown decrements live (`30s` -> `0s`).
+   - Pressing **`Enter`** immediately approves execution (`approve('once')`).
+   - Pressing **`Escape`** immediately cancels execution (`deny('denied_by_user')`).
+   - Clickable action buttons for Approve and Deny are permanently reachable on top of any click-through desktop geometry.
+
