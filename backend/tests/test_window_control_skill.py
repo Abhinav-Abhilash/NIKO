@@ -26,6 +26,22 @@ async def test_window_control_list() -> None:
 
 
 @pytest.mark.asyncio
+async def test_window_control_inspect() -> None:
+    skill = WindowControlSkill()
+    ctx = SkillContext(request_id="test_win_inspect", user_id="test_user", provenance="direct")
+
+    res = await skill.execute({"action": "inspect"}, ctx)
+    assert res.success is True
+    assert "active_window" in res.data
+    assert "cursor" in res.data
+    assert "visible_windows" in res.data
+    assert "count" in res.data
+    assert isinstance(res.data["cursor"], dict)
+    assert "x" in res.data["cursor"]
+    assert "y" in res.data["cursor"]
+
+
+@pytest.mark.asyncio
 async def test_window_control_focus_nonexistent() -> None:
     skill = WindowControlSkill()
     ctx = SkillContext(request_id="test_win_2", user_id="test_user", provenance="direct")
