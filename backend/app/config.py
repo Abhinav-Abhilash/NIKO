@@ -71,6 +71,13 @@ class Settings(BaseSettings):
     INITIAL_GROQ_API_KEY: str | None = None
     INITIAL_OPENROUTER_API_KEY: str | None = None
 
+    @field_validator("APP_ENV", "ENCRYPTION_KEY", "JWT_SECRET_KEY", "SETUP_TOKEN", mode="before")
+    @classmethod
+    def strip_environment_strings(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.strip()
+        return v
+
     @field_validator("DATABASE_URL")
     @classmethod
     def validate_database_url(cls, v: str) -> str:

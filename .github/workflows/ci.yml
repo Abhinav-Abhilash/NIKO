@@ -10,6 +10,11 @@ jobs:
   backend-quality:
     name: Backend (Ruff, Mypy, Pytest)
     runs-on: windows-latest
+    env:
+      APP_ENV: test
+      ENCRYPTION_KEY: YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY=
+      JWT_SECRET_KEY: ci_test_jwt_secret_key_1234567890_abcdefghijklmnop
+      SETUP_TOKEN: test_setup_token_12345
 
     steps:
       - name: Checkout Code
@@ -28,11 +33,6 @@ jobs:
       - name: Install Dependencies
         run: |
           uv sync --all-extras --dev
-
-      - name: Generate Runtime Test Environment Secrets
-        shell: bash
-        run: |
-          uv run python -c "from cryptography.fernet import Fernet; import secrets; print(f'ENCRYPTION_KEY={Fernet.generate_key().decode()}'); print(f'JWT_SECRET_KEY={secrets.token_urlsafe(48)}'); print(f'SETUP_TOKEN={secrets.token_urlsafe(24)}'); print('APP_ENV=test')" >> $GITHUB_ENV
 
       - name: Run Ruff Lint
         run: |
