@@ -2,9 +2,9 @@ name: NIKO CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, release/v0.1.0 ]
+    branches: [ main, "release/**" ]
   pull_request:
-    branches: [ main, release/v0.1.0 ]
+    branches: [ main, "release/**" ]
 
 jobs:
   backend-quality:
