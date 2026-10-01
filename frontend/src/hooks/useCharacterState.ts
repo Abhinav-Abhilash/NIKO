@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import {
+import type {
   AssistantSemanticState,
   CharacterPosture,
   CharacterEmotion,
@@ -7,7 +7,7 @@ import {
   CharacterCoordinates,
   CharacterGaze,
 } from '../types/character';
-import { OrbState } from './useOrbState';
+import type { OrbState } from './useOrbState';
 
 export interface UseCharacterStateParams {
   orbState: OrbState;

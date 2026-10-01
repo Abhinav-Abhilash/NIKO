@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import {
+import { DEFAULT_CHARACTER_PALETTE } from '../types/character';
+import type {
   AssistantSemanticState,
   CharacterPosture,
   CharacterEmotion,
   CharacterCoordinates,
   CharacterGaze,
-  DEFAULT_CHARACTER_PALETTE,
 } from '../types/character';
 import { tokens } from '../tokens';
 

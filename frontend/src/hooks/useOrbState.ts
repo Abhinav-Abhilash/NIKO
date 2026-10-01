@@ -1,4 +1,5 @@
 export type OrbStateType = 'idle' | 'thinking' | 'acting' | 'confirm';
+export type OrbState = OrbStateType;
 
 export interface UseOrbStateOptions {
   hasPendingApproval?: boolean;
