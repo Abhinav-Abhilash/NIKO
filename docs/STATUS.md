@@ -1,22 +1,41 @@
 # NIKO Project Status
 
-Current Architecture State: **Release v0.3.0: Extensibility, Shadow Undo & Local Document Q&A (COMPLETE)**
-Current Roadmap Phase: **ALL PLANNED PHASES COMPLETE - PRODUCTION READY**
+Current Architecture State: **Release v0.3.0: Extensibility, Shadow Undo, Local Document Q&A & Hardened Virtual Pet (COMPLETE)**
+Current Roadmap Phase: **EDITS ROUND (Phase A & B COMPLETE; Phase C Next)**
 
-## Release v0.3.0 Status: Extensibility, Shadow Undo & Local Document Q&A (DONE - MERGED TO MAIN)
+## Phase B: Virtual Pet Wiring, Real Telemetry & Approval Reachability (DONE - MAIN)
+
+- [x] **Real State Machine & Telemetry Mapping (Zero Fake Timers)**:
+  - Eliminated artificial idle timers (`bored`, `sleepy`, `sleeping` after arbitrary seconds).
+  - Derived pet state strictly 1:1 from live event bus and UI hooks:
+    - `idle`: `ASSISTANT_IDLE`, posture: `STANDING`, emotion: `NEUTRAL`.
+    - `thinking`: `ASSISTANT_THINKING`, posture: `STANDING`, emotion: `CONFUSED` (`isStreaming || orbState === 'thinking'`).
+    - `acting`: `ASSISTANT_WORKING`, posture: `SITTING`, emotion: `NEUTRAL` (`activeToolCallsCount > 0 || orbState === 'acting'`).
+    - `waiting for approval`: `ASSISTANT_NEEDS_PERMISSION`, posture: `STANDING`, emotion: `SURPRISED` (`hasPendingApproval || orbState === 'confirm'`).
+    - `error`: `ASSISTANT_ERROR`, posture: `STANDING`, emotion: `SAD` (`Boolean(error) || lastToolStatus === 'error'`).
+    - `providers cooling down`: `ASSISTANT_COOLING_DOWN`, posture: `SITTING`, emotion: `SLEEPY` (`isCoolingDown === true`).
+    - `speaking`: `ASSISTANT_SPEAKING`, posture: `STANDING`, emotion: `HAPPY` (`isSpeaking === true`, real-time mouth flap aperture scaling).
+  - Documented complete state machine, event topics, and payload shapes in `docs/UI_CONTRACT.md`.
+- [x] **Unreachable-Proof Approval Prompt & Click-Through Protocol**:
+  - The transparent desktop overlay root container (`#niko-pet-companion-wrapper`) enforces `pointer-events: none;`, guaranteeing underlying OS windows remain click-through.
+  - The pet companion (`#niko-embodied-character`) enforces `pointer-events: auto;`, allowing direct mouse interaction, dragging, and mic toggle.
+  - When an approval request arrives, `#niko-pet-approval-card` mounts with `pointer-events: auto;` and automatically receives focus (`tabIndex={0}`).
+  - Accessible keyboard shortcuts: **`Enter`** to approve (`'once'`) and **`Escape`** to deny (`'denied_by_user'`).
+  - Prominent 30-second live countdown badge with auto-cancel guard.
+- [x] **Verification**:
+  - 9 dedicated pet approval accessibility & telemetry tests in `frontend/src/tests/petApprovalAccessibility.test.tsx`.
+  - 65 frontend Vitest tests passing (`100%`).
+  - 218 backend pytest tests passing (`100%`).
+  - Strict mypy static analysis: 0 errors across 154 files.
+  - Secret scan: 0 secrets detected.
+
+## Phase A: Git and CI Pipeline Hardening (DONE - MAIN)
 
 - [x] **Fast-Forward Merge to Main**:
-  - `release/v0.3.0` cleanly fast-forward merged into `main` (`commit 5577656`).
-  - Strict CI pipeline configured across `main`, `release/**`, and pull requests in `.github/workflows/ci.yml`.
-  - Full static analysis pass: `mypy backend` clean (0 errors across 154 files), `ruff check .` clean (0 errors).
-- [x] **Zero-Cost Neural Anime Speech Synthesizer**:
-  - Edge Neural TTS integration (`ja-JP-NanamiNeural` modulated to English, +45Hz pitch, +10% rate) with Base64 audio streaming over WebSocket.
-- [x] **Embodied Chibi Character & Voice Lip-Sync**:
-  - Procedural React SVG avatar with real-time mouth flap aperture scaling (`0.2` - `1.0`), state synchronization, and live speech bubble captions.
-- [x] **Verification**:
-  - 218 backend pytest tests passing (`100%`).
-  - 56 frontend Vitest tests passing (`100%`).
-  - Secret scan: 0 secrets detected.
+  - `release/v0.3.0` fast-forward merged into `main` (`commit 5577656`, `--ff-only`, 0 squash).
+  - GitHub Actions CI workflow (`.github/workflows/ci.yml`) updated to trigger on `main`, `release/**`, and pull requests.
+  - Strict Mypy compliance: resolved all 17 typing issues across backend services and test fixtures (`0 errors across 154 source files`).
+
 
 ## Release v0.2.0 Status: Companion, Voice & Productivity Suite (DONE)
 
