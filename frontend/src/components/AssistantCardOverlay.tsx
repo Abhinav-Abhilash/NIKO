@@ -248,7 +248,7 @@ export const AssistantCardOverlay: React.FC<AssistantCardOverlayProps> = ({
       </div>
 
       {/* HITL Pending Approval Dialog Banner (If Active) */}
-      {approvals.hasPendingApproval && approvals.pendingApprovals[0] && (
+      {approvals.hasPendingApproval && approvals.pendingApproval && (
         <div
           style={{
             backgroundColor: 'rgba(245, 158, 11, 0.15)',
@@ -262,16 +262,16 @@ export const AssistantCardOverlay: React.FC<AssistantCardOverlayProps> = ({
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: '12px', fontWeight: 600, color: '#FBBF24' }}>
-              ⚠️ Action Permission Required: {approvals.pendingApprovals[0].skill_name}
+              ⚠️ Action Permission Required: {approvals.pendingApproval.skillName}
             </span>
           </div>
           <div style={{ fontSize: '11px', color: '#CBD5E1', fontFamily: tokens.typography.fontMono }}>
-            {JSON.stringify(approvals.pendingApprovals[0].arguments, null, 2)}
+            {JSON.stringify(approvals.pendingApproval.arguments, null, 2)}
           </div>
           <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
             <button
               type="button"
-              onClick={() => approvals.approve(approvals.pendingApprovals[0].id)}
+              onClick={() => approvals.approve()}
               style={{
                 backgroundColor: '#10B981',
                 color: '#0F172A',
@@ -287,7 +287,7 @@ export const AssistantCardOverlay: React.FC<AssistantCardOverlayProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => approvals.reject(approvals.pendingApprovals[0].id)}
+              onClick={() => approvals.deny()}
               style={{
                 backgroundColor: 'rgba(239, 68, 68, 0.2)',
                 color: '#EF4444',

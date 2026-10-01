@@ -28,9 +28,9 @@ vi.mock('../hooks', () => ({
   }),
   useApprovals: () => ({
     hasPendingApproval: false,
-    pendingApprovals: [],
+    pendingApproval: null,
     approve: vi.fn(),
-    reject: vi.fn(),
+    deny: vi.fn(),
   }),
   useOrbState: () => ({
     orbState: 'idle',
