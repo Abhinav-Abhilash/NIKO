@@ -22,6 +22,9 @@ class User(Base, UUIDMixin, TimestampMixin):
     reminders: Mapped[list["Reminder"]] = relationship(
         "Reminder", back_populates="user", cascade="all, delete-orphan"
     )
+    scheduled_tasks: Mapped[list["ScheduledTask"]] = relationship(
+        "ScheduledTask", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class Session(Base, UUIDMixin, TimestampMixin):
@@ -238,6 +241,7 @@ class StorageReport(Base, UUIDMixin):
 
 # Long-term memory model
 from backend.app.db.models.memory import Memory  # noqa: E402
+from backend.app.db.models.scheduled_task import ScheduledTask  # noqa: E402
 
 __all__ = [
     "Approval",
@@ -248,6 +252,7 @@ __all__ = [
     "Memory",
     "Message",
     "Reminder",
+    "ScheduledTask",
     "Session",
     "Setting",
     "SkillConfig",
