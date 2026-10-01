@@ -38,6 +38,11 @@ env/
 
 # Database & Local Storage
 storage/
+storage/*.db
+storage/test_niko.db
+storage/screenshots/
+storage/backups/
+storage/logs/
 *.db
 *.sqlite
 *.sqlite3
@@ -63,8 +68,12 @@ Desktop.ini
 .DS_Store
 
 # Frontend & Desktop Shell
-frontend/node_modules/
+node_modules/
+**/node_modules/
+target/
+**/target/
 frontend/dist/
 frontend/.turbo/
 src-tauri/target/
+
 
