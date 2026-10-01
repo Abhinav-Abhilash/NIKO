@@ -1,11 +1,16 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "enables the default permissions",
+  "description": "Scoped permissions for overlay and dashboard windows enforcing least privilege",
   "windows": [
-    "main"
+    "overlay",
+    "dashboard"
   ],
   "permissions": [
-    "core:default"
+    "core:event:default",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-set-focus",
+    "core:window:allow-is-visible"
   ]
 }
