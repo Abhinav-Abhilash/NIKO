@@ -53,6 +53,7 @@ export const PlaceholderOverlay: React.FC = () => {
         isSpeaking={voice.isSpeaking}
         isBargeInActive={voice.isBargeInActive}
         audioLevel={voice.audioLevel}
+        activeSpeechSnippet={voice.currentSentence || undefined}
         onExpand={() => overlay.setMode('compact')}
         onToggleVoice={voice.toggleListening}
         onBargeIn={voice.triggerBargeIn}

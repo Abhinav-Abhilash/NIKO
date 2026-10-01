@@ -10,6 +10,7 @@ export interface PetCompanionProps {
   isSpeaking: boolean;
   isBargeInActive: boolean;
   audioLevel: number;
+  activeSpeechSnippet?: string;
   onExpand: () => void;
   onToggleVoice: () => void;
   onBargeIn?: () => void;
@@ -21,6 +22,7 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
   isSpeaking,
   isBargeInActive,
   audioLevel,
+  activeSpeechSnippet,
   onExpand,
   onToggleVoice,
   onBargeIn,
@@ -69,6 +71,7 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
         mouthOpen={charState.mouthOpen}
         isListening={isListening}
         isSpeaking={isSpeaking}
+        activeSpeechSnippet={activeSpeechSnippet}
         onPointerDown={charState.startDrag}
         onPointerMove={charState.onDrag}
         onPointerUp={(e) => charState.endDrag(e, onExpand)}
