@@ -55,7 +55,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
     status: 'healthy',
     uptime_seconds: 0,
   });
-  const [loadingTasks, setLoadingTasks] = useState(false);
+
 
   // Fetch live widget data
   const fetchLiveData = useCallback(async () => {

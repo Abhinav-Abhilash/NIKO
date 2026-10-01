@@ -52,17 +52,14 @@ export const PlaceholderOverlay: React.FC = () => {
         return tokens.colors.coreThinking;
       case 'acting':
         return tokens.colors.coreActing;
-      case 'confirming':
+      case 'confirm':
         return tokens.colors.coreConfirm;
-      case 'error':
-        return tokens.colors.error;
-      case 'listening':
-        return tokens.colors.accentHover;
       case 'idle':
       default:
         return tokens.colors.coreIdle;
     }
   };
+
 
   const coreColor = getCoreColor();
 
