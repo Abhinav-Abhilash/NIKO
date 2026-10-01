@@ -142,7 +142,6 @@ class ClipboardSkill(BaseSkill):
                 return SkillResult(
                     success=True,
                     data={"action": "read", "content": "", "empty": True},
-                    message="Clipboard is empty or contains non-text data.",
                 )
             return SkillResult(
                 success=True,
@@ -151,7 +150,6 @@ class ClipboardSkill(BaseSkill):
                     "content": content,
                     "length": len(content),
                 },
-                message=f"Successfully read {len(content)} characters from clipboard.",
             )
 
         elif action == "write":
@@ -167,8 +165,8 @@ class ClipboardSkill(BaseSkill):
                 return SkillResult(
                     success=True,
                     data={"action": "write", "length": len(text_to_write)},
-                    message=f"Copied {len(text_to_write)} characters to clipboard.",
                 )
+
 
             return SkillResult(
                 success=False,

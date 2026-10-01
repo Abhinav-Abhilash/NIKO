@@ -1,7 +1,9 @@
 import pytest
 
 from backend.app.skills.base import SkillContext
-from backend.app.skills.builtin.clipboard_skill import ClipboardSkill, get_clipboard_text, set_clipboard_text
+from backend.app.skills.builtin.clipboard_skill import (
+    ClipboardSkill,
+)
 
 
 @pytest.mark.asyncio

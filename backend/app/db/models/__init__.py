@@ -241,6 +241,7 @@ class StorageReport(Base, UUIDMixin):
 
 # Long-term memory model
 from backend.app.db.models.memory import Memory  # noqa: E402
+from backend.app.db.models.note import NoteItem  # noqa: E402
 from backend.app.db.models.scheduled_task import ScheduledTask  # noqa: E402
 
 __all__ = [
@@ -251,6 +252,7 @@ __all__ = [
     "LLMProviderModel",
     "Memory",
     "Message",
+    "NoteItem",
     "Reminder",
     "ScheduledTask",
     "Session",
@@ -261,3 +263,4 @@ __all__ = [
     "ToolCall",
     "User",
 ]
+
