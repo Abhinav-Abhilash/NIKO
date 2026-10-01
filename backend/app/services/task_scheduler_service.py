@@ -5,12 +5,13 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import psutil
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from backend.app.core.events import EventBus, get_event_bus
 from backend.app.core.exceptions import NotFoundError, ValidationFailedError
 from backend.app.core.logging import get_logger
-from backend.app.db.models import ScheduledTask
+from backend.app.db.models import ScheduledTask, User
 from backend.app.db.session import get_session_maker
 from backend.app.repositories.scheduled_task_repository import ScheduledTaskRepository
 from backend.app.skills.base import SkillContext
@@ -167,10 +168,10 @@ class TaskSchedulerService:
 
     async def create_task(
         self,
-        user_id: str,
         name: str,
         schedule_type: str,
         action_name: str,
+        user_id: str | None = None,
         next_run_at: datetime | None = None,
         description: str | None = None,
         cron_expression: str | None = None,
@@ -214,6 +215,21 @@ class TaskSchedulerService:
             should_commit = True
 
         try:
+            if not user_id:
+                user_res = await target_session.execute(select(User).limit(1))
+                first_user = user_res.scalar_one_or_none()
+                if first_user:
+                    user_id = first_user.id
+                else:
+                    default_user = User(
+                        username="operator",
+                        password_hash="system_managed",
+                        role="owner",
+                    )
+                    target_session.add(default_user)
+                    await target_session.flush()
+                    user_id = default_user.id
+
             repo = ScheduledTaskRepository(target_session)
             task = await repo.create(
                 user_id=user_id,

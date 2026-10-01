@@ -7,6 +7,7 @@ from backend.app.skills.builtin.memory_skills import (
 )
 from backend.app.skills.builtin.open_app_skill import OpenAppSkill
 from backend.app.skills.builtin.reminders_skill import RemindersSkill
+from backend.app.skills.builtin.schedule_task_skill import ScheduleTaskSkill
 from backend.app.skills.builtin.screenshot_skill import ScreenshotSkill
 from backend.app.skills.builtin.system_stats_skill import SystemStatsSkill
 from backend.app.skills.builtin.volume_brightness_skill import VolumeBrightnessSkill
@@ -21,6 +22,7 @@ __all__ = [
     "RecallSkill",
     "RememberSkill",
     "RemindersSkill",
+    "ScheduleTaskSkill",
     "ScreenshotSkill",
     "SystemStatsSkill",
     "VolumeBrightnessSkill",

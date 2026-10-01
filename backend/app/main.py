@@ -15,6 +15,7 @@ from backend.app.api.v1.health import router as health_router
 from backend.app.api.v1.memories import router as memories_router
 from backend.app.api.v1.metrics import router as metrics_router
 from backend.app.api.v1.reminders import router as reminders_router
+from backend.app.api.v1.schedules import router as schedules_router
 from backend.app.api.v1.settings import router as settings_router
 from backend.app.api.v1.skills import router as skills_router
 from backend.app.api.v1.websocket import router as ws_router
@@ -230,6 +231,7 @@ def create_app() -> FastAPI:
     app.include_router(settings_router, prefix="/api/v1")
     app.include_router(reminders_router, prefix="/api/v1")
     app.include_router(memories_router, prefix="/api/v1")
+    app.include_router(schedules_router, prefix="/api/v1")
     app.include_router(ws_router)
 
     return app
