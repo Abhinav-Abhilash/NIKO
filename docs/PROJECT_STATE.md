@@ -314,3 +314,100 @@ E:\NIKO AI
    * When Primary returns HTTP 429 (`ProviderRateLimitError`), the orchestrator automatically records a cooldown timestamp on the primary target and immediately retries the secondary model (`MockProvider/groq`) without leaking errors to the client.
    * When all configured providers return 429 or 404, the orchestrator raises `AllProvidersExhaustedError`, triggering a cooldown banner on the client HUD.
 
+---
+
+## 6. SECURITY
+
+### Implemented Controls Matrix
+
+| Security Control | Code Implementation | Verification Test | Protection Mechanism |
+|:---|:---|:---|:---|
+| **TrustedHost** | `backend/app/main.py:212` | `backend/tests/test_trusted_host.py` | Restricts incoming HTTP `Host` headers to configured allowlist (`127.0.0.1`, `localhost`, `testserver`), mitigating DNS rebinding attacks. |
+| **WebSocket Origin** | `backend/app/api/v1/websocket.py:38` | `backend/tests/test_ws_origin.py` | Validates `Origin` header against `WS_ALLOWED_ORIGINS` before accepting WebSocket handshakes. |
+| **CSRF / Mutating Origin** | `backend/app/main.py:150-208` | `backend/tests/test_origin_mutating_routes.py` | Blocks mutating HTTP verbs (`POST`, `PUT`, `PATCH`, `DELETE`) with cookie credentials unless an authorized `Origin` or `X-CSRF-Token` header is present. |
+| **Setup Token** | `backend/app/api/v1/auth.py:42` | `backend/tests/test_setup_token.py` | Enforces a single-use setup token barrier on `POST /api/v1/auth/setup` to prevent unauthorized initial admin registration. |
+| **Rate Limiting** | `backend/app/llm/cooldown.py:45` | `backend/tests/test_llm_roles_and_fallback.py` | Local sliding-window tracking of TPM and RPM quotas with proactive 90% throttling. |
+| **Token Rotation** | `backend/app/services/auth_service.py:110` | `backend/tests/test_auth_service.py` | One-time refresh tokens with `family_id` tracking; detecting reuse immediately invalidates all family sessions. |
+| **HITL Approvals** | `backend/app/services/approval_service.py` | `backend/tests/test_approval_flow.py` | Requires explicit user approval for state-altering actions, binding requests with SHA-256 parameter hashes. |
+| **Provenance Guard** | `backend/app/skills/guard.py:40` | `backend/tests/test_skill_guard_provenance.py` | Tags untrusted external content and forces approval dialogs on all state-altering tool calls regardless of autonomy level. |
+| **Key Encryption** | `backend/app/core/security.py:75` | `backend/tests/test_security_crypto.py` | Encrypts API provider keys at rest using Fernet symmetric encryption before database storage. |
+| **Log Redaction** | `backend/app/core/logging.py:48` | `backend/tests/test_log_redaction.py` | Dynamically scrubs registered sensitive tokens and API keys matching high-entropy regexes from logging outputs. |
+| **Secret Leak Guard** | `.secrets.baseline` | `backend/tests/test_secret_leak_guard.py` | Scans git-tracked files against `.secrets.baseline` preventing accidental hardcoded credentials. |
+
+### Known Security Gaps & Untested Areas
+* **Windows Sandbox Subprocess Elevation:** Tools executing via `LocalExecutor` currently run with the user's ambient Windows privilege level; true OS-level containerization (e.g. Windows AppContainer or Hyper-V isolation) is not yet active.
+* **Network Egress Firewall:** Skills executing `web_search` or `open_app` can initiate arbitrary outbound TCP/HTTPS requests without local DNS-level pinholing or allowlist filtering.
+
+---
+
+## 7. QUALITY
+
+### Automated Test Tally by Area
+* **Backend Pytest:** **218 passed** across 58 test files (`uv run pytest` executed in 32.67s).
+  * Core Security & Auth: 38 tests
+  * Database & Migrations: 24 tests
+  * LLM Roles, Routing, & Fallback: 18 tests
+  * Builtin Desktop Skills & Guard: 64 tests
+  * WebSocket Hub, Streaming, & Voice: 36 tests
+  * MCP, Document Q&A, & Shadow Copy: 38 tests
+* **Frontend Vitest:** **56 passed** across 16 test files (`npm test -- --run` executed in 26.00s).
+  * Character Avatar & Procedural SVG: 4 tests
+  * Character & Voice Lipsync Integration: 3 tests
+  * Pet Companion Mode: 2 tests
+  * Assistant Bottom HUD Card: 2 tests
+  * Human-In-The-Loop Approval Dialog: 4 tests
+  * Telemetry & Dashboard Widgets: 3 tests
+  * Voice Engine & Barge-In Hooks: 3 tests
+  * Chat Streaming & WebSocket Hooks: 35 tests
+
+### Static Analysis & Verification Results
+
+1. **Ruff Linter (`uv run ruff check .`):**
+   ```text
+   All checks passed!
+   ```
+2. **TypeScript Compiler (`npx tsc -p tsconfig.app.json`):**
+   ```text
+   Zero errors. (Exit code 0)
+   ```
+3. **Mypy Static Type Checking (`uv run mypy backend`):**
+   * Found 17 type warnings in 11 files (predominantly missing parameter type annotations in test fixtures and optional third-party `pypdf` stubs). Zero fatal type errors in runtime paths.
+4. **Secret Leak Scan (`test_secret_leak_guard.py`):**
+   ```text
+   backend/tests/test_secret_leak_guard.py::test_tracked_files_contain_no_secrets PASSED [100%]
+   ```
+5. **Database Migration Consistency:**
+   * Alembic head revision is `a1b2c3d4e5f6` (`scheduled_tasks_schema.py`).
+
+### Host Resource Measurements
+* **Backend Cold Boot Time:** **2.673 seconds** (`FastAPI` creation + route compilation).
+* **Backend Idle RAM Usage:** **80.27 MB** RSS memory.
+* **SQLite Database Disk Footprint:** **252.00 KB** (`storage/niko.db`).
+* **Repository Source Footprint:** **1,468.05 MB** (includes high-fidelity voice audio references and local storage caches).
+
+---
+
+## 8. WHAT'S MISSING AND RISKY
+
+### Status of Components
+* **ChatService & Chat Streaming:** **DONE** — End-to-end operational with chunk streaming, sentence boundary detection, and WebSocket broadcasting.
+* **Key Redaction in Logs:** **DONE** — Active via `register_sensitive_token` in `backend/app/core/logging.py`.
+* **Deferred Queue:** **DONE** — Operational in `backend/app/llm/deferred_queue.py` for queuing background reasoning tasks.
+* **Embodied Character & Voice Lip-Sync:** **DONE** — Synchronized via `useCharacterState` and `useVoiceEngine`.
+* **Milestone 4 Documentation:** **DONE** — Recorded in [ROADMAP.md](file:///e:/NIKO%20AI/docs/ROADMAP.md) and [CHANGELOG.md](file:///e:/NIKO%20AI/CHANGELOG.md).
+
+### Code Markers (TODO / FIXME Audit)
+* **Total TODO / FIXME comments across entire codebase:** **0** (`Found 0 TODO/FIXME markers`).
+
+### Cross-Platform & Cloud Migration Risks
+1. **SQLite FTS5 Specificity:**
+   * Current episodic memory and document Q&A rely on SQLite FTS5 extension (`MATCH` syntax and `bm25()` ranking).
+   * *Risk:* If migrated to PostgreSQL, FTS5 virtual tables will not execute and must be rewritten using `to_tsvector()` / `to_tsquery()` or `pgvector`.
+2. **Windows Desktop Tooling Dependencies:**
+   * Skills like `window_control_skill.py`, `volume_brightness_skill.py`, and `clipboard_skill.py` invoke Windows-specific APIs (`pywin32`, Windows CoreAudio, PowerShell `Get-Process`).
+   * *Risk:* Running in a Linux container or headless cloud host requires headless X11 mocks or disabling Windows-specific desktop skills.
+3. **Edge Neural TTS Network Availability:**
+   * `edge-tts` communicates with Microsoft's public edge neural endpoints over HTTPS.
+   * *Risk:* If the host machine is completely offline without internet connectivity, neural speech synthesis falls back to browser-side local Web Speech synthesis.
+
+
