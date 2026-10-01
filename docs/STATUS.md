@@ -1,7 +1,25 @@
 # NIKO Project Status
 
 Current Architecture State: **Release v0.3.0: Extensibility, Shadow Undo, Local Document Q&A & Hardened Virtual Pet (COMPLETE)**
-Current Roadmap Phase: **EDITS ROUND (Phase A & B COMPLETE; Phase C Next)**
+Current Roadmap Phase: **EDITS ROUND (Phases A, B & C COMPLETE; Phase D Next)**
+
+## Phase C: Sound System, Ducking & Audio Unlock (DONE - MAIN)
+
+- [x] **Sound Settings & Telemetry Controls**:
+  - `SoundService` with master mute, volume scaling (`0.0` - `1.0`), quiet hours gating (with overnight span support e.g. `22:00` - `08:00`), and independent per-event toggles (`approval`, `message`, `tool`, `error`, `click`, `wake`).
+  - Persistent state synchronization in `localStorage` (`niko_sound_settings`).
+- [x] **Acoustic Feedback Ducking**:
+  - Automatically suppresses and ducks sound cues whenever the microphone is open (`isListening === true`) or NIKO voice TTS is speaking (`isSpeaking === true`), guaranteeing the client never hears itself or triggers false barge-ins.
+- [x] **100% Local CC0 Audio Assets & Documentation**:
+  - Deterministically synthesized local 16-bit PCM WAV audio files (`scripts/generate_local_sounds.py`) in `frontend/public/sounds/`:
+    - `approval.wav`, `message.wav`, `tool.wav`, `error.wav`, `click.wav`, `wake.wav`.
+  - Comprehensive asset inventory and license verification documented in `docs/CREDITS.md` (all CC0 1.0 Universal / Public Domain, zero unverified assets, zero remote fetches).
+- [x] **Browser Audio Unlock on First Interaction**:
+  - Automatic `pointerdown`, `keydown`, and `click` listeners unlocking `AudioContext` and enabling sound playback without unhandled autoplay warnings.
+- [x] **Verification**:
+  - 12 dedicated unit tests in `frontend/src/tests/soundService.test.ts`.
+  - 77 frontend Vitest tests passing (`100%`).
+  - 218 backend pytest tests passing (`100%`).
 
 ## Phase B: Virtual Pet Wiring, Real Telemetry & Approval Reachability (DONE - MAIN)
 
