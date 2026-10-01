@@ -2,7 +2,8 @@ import asyncio
 import math
 import struct
 import time
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from backend.app.core.events import EventBus, get_event_bus
 from backend.app.core.logging import get_logger
@@ -156,3 +157,55 @@ class VoiceBargeInEngine:
                 "action": "flush_audio_queue",
             },
         )
+
+
+class NikoVoiceSynthesizer:
+    """
+    High-speed English Neural Chibi Voice Synthesizer for NIKO.
+    Powered by Edge Neural TTS with high-energy anime pitch modulation (+45Hz) and pace boost.
+    Streams synthesized audio chunks in milliseconds with zero cloud tokens.
+    """
+
+    def __init__(
+        self,
+        voice: str | None = None,
+        pitch: str | None = None,
+        rate: str | None = None,
+    ) -> None:
+        import os
+        # Default to ja-JP-NanamiNeural speaking English with +45Hz (+15% pitch) and +10% rate
+        self.voice = voice or os.getenv("NIKO_VOICE", "ja-JP-NanamiNeural")
+        self.pitch = pitch or os.getenv("NIKO_VOICE_PITCH", "+45Hz")
+        self.rate = rate or os.getenv("NIKO_VOICE_RATE", "+10%")
+
+    async def synthesize_bytes(self, text: str) -> bytes:
+        """Synthesize text into MP3 audio bytes using energetic anime configuration."""
+        import edge_tts
+
+        clean_text = text.strip()
+        if not clean_text:
+            return b""
+
+        communicate = edge_tts.Communicate(
+            text=clean_text,
+            voice=self.voice,
+            pitch=self.pitch,
+            rate=self.rate,
+        )
+
+        chunks: list[bytes] = []
+        async for chunk in communicate.stream():
+            if chunk.get("type") == "audio" and "data" in chunk:
+                chunks.append(chunk["data"])
+
+        return b"".join(chunks)
+
+    async def synthesize_base64(self, text: str) -> str:
+        """Synthesize text into base64-encoded audio for direct WebSocket streaming."""
+        import base64
+
+        audio_bytes = await self.synthesize_bytes(text)
+        if not audio_bytes:
+            return ""
+        return base64.b64encode(audio_bytes).decode("utf-8")
+
