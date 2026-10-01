@@ -6,11 +6,12 @@ import {
   useOrbState,
   useProviderStatus,
 } from '../hooks';
+import { tokens } from '../tokens';
 
 /**
- * Plain, unstyled placeholder UI proving end-to-end wiring.
- * Intentionally void of styling, colors, glow, or animations.
- * Ready to be replaced by Flow design import.
+ * Cyberpunk / Windows 11 Acrylic HUD Overlay.
+ * Implements high-agency terminal aesthetics with glassmorphic depth,
+ * dynamic reactor core state visualization, and least-latency interaction.
  */
 export const PlaceholderOverlay: React.FC = () => {
   const overlay = useOverlay(true, 'compact');
@@ -44,32 +45,165 @@ export const PlaceholderOverlay: React.FC = () => {
     setInputVal('');
   };
 
+  // Determine core glow color based on orbState
+  const getCoreColor = () => {
+    switch (orb.orbState) {
+      case 'thinking':
+        return tokens.colors.coreThinking;
+      case 'acting':
+        return tokens.colors.coreActing;
+      case 'confirming':
+        return tokens.colors.coreConfirm;
+      case 'error':
+        return tokens.colors.error;
+      case 'listening':
+        return tokens.colors.accentHover;
+      case 'idle':
+      default:
+        return tokens.colors.coreIdle;
+    }
+  };
+
+  const coreColor = getCoreColor();
+
   return (
     <div
       id="niko-overlay-container"
       style={{
-        padding: '16px',
-        maxWidth: overlay.mode === 'expanded' ? '800px' : '500px',
-        margin: '20px auto',
-        backgroundColor: 'rgba(20, 20, 20, 0.95)',
-        color: '#ffffff',
-        border: '1px solid #444',
-        borderRadius: '8px',
-        fontFamily: 'monospace',
+        width: 'calc(100% - 32px)',
+        maxWidth: overlay.mode === 'expanded' ? '820px' : '560px',
+        margin: '24px auto',
+        backgroundColor: 'rgba(11, 14, 18, 0.88)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        color: tokens.colors.textPrimary,
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        borderRadius: tokens.radii.lg,
+        boxShadow: '0 24px 48px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06)',
+        fontFamily: tokens.typography.fontSans,
+        padding: '16px 20px',
+        position: 'relative',
+        transition: 'max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+        overflow: 'hidden',
       }}
     >
-      {/* Header bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-        <span>NIKO (State: <strong>{orb.orbState}</strong>)</span>
-        <div>
+      {/* Top subtle hairline glow */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: '10%',
+          right: '10%',
+          height: '1px',
+          background: `linear-gradient(90deg, transparent, ${coreColor}88, transparent)`,
+        }}
+      />
+
+      {/* Header Bar */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '14px',
+          paddingBottom: '10px',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        }}
+      >
+        {/* Reactor Core Icon + Status Label */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div
+            style={{
+              position: 'relative',
+              width: '24px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {/* Spinning Concentric Reticle */}
+            <svg
+              style={{
+                width: '24px',
+                height: '24px',
+                animation: chat.isStreaming ? 'spin 3s linear infinite' : 'none',
+              }}
+              viewBox="0 0 32 32"
+            >
+              <circle
+                cx="16"
+                cy="16"
+                r="13"
+                fill="none"
+                stroke={coreColor}
+                strokeWidth="1.5"
+                strokeDasharray="4 4"
+                opacity="0.6"
+              />
+            </svg>
+            {/* Glowing Core Dot */}
+            <div
+              style={{
+                position: 'absolute',
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: coreColor,
+                boxShadow: `0 0 10px ${coreColor}`,
+              }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span
+              style={{
+                fontFamily: tokens.typography.fontMono,
+                fontSize: tokens.typography.sizeXs,
+                letterSpacing: '0.08em',
+                fontWeight: 600,
+                color: tokens.colors.textSecondary,
+              }}
+            >
+              NIKO (State: <strong style={{ color: coreColor }}>{orb.orbState}</strong>)
+            </span>
+          </div>
+        </div>
+
+        {/* Window & View Control Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             type="button"
             onClick={() => overlay.setMode(overlay.mode === 'compact' ? 'expanded' : 'compact')}
-            style={{ marginRight: '8px' }}
+            style={{
+              background: 'rgba(255, 255, 255, 0.06)',
+              color: tokens.colors.textSecondary,
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: tokens.radii.sm,
+              padding: '4px 10px',
+              fontSize: '11px',
+              fontFamily: tokens.typography.fontMono,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
           >
             {overlay.mode === 'compact' ? 'Expand' : 'Compact'}
           </button>
-          <button type="button" onClick={overlay.hide}>
+          <button
+            type="button"
+            onClick={overlay.hide}
+            style={{
+              background: 'rgba(239, 68, 68, 0.08)',
+              color: '#f87171',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              borderRadius: tokens.radii.sm,
+              padding: '4px 10px',
+              fontSize: '11px',
+              fontFamily: tokens.typography.fontMono,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+          >
             Hide (Esc)
           </button>
         </div>
@@ -77,8 +211,25 @@ export const PlaceholderOverlay: React.FC = () => {
 
       {/* Provider Cooldown Banner */}
       {providers.isCoolingDown && (
-        <div style={{ background: '#773300', padding: '6px', marginBottom: '8px', borderRadius: '4px' }}>
-          <strong>COOLDOWN:</strong> {providers.cooldownMessage} (reset in {providers.shortestResetSeconds}s)
+        <div
+          style={{
+            background: 'rgba(245, 158, 11, 0.12)',
+            border: '1px solid rgba(245, 158, 11, 0.35)',
+            color: '#fbbf24',
+            padding: '8px 12px',
+            marginBottom: '12px',
+            borderRadius: tokens.radii.sm,
+            fontSize: tokens.typography.sizeSm,
+            fontFamily: tokens.typography.fontMono,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
+          <span>
+            <strong>COOLDOWN:</strong> {providers.cooldownMessage} (reset in {providers.shortestResetSeconds}s)
+          </span>
         </div>
       )}
 
@@ -87,31 +238,78 @@ export const PlaceholderOverlay: React.FC = () => {
         <div
           id="niko-approval-card"
           style={{
-            border: '2px solid #ffaa00',
-            padding: '12px',
-            marginBottom: '12px',
-            backgroundColor: '#221100',
+            border: '1px solid rgba(245, 158, 11, 0.65)',
+            backgroundColor: 'rgba(30, 20, 10, 0.92)',
+            borderRadius: tokens.radii.md,
+            padding: '14px 16px',
+            marginBottom: '14px',
+            boxShadow: '0 8px 24px rgba(245, 158, 11, 0.15)',
           }}
         >
-          <h4 style={{ margin: '0 0 6px 0', color: '#ffaa00' }}>
-            CONFIRMATION REQUIRED ({approvals.remainingSeconds}s)
-          </h4>
-          <p style={{ margin: '4px 0' }}>
-            Skill: <strong>{approvals.pendingApproval.skillName}</strong>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <h4
+              style={{
+                margin: 0,
+                color: '#fbbf24',
+                fontSize: tokens.typography.sizeSm,
+                fontFamily: tokens.typography.fontMono,
+                letterSpacing: '0.04em',
+                fontWeight: 700,
+              }}
+            >
+              CONFIRMATION REQUIRED ({approvals.remainingSeconds}s)
+            </h4>
+            <span
+              style={{
+                fontSize: '10px',
+                fontFamily: tokens.typography.fontMono,
+                background: 'rgba(245, 158, 11, 0.2)',
+                color: '#fbbf24',
+                padding: '2px 6px',
+                borderRadius: tokens.radii.sm,
+              }}
+            >
+              ACTION_CONFIRM
+            </span>
+          </div>
+
+          <p style={{ margin: '4px 0', fontSize: tokens.typography.sizeSm }}>
+            Skill: <strong style={{ color: '#fef08a' }}>{approvals.pendingApproval.skillName}</strong>
           </p>
-          <p style={{ margin: '4px 0' }}>
-            Arguments: <code>{JSON.stringify(approvals.pendingApproval.arguments)}</code>
+          <p style={{ margin: '4px 0', fontSize: '12px' }}>
+            Arguments:{' '}
+            <code
+              style={{
+                fontFamily: tokens.typography.fontMono,
+                background: 'rgba(0, 0, 0, 0.4)',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                color: '#e2e8f0',
+              }}
+            >
+              {JSON.stringify(approvals.pendingApproval.arguments)}
+            </code>
           </p>
-          <p style={{ margin: '4px 0', fontSize: '11px', color: '#aaa' }}>
+          <p style={{ margin: '4px 0', fontSize: '11px', color: '#94a3b8' }}>
             Provenance: {approvals.pendingApproval.provenance}
           </p>
 
-          <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button
               id="approve-once-btn"
               type="button"
               onClick={() => approvals.approve('once')}
-              style={{ fontWeight: 'bold' }}
+              style={{
+                background: '#f59e0b',
+                color: '#000000',
+                border: 'none',
+                borderRadius: tokens.radii.sm,
+                padding: '6px 12px',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'opacity 0.15s ease',
+              }}
             >
               Approve (Enter)
             </button>
@@ -119,6 +317,15 @@ export const PlaceholderOverlay: React.FC = () => {
               id="approve-session-btn"
               type="button"
               onClick={() => approvals.approve('session')}
+              style={{
+                background: 'rgba(245, 158, 11, 0.15)',
+                color: '#fbbf24',
+                border: '1px solid rgba(245, 158, 11, 0.35)',
+                borderRadius: tokens.radii.sm,
+                padding: '6px 12px',
+                fontSize: '12px',
+                cursor: 'pointer',
+              }}
             >
               Allow for this session
             </button>
@@ -126,6 +333,15 @@ export const PlaceholderOverlay: React.FC = () => {
               id="approve-always-btn"
               type="button"
               onClick={() => approvals.approve('always')}
+              style={{
+                background: 'rgba(255, 255, 255, 0.08)',
+                color: tokens.colors.textPrimary,
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                borderRadius: tokens.radii.sm,
+                padding: '6px 12px',
+                fontSize: '12px',
+                cursor: 'pointer',
+              }}
             >
               Always allow this action
             </button>
@@ -133,6 +349,15 @@ export const PlaceholderOverlay: React.FC = () => {
               id="deny-btn"
               type="button"
               onClick={() => approvals.deny('denied_by_user')}
+              style={{
+                background: 'rgba(239, 68, 68, 0.15)',
+                color: '#f87171',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
+                borderRadius: tokens.radii.sm,
+                padding: '6px 12px',
+                fontSize: '12px',
+                cursor: 'pointer',
+              }}
             >
               Deny (Esc)
             </button>
@@ -140,31 +365,78 @@ export const PlaceholderOverlay: React.FC = () => {
         </div>
       )}
 
-      {/* Message stream */}
+      {/* Message Stream */}
       <div
         id="niko-message-list"
         style={{
-          maxHeight: overlay.mode === 'expanded' ? '400px' : '200px',
+          maxHeight: overlay.mode === 'expanded' ? '420px' : '220px',
           overflowY: 'auto',
-          marginBottom: '12px',
-          borderBottom: '1px solid #333',
-          paddingBottom: '8px',
+          marginBottom: '14px',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          paddingBottom: '12px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
         }}
       >
         {chat.messages.length === 0 ? (
-          <div style={{ color: '#888', fontStyle: 'italic' }}>
-            No messages yet. Type a query below.
+          <div
+            style={{
+              color: tokens.colors.textMuted,
+              fontStyle: 'italic',
+              fontSize: tokens.typography.sizeSm,
+              padding: '12px 0',
+              textAlign: 'center',
+            }}
+          >
+            NIKO ready. Ask a question or command an OS action below.
           </div>
         ) : (
           chat.messages.map((m) => (
-            <div key={m.id} style={{ margin: '6px 0' }}>
-              <strong>{m.role}: </strong>
-              <span>{m.content}</span>
+            <div
+              key={m.id}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+                background: m.role === 'user' ? 'rgba(56, 189, 248, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                border: m.role === 'user' ? '1px solid rgba(56, 189, 248, 0.15)' : '1px solid rgba(255, 255, 255, 0.05)',
+                borderRadius: tokens.radii.md,
+                padding: '8px 12px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span
+                  style={{
+                    fontFamily: tokens.typography.fontMono,
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    letterSpacing: '0.05em',
+                    color: m.role === 'user' ? tokens.colors.accent : tokens.colors.coreThinking,
+                  }}
+                >
+                  {m.role === 'user' ? 'OPERATOR' : 'NIKO'}
+                </span>
+              </div>
+              <span style={{ fontSize: tokens.typography.sizeSm, lineHeight: '1.45', whiteSpace: 'pre-wrap' }}>
+                {m.content}
+              </span>
 
               {m.toolCalls && m.toolCalls.length > 0 && (
-                <div style={{ paddingLeft: '12px', fontSize: '12px', color: '#88cc88' }}>
+                <div style={{ marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {m.toolCalls.map((tc) => (
-                    <div key={tc.id}>
+                    <div
+                      key={tc.id}
+                      style={{
+                        fontFamily: tokens.typography.fontMono,
+                        fontSize: '11px',
+                        background: 'rgba(34, 197, 94, 0.08)',
+                        border: '1px solid rgba(34, 197, 94, 0.25)',
+                        color: '#4ade80',
+                        borderRadius: tokens.radii.sm,
+                        padding: '4px 8px',
+                      }}
+                    >
                       [Tool: {tc.name} ({tc.status})]
                       {tc.result !== undefined && <span> -&gt; {JSON.stringify(tc.result)}</span>}
                     </div>
@@ -176,8 +448,8 @@ export const PlaceholderOverlay: React.FC = () => {
         )}
       </div>
 
-      {/* Input bar */}
-      <form onSubmit={handleSend} style={{ display: 'flex', gap: '8px' }}>
+      {/* Input Bar */}
+      <form onSubmit={handleSend} style={{ display: 'flex', gap: '8px', position: 'relative' }}>
         <input
           id="niko-chat-input"
           ref={overlay.inputRef}
@@ -187,41 +459,102 @@ export const PlaceholderOverlay: React.FC = () => {
           placeholder="Ask NIKO (e.g. what time is it and how's my CPU)..."
           style={{
             flex: 1,
-            padding: '8px',
-            backgroundColor: '#111',
-            color: '#fff',
-            border: '1px solid #555',
-            fontFamily: 'monospace',
+            padding: '10px 14px',
+            backgroundColor: 'rgba(0, 0, 0, 0.45)',
+            color: tokens.colors.textPrimary,
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            borderRadius: tokens.radii.sm,
+            fontFamily: tokens.typography.fontMono,
+            fontSize: tokens.typography.sizeSm,
+            outline: 'none',
+            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.5)',
+            transition: 'border-color 0.15s ease',
           }}
           disabled={chat.isStreaming}
         />
         {chat.isStreaming ? (
-          <button type="button" onClick={chat.cancelStream}>
+          <button
+            type="button"
+            onClick={chat.cancelStream}
+            style={{
+              padding: '0 16px',
+              backgroundColor: 'rgba(239, 68, 68, 0.2)',
+              color: '#f87171',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              borderRadius: tokens.radii.sm,
+              fontSize: tokens.typography.sizeSm,
+              fontFamily: tokens.typography.fontMono,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
             Cancel
           </button>
         ) : (
-          <button type="submit" id="niko-submit-btn">
+          <button
+            type="submit"
+            id="niko-submit-btn"
+            style={{
+              padding: '0 18px',
+              backgroundColor: tokens.colors.accent,
+              color: '#0b0e12',
+              border: 'none',
+              borderRadius: tokens.radii.sm,
+              fontSize: tokens.typography.sizeSm,
+              fontFamily: tokens.typography.fontMono,
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'opacity 0.15s ease',
+            }}
+          >
             Send
           </button>
         )}
       </form>
 
-      {/* Footer Settings */}
-      <div style={{ marginTop: '8px', fontSize: '11px', color: '#777', display: 'flex', justifyContent: 'space-between' }}>
-        <label>
+      {/* Footer Settings & Meta */}
+      <div
+        style={{
+          marginTop: '10px',
+          fontSize: '11px',
+          color: tokens.colors.textMuted,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
           <input
             type="checkbox"
             checked={overlay.autoHideOnBlur}
             onChange={(e) => overlay.setAutoHideOnBlur(e.target.checked)}
+            style={{ accentColor: tokens.colors.accent }}
           />{' '}
           Auto-hide on blur
         </label>
-        {chat.messages.length > 0 && (
-          <button type="button" onClick={chat.clearMessages} style={{ fontSize: '10px' }}>
-            Clear History
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontFamily: tokens.typography.fontMono }}>Hotkey: Ctrl+Space</span>
+          {chat.messages.length > 0 && (
+            <button
+              type="button"
+              onClick={chat.clearMessages}
+              style={{
+                fontSize: '10px',
+                fontFamily: tokens.typography.fontMono,
+                color: tokens.colors.textMuted,
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+              }}
+            >
+              Clear History
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
 };
+
+export default PlaceholderOverlay;

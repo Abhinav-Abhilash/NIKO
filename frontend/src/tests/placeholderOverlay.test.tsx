@@ -75,4 +75,14 @@ describe('PlaceholderOverlay component', () => {
 
     expect(ApiService.respondToApproval).toHaveBeenCalledWith('app_deny_456', 'deny');
   });
+
+  it('toggles between compact and expanded HUD mode', () => {
+    render(<PlaceholderOverlay />);
+    const toggleBtn = screen.getByRole('button', { name: /Expand/i });
+    expect(toggleBtn).toBeInTheDocument();
+
+    fireEvent.click(toggleBtn);
+    expect(screen.getByRole('button', { name: /Compact/i })).toBeInTheDocument();
+  });
 });
+
