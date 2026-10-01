@@ -1,10 +1,14 @@
 import asyncio
-import base64
+
 import pytest
 
 from backend.app.core.events import EventBus
 from backend.app.services.sentence_divider import SentenceDivider, split_stream_sentences
-from backend.app.services.voice_service import VoiceActivityDetector, VoiceBargeInEngine
+from backend.app.services.voice_service import (
+    NikoVoiceSynthesizer,
+    VoiceActivityDetector,
+    VoiceBargeInEngine,
+)
 
 
 def test_sentence_divider_basic() -> None:
@@ -70,7 +74,7 @@ def test_voice_activity_detector_silence_vs_speech() -> None:
     # Loud audio: alternating high amplitude 16-bit values
     loud_samples = bytearray()
     for _ in range(320):
-        loud_samples.extend(int(16000).to_bytes(2, byteorder="little", signed=True))
+        loud_samples.extend((16000).to_bytes(2, byteorder="little", signed=True))
     loud_pcm = bytes(loud_samples)
 
     # Feed loud frames to exceed speech_pad_frames (3)
@@ -101,7 +105,7 @@ async def test_voice_barge_in_engine() -> None:
     # Loud audio frame to trigger speech_start
     loud_samples = bytearray()
     for _ in range(320):
-        loud_samples.extend(int(18000).to_bytes(2, byteorder="little", signed=True))
+        loud_samples.extend((18000).to_bytes(2, byteorder="little", signed=True))
     loud_pcm = bytes(loud_samples)
 
     # Feed frames to trigger speech_start
@@ -113,8 +117,26 @@ async def test_voice_barge_in_engine() -> None:
     assert barge_in_called is True
     assert bool(dummy_task.cancelling()) or dummy_task.cancelled()
     assert engine.is_assistant_speaking is False
-    
+
     # Cleanup task
     dummy_task.cancel()
     with pytest.raises(asyncio.CancelledError):
         await dummy_task
+
+
+@pytest.mark.asyncio
+async def test_niko_voice_synthesizer_config_and_synthesis() -> None:
+    synth = NikoVoiceSynthesizer()
+    assert synth.voice == "ja-JP-NanamiNeural"
+    assert synth.pitch == "+45Hz"
+    assert synth.rate == "+10%"
+
+    # Empty text returns empty
+    assert await synth.synthesize_bytes("") == b""
+    assert await synth.synthesize_base64("") == ""
+
+    # Synthesis of short phrase produces valid base64 audio
+    b64 = await synth.synthesize_base64("Ready!")
+    assert isinstance(b64, str)
+    assert len(b64) > 100
+

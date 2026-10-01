@@ -1,20 +1,15 @@
-import asyncio
-import json
 import sys
 from pathlib import Path
-import pytest
-from httpx import AsyncClient, ASGITransport
 
-from backend.app.main import create_app
+import pytest
+from httpx import AsyncClient
+
 from backend.app.services.mcp_service import (
     MCPServerConfig,
-    MCPDynamicSkill,
     MCPService,
-    MCPJsonRpcClient,
 )
 from backend.app.skills.base import SkillContext
 from backend.app.skills.registry import SkillRegistry
-
 
 # Minimal mock python script acting as an MCP stdio server
 MOCK_MCP_SERVER_CODE = """
@@ -99,6 +94,7 @@ def mock_mcp_script(tmp_path: Path) -> Path:
 @pytest.fixture
 async def owner_token_and_headers(db_session) -> dict[str, str]:
     from datetime import timedelta
+
     from backend.app.config import get_settings
     from backend.app.core.security import create_jwt_token, hash_password
     from backend.app.db.models import User

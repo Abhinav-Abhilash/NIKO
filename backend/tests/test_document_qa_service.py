@@ -1,10 +1,14 @@
 from pathlib import Path
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.db.models import User
-from backend.app.services.document_service import DocumentService, chunk_text, extract_text_from_file
+from backend.app.services.document_service import (
+    DocumentService,
+    chunk_text,
+)
 from backend.app.skills.base import SkillContext
 from backend.app.skills.builtin.document_search_skill import DocumentSearchSkill
 
@@ -40,6 +44,7 @@ def sample_files(tmp_path: Path) -> dict[str, Path]:
 @pytest.fixture
 async def owner_user_and_headers(db_session: AsyncSession) -> tuple[User, dict[str, str]]:
     from datetime import timedelta
+
     from backend.app.config import get_settings
     from backend.app.core.security import create_jwt_token, hash_password
 

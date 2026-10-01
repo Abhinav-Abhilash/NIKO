@@ -1,5 +1,6 @@
-import pytest
 from pathlib import Path
+
+import pytest
 from httpx import AsyncClient
 
 from backend.app.services.shadow_copy_service import ShadowCopyService
@@ -23,6 +24,7 @@ def shadow_service(tmp_path: Path) -> ShadowCopyService:
 @pytest.fixture
 async def owner_token_and_headers(db_session) -> dict[str, str]:
     from datetime import timedelta
+
     from backend.app.config import get_settings
     from backend.app.core.security import create_jwt_token, hash_password
     from backend.app.db.models import User
@@ -119,11 +121,12 @@ async def test_undo_skill_manifest_and_execution(temp_workspace: Path, tmp_path:
     target_file = temp_workspace / "skill_test.txt"
     target_file.write_text("Hello Skill", encoding="utf-8")
     snap_id = service.create_snapshot([target_file], description="Skill test snapshot")
+    assert snap_id is not None
 
     target_file.write_text("Corrupted Text", encoding="utf-8")
 
     ctx = SkillContext(request_id="req_undo_1", user_id="user_123", provenance="direct")
-    
+
     # 1. List snapshots action
     res_list = await skill.execute({"action": "list_snapshots"}, ctx)
     assert res_list.success is True
