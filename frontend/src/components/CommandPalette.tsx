@@ -92,7 +92,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       id: 'diag-health',
       category: 'Diagnostics',
       label: 'Run System Health Check',
-      sublabel: 'Validate local SQLite, Ollama, and Cloud providers',
+      sublabel: 'Validate local database and active LLM providers',
       icon: 'health_and_safety',
       action: () => {
         onRunPrompt('Run complete system diagnostics on database and active LLM providers.');

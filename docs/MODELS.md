@@ -5,8 +5,9 @@ This document records the verified model list, role assignments, and free-tier q
 > **Policy Enforcement**:
 > - **NO Local Models / Ollama**: NIKO runs exclusively on zero-local-resource free tiers.
 > - **NO Paid Models**: All models listed below are 100% free-tier eligible.
-> - **Predictive Cooldown**: Throttling engages before reaching quotas (at 90% threshold) using local request/token tracking and upstream 429 response headers.
-> - **Live Discovery**: Models are validated against provider endpoints at startup and via manual admin refresh. Missing or 404 models are skipped with warnings.
+> - **Predictive Cooldown & 429 Handling**: Throttling engages predictively (at 90% quota threshold) and immediately obeys real upstream HTTP 429 response `Retry-After` headers.
+> - **Live Discovery & 6-Hour Gating**: Model availability is verified via provider `list-models` endpoints at startup (no generation calls). Runtime 404/410 responses mark the target unavailable for 6 hours and emit a system event on the bus to promote the next candidate.
+> - **Security & Header Auth**: Gemini API keys are passed strictly in the `x-goog-api-key` HTTP header (never exposed in query parameters or URLs). Key strings are automatically scrubbed from all logs and error traces.
 
 ---
 
@@ -14,68 +15,63 @@ This document records the verified model list, role assignments, and free-tier q
 
 | Role | Provider | Exact Model ID | RPM | RPD | TPM | TPD | Source & Verification Date | Status |
 | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :--- | :--- |
-| **`light`** | **Gemini** | `gemini-2.0-flash-lite` | 15 | 1,500 | 1,000,000 | Uncapped* | [Google AI Studio Pricing](https://ai.google.dev/pricing) (Checked: 2026-09-29) | Verified |
-| **`light`** | **Groq** | `openai/gpt-oss-20b` | 30 | 1,000 | 8,000 | 200,000 | [Groq Rate Limits](https://console.groq.com/docs/rate-limits) (Checked: 2026-09-29) | Verified |
-| **`light`** | **Groq (alt)** | `llama-3.1-8b-instant` | 30 | 14,400 | 6,000 | 500,000 | [Groq Rate Limits](https://console.groq.com/docs/rate-limits) (Checked: 2026-09-29) | Verified |
-| **`chat`** | **Gemini** | `gemini-2.0-flash` | 15 | 1,500 | 1,000,000 | Uncapped* | [Google AI Studio Pricing](https://ai.google.dev/pricing) (Checked: 2026-09-29) | Verified |
-| **`chat`** | **Groq** | `openai/gpt-oss-120b` | 30 | 1,000 | 8,000 | 200,000 | [Groq Rate Limits](https://console.groq.com/docs/rate-limits) (Checked: 2026-09-29) | Verified |
-| **`chat`** | **Groq (alt)** | `llama-3.3-70b-versatile` | 30 | 1,000 | 12,000 | 100,000 | [Groq Rate Limits](https://console.groq.com/docs/rate-limits) (Checked: 2026-09-29) | Verified |
-| **`code`** | **Gemini** | `gemini-2.0-flash` | 15 | 1,500 | 1,000,000 | Uncapped* | [Google AI Studio Pricing](https://ai.google.dev/pricing) (Checked: 2026-09-29) | Verified |
-| **`code`** | **Groq** | `openai/gpt-oss-120b` | 30 | 1,000 | 8,000 | 200,000 | [Groq Rate Limits](https://console.groq.com/docs/rate-limits) (Checked: 2026-09-29) | Verified |
-| **`code`** | **OpenRouter** | `openrouter/free` | 20 | 200 | *Unverified* | *Unverified* | [OpenRouter Free Router](https://openrouter.ai/models/openrouter/free) (Checked: 2026-09-29) | Partial (TPM/TPD unverified upstream) |
-| **`code`** | **OpenRouter (alt)** | `qwen/qwen-2.5-coder-32b-instruct:free` | 20 | 200 | *Unverified* | *Unverified* | [OpenRouter Models](https://openrouter.ai/models) (Checked: 2026-09-29) | Partial (TPM/TPD unverified upstream) |
-| **`search`** | **Gemini** | `gemini-2.0-flash-lite` | 15 | 1,500 | 1,000,000 | Uncapped* | [Google AI Studio Pricing](https://ai.google.dev/pricing) (Checked: 2026-09-29) | Verified |
-| **`search`** | **Groq** | `openai/gpt-oss-20b` | 30 | 1,000 | 8,000 | 200,000 | [Groq Rate Limits](https://console.groq.com/docs/rate-limits) (Checked: 2026-09-29) | Verified |
-
-*\* Note: Gemini free-tier daily token limits are not published as a static number by Google and are bounded by the 1,500 RPD and 1M TPM quotas per Google Cloud project.*
+| **`fast`** (light + chat) | **Groq** | `openai/gpt-oss-20b` | 30 | 1,000 | 8,000 | 200,000 | [Groq Rate Limits](https://console.groq.com/docs/rate-limits) (Checked: 2026-10-02) | Verified |
+| **`fast`** (light + chat) | **Gemini** | `gemini-3.5-flash-lite` | 15 | 1,500 | 1,000,000 | UNVERIFIED (True quota shown in AI Studio) | [Google AI Studio Pricing](https://ai.google.dev/pricing) (Checked: 2026-10-02) | Verified |
+| **`fast`** (backup) | **Gemini** | `gemini-flash-lite-latest` | 15 | 1,500 | 1,000,000 | UNVERIFIED (True quota shown in AI Studio) | [Google AI Studio Pricing](https://ai.google.dev/pricing) (Checked: 2026-10-02) | Verified (Last-resort alias) |
+| **`fast`** (fallback) | **OpenRouter** | `openrouter/free` | 20 | 200 | UNVERIFIED | UNVERIFIED | [OpenRouter Free Router](https://openrouter.ai/models/openrouter/free) (Checked: 2026-10-02) | Verified (Free router) |
+| **`coder`** (code) | **Groq** | `openai/gpt-oss-120b` | 30 | 1,000 | 8,000 | 200,000 | [Groq Rate Limits](https://console.groq.com/docs/rate-limits) (Checked: 2026-10-02) | Verified |
+| **`coder`** (code) | **Gemini** | `gemini-3.8-flash` | 15 | 1,500 | 1,000,000 | UNVERIFIED (True quota shown in AI Studio) | [Google AI Studio Pricing](https://ai.google.dev/pricing) (Checked: 2026-10-02) | Verified |
+| **`coder`** (backup) | **Gemini** | `gemini-flash-latest` | 15 | 1,500 | 1,000,000 | UNVERIFIED (True quota shown in AI Studio) | [Google AI Studio Pricing](https://ai.google.dev/pricing) (Checked: 2026-10-02) | Verified (Last-resort alias) |
+| **`coder`** (fallback) | **OpenRouter** | `cohere/north-mini-code:free` | 20 | 200 | UNVERIFIED | UNVERIFIED | [OpenRouter Models](https://openrouter.ai/models) (Checked: 2026-10-02) | Verified (Free coding target) |
+| **`coder`** (fallback) | **OpenRouter** | `openrouter/free` | 20 | 200 | UNVERIFIED | UNVERIFIED | [OpenRouter Free Router](https://openrouter.ai/models/openrouter/free) (Checked: 2026-10-02) | Verified (Free router) |
+| **`vision_long`** (search + image/long) | **Gemini** | `gemini-3.5-flash-lite` | 15 | 1,500 | 1,000,000 | UNVERIFIED (True quota shown in AI Studio) | [Google AI Studio Pricing](https://ai.google.dev/pricing) (Checked: 2026-10-02) | Verified |
+| **`vision_long`** (search + image/long) | **Gemini** | `gemini-3.8-flash` | 15 | 1,500 | 1,000,000 | UNVERIFIED (True quota shown in AI Studio) | [Google AI Studio Pricing](https://ai.google.dev/pricing) (Checked: 2026-10-02) | Verified |
 
 ---
 
 ## Role Configuration Defaults & Parameters
 
-Each role defines execution constraints tailored to the task category:
+Each role implements execution constraints tailored to the task type:
 
-1. **`light`**:
-   - **Purpose**: Greetings, simple direct queries, quick date/time lookups, status checks.
-   - **Max Output Tokens**: 1,024
-   - **Reasoning Effort**: `low`
-   - **Tool Schema Filtering**: Only attach matching read-only/lookup tool schemas.
-   - **Fallback Sequence**: `gemini/gemini-2.0-flash-lite` $\to$ `groq/openai/gpt-oss-20b` $\to$ `groq/llama-3.1-8b-instant`.
+1. **`fast`** (light + chat):
+   - **Purpose**: Quick turn chat, greetings, status queries, date/time lookups.
+   - **Max Output Tokens**: 1,024 (light) / 4,096 (chat)
+   - **Reasoning Effort**: `low` (`{"thinkingConfig": {"thinkingLevel": "low"}}`)
+   - **Routing Heuristic**: Short prompts (<5,000 tokens) route to Groq first; prompts over 5,000 tokens or containing image data automatically skip Groq and route to Gemini Flash-Lite.
+   - **Fallback Sequence**: `groq/openai/gpt-oss-20b` $\to$ `gemini/gemini-3.5-flash-lite` $\to$ `gemini/gemini-flash-lite-latest` $\to$ `openrouter/openrouter/free`.
 
-2. **`chat`**:
-   - **Purpose**: Multi-turn conversation, reasoning, planning, general queries.
-   - **Max Output Tokens**: 4,096
-   - **Reasoning Effort**: `default`
-   - **Fallback Sequence**: `gemini/gemini-2.0-flash` $\to$ `groq/openai/gpt-oss-120b` $\to$ `groq/llama-3.3-70b-versatile`.
-
-3. **`code`**:
-   - **Purpose**: Software engineering, debugging, code generation, script analysis.
+2. **`coder`** (code):
+   - **Purpose**: Software development, debugging, code generation, script analysis.
    - **Max Output Tokens**: 8,192
-   - **Reasoning Effort**: `default`
-   - **Fallback Sequence**: `gemini/gemini-2.0-flash` $\to$ `groq/openai/gpt-oss-120b` $\to$ `openrouter/openrouter/free`.
+   - **Reasoning Effort**: `default` / moderate (`{"thinkingConfig": {"thinkingBudget": 1024}}`)
+   - **Routing Heuristic**: Short code snippets route to Groq; long code (>5,000 tokens) routes to Gemini 3.8 Flash.
+   - **Fallback Sequence**: `groq/openai/gpt-oss-120b` $\to$ `gemini/gemini-3.8-flash` $\to$ `gemini/gemini-flash-latest` $\to$ `openrouter/cohere/north-mini-code:free` $\to$ `openrouter/openrouter/free`.
 
-4. **`search`**:
-   - **Purpose**: Synthesizing web search results, URL scraping, knowledge retrieval over pruned inputs.
+3. **`vision_long`** (search + vision / large context):
+   - **Purpose**: Synthesizing web searches, document comprehension, screenshot/image analysis, large context files.
    - **Max Output Tokens**: 2,048
    - **Reasoning Effort**: `low`
-   - **Fallback Sequence**: `gemini/gemini-2.0-flash-lite` $\to$ `groq/openai/gpt-oss-20b`.
+   - **Routing Heuristic**: Skips Groq automatically when images or large inputs are detected.
+   - **Fallback Sequence**: `gemini/gemini-3.5-flash-lite` $\to$ `gemini/gemini-3.8-flash` $\to$ `gemini/gemini-flash-latest`.
 
 ---
 
-## Dynamic Discovery & Fallback Behavior
+## Dynamic Discovery & Health Gating
 
 1. **Startup Discovery**:
-   - On server startup, NIKO attempts to list available models via each configured provider's list endpoint:
-     - **Gemini**: `GET https://generativelanguage.googleapis.com/v1beta/models`
-     - **Groq**: `GET https://api.groq.com/openai/v1/models`
-     - **OpenRouter**: `GET https://openrouter.ai/api/v1/models` (filtered to `:free` and tool support)
-   - If an endpoint returns 404, 401, or cannot reach a model, NIKO logs a warning and marks that model as unavailable without halting backend boot.
+   - At startup, NIKO checks model availability using provider `list-models` endpoints without issuing generation requests.
+   - Endpoints:
+     - **Gemini**: `GET https://generativelanguage.googleapis.com/v1beta/models` (Header: `x-goog-api-key`)
+     - **Groq**: `GET https://api.groq.com/openai/v1/models` (Header: `Authorization: Bearer <key>`)
+     - **OpenRouter**: `GET https://openrouter.ai/api/v1/models`
 
-2. **Admin Refresh**:
-   - The admin can trigger `POST /api/v1/settings/models/refresh` to re-query all endpoints and refresh the active model availability cache.
+2. **Runtime 404/410 Gating**:
+   - If an upstream model returns HTTP 404 or 410, NIKO marks the model temporarily unavailable for 6 hours.
+   - A bus event `llm:model_unavailable` is published and the next target in the fallback chain is automatically promoted.
+   - The admin status API (`GET /api/v1/settings/models/status`) surfaces active and temporarily unavailable models with remaining cooldown seconds.
 
-3. **Predictive Cooldown**:
-   - Token and request tallies are recorded per-provider per-minute and per-day in SQLite and in-memory rate limiters.
-   - When 90% of RPM, RPD, TPM, or TPD is consumed, the model initiates cooldown *predictively* before an upstream HTTP 429 error occurs.
-   - Real upstream `429 Too Many Requests` responses and `Retry-After` headers immediately engage a cooldown backoff window.
-   - If all models for a role enter cooldown, requests enter the deferred queue accompanied by an active frontend cooldown banner.
+3. **Live Smoke Testing**:
+   - Live upstream verification can be run outside CI at any time using:
+     ```bash
+     python scripts/smoke_models.py
+     ```

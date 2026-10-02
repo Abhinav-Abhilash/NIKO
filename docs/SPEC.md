@@ -27,25 +27,31 @@ NIKO uses a multi-tier, sequential fallback architecture across high-speed cloud
 > Local Ollama has been removed from active routing to eliminate heavy local VRAM memory constraints and dependency friction. All LLM operations route sequentially through cloud APIs.
 
 ### Active Providers & Supported Models:
-1. **Google Gemini:** `gemini-2.0-flash`, `gemini-2.0-flash-lite`, `gemini-1.5-pro` (Streaming via SSE, function calling).
-2. **Groq Cloud:** `llama-3.3-70b-versatile`, `llama-3.1-8b-instant` (High-speed LPU inference with token streaming).
-3. **OpenRouter:** `qwen/qwen-2.5-coder-32b-instruct:free` (Free-tier coding backup).
+1. **Google Gemini:** `gemini-3.5-flash-lite`, `gemini-3.8-flash`, `gemini-flash-lite-latest`, `gemini-flash-latest` (Streaming via SSE, function calling, header auth via `x-goog-api-key`).
+2. **Groq Cloud:** `openai/gpt-oss-20b`, `openai/gpt-oss-120b` (High-speed LPU inference with token streaming).
+3. **OpenRouter:** `openrouter/free`, `cohere/north-mini-code:free` (Free-tier coding and general fallback).
 
 ### Model Roles & Fallback Chains:
-- **`Chat` Role (Primary conversational turn & general tools):**
-  1. `groq/llama-3.3-70b-versatile`
-  2. `gemini/gemini-2.0-flash`
-  3. `openrouter/qwen/qwen-2.5-coder-32b-instruct:free`
-- **`Fast` Role (Low-overhead classification, summaries, parameter extraction):**
-  1. `groq/llama-3.1-8b-instant`
-  2. `gemini/gemini-2.0-flash`
-- **`Reasoning` Role (Complex multi-step problem solving & code generation):**
-  1. `gemini/gemini-2.0-flash` (with `reasoning_effort: high`)
-  2. `groq/llama-3.3-70b-versatile`
-  3. `openrouter/qwen/qwen-2.5-coder-32b-instruct:free`
+- **`fast` Role (Quick chat, light queries, short classification):**
+  1. `groq/openai/gpt-oss-20b` (for short prompts <5,000 tokens)
+  2. `gemini/gemini-3.5-flash-lite`
+  3. `gemini/gemini-flash-lite-latest` (backup)
+  4. `openrouter/openrouter/free`
+- **`coder` Role (Code generation, debugging, script analysis):**
+  1. `groq/openai/gpt-oss-120b` (for short code snippets <5,000 tokens)
+  2. `gemini/gemini-3.8-flash` (for long code)
+  3. `gemini/gemini-flash-latest` (backup)
+  4. `openrouter/cohere/north-mini-code:free`
+  5. `openrouter/openrouter/free`
+- **`vision_long` Role (Search synthesis, OCR, image inputs, long context):**
+  1. `gemini/gemini-3.5-flash-lite`
+  2. `gemini/gemini-3.8-flash`
+  3. `gemini/gemini-flash-latest`
 
 ### Quota Avoidance & Deferred Queue:
-- **Predictive Cooldown Tracker:** Automatically cools down a provider/model after 3 consecutive 429 rate limits or high token consumption.
+- **Routing Heuristics:** Prompts over ~5,000 estimated tokens or containing image data automatically bypass Groq and route directly to Gemini.
+- **Predictive Cooldown Tracker:** Automatically cools down a provider/model at 90% quota consumption or upon upstream HTTP 429 responses with `Retry-After`.
+- **Runtime 404/410 Gating:** Runtime 404/410 marks the target unavailable for 6 hours, emits a bus event, and promotes the next model in sequence.
 - **Deferred Chat Queue:** If all providers for a role are simultaneously cooling down, requests are buffered in a deferred queue and automatically retried when the shortest reset timer expires, while broadcasting a live cooldown banner to the UI.
 
 ---
