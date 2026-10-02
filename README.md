@@ -11,6 +11,8 @@
 [![SQLite WAL](https://img.shields.io/badge/sqlite-WAL%20mode-003B57.svg?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![Zero Subscriptions](https://img.shields.io/badge/cost-$0%2Fmo%20(Zero%20Subs)-brightgreen.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Abhinav_Abhilash-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/abhinavabhilash/)
+[![Discord](https://img.shields.io/badge/Discord-blackflashh-5865F2?logo=discord&logoColor=white)](https://discord.com/)
 
 <p align="center">
   <img src="docs/assets/niko_banner.jpg" alt="NIKO Desktop AI Assistant Hero Banner" width="100%" style="border-radius: 12px; margin: 16px 0;" />
@@ -250,10 +252,23 @@ NIKO adheres to strict engineering standards for reproducible, auditable develop
 
 ## 📬 Connect & Community
 
-Have feedback, questions, or want to contribute? Reach out directly:
+<div align="center">
 
-- **LinkedIn**: [Abhinav Abhilash](https://www.linkedin.com/in/abhinavabhilash/)
-- **Discord**: `blackflashh`
+<p><strong>Got questions, feedback, or want to collaborate on the future of embodied desktop AI? Let's connect!</strong></p>
+
+<a href="https://www.linkedin.com/in/abhinavabhilash/" target="_blank">
+  <img src="https://img.shields.io/badge/LinkedIn-Abhinav%20Abhilash-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn Profile" />
+</a>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://discord.com/" target="_blank">
+  <img src="https://img.shields.io/badge/Discord-blackflashh-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord ID: blackflashh" />
+</a>
+
+<br><br>
+
+<sub>Feel free to shoot a message on Discord (<code>blackflashh</code>) or connect on LinkedIn to discuss features, architecture, or integrations!</sub>
+
+</div>
 
 ---
 
