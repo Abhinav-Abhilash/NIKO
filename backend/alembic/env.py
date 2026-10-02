@@ -18,7 +18,12 @@ if config.config_file_name is not None:
 
 settings = get_settings()
 settings.ensure_directories()
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+db_url = config.get_main_option("sqlalchemy.url")
+if not db_url or db_url == "sqlite:///storage/niko.db":
+    db_url = settings.DATABASE_URL
+if db_url.startswith("sqlite:///") and not db_url.startswith("sqlite+aiosqlite:///"):
+    db_url = db_url.replace("sqlite:///", "sqlite+aiosqlite:///")
+config.set_main_option("sqlalchemy.url", db_url)
 
 target_metadata = Base.metadata
 

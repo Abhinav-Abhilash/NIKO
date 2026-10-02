@@ -42,6 +42,11 @@ jobs:
         run: |
           uv run mypy backend
 
+      - name: Validate Alembic Migrations on Empty Database
+        run: |
+          uv run alembic upgrade head
+          uv run alembic check
+
       - name: Run Pytest Suite
         run: |
           uv run pytest backend/tests -v
