@@ -94,6 +94,10 @@ class GeminiProvider(BaseLLMProvider):
         gen_config: dict[str, Any] = {"temperature": temperature}
         if max_output_tokens:
             gen_config["maxOutputTokens"] = max_output_tokens
+        if _reasoning_effort == "low":
+            gen_config["thinkingConfig"] = {"thinkingLevel": "low"}
+        elif _reasoning_effort in ("default", "high"):
+            gen_config["thinkingConfig"] = {"thinkingBudget": 1024}
         body["generationConfig"] = gen_config
 
         # Tools declaration
@@ -125,10 +129,12 @@ class GeminiProvider(BaseLLMProvider):
         body = self._convert_messages_and_tools(
             messages, tools, max_output_tokens, reasoning_effort, temperature
         )
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent?alt=sse&key={self.api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent?alt=sse"
+        headers = {"x-goog-api-key": self.api_key}
 
         async with httpx.AsyncClient(timeout=60.0) as client:
-            async with client.stream("POST", url, json=body) as response:
+            async with client.stream("POST", url, headers=headers, json=body) as response:
+
                 if response.status_code == 429:
                     retry_header = response.headers.get("retry-after") or "60"
                     retry_sec = float(retry_header) if retry_header.isdigit() else 60.0
@@ -208,10 +214,12 @@ class GeminiProvider(BaseLLMProvider):
         body = self._convert_messages_and_tools(
             messages, tools, max_output_tokens, reasoning_effort, temperature
         )
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+        headers = {"x-goog-api-key": self.api_key}
 
         async with httpx.AsyncClient(timeout=60.0) as client:
-            res = await client.post(url, json=body)
+            res = await client.post(url, headers=headers, json=body)
+
             if res.status_code == 429:
                 retry_header = res.headers.get("retry-after") or "60"
                 retry_sec = float(retry_header) if retry_header.isdigit() else 60.0

@@ -124,3 +124,20 @@ def test_provider_keys_redacted_in_uvicorn_log_record() -> None:
     assert groq_key not in err_record.msg
     assert "[REDACTED]" in err_record.msg
 
+
+def test_field_named_key_and_error_scrubbing() -> None:
+    from backend.app.core.logging import redact_sensitive_data
+
+    gemini_key = "AI" + "za" + "SyD_fakegeminikey1234567890"
+    event_dict = {
+        "key": gemini_key,
+        "x_api_key": "some_secret_val",
+        "error": f"Failed request with header x-goog-api-key: {gemini_key}",
+    }
+    scrubbed = redact_sensitive_data(None, "error", event_dict)
+    assert scrubbed["key"] == "[REDACTED]"
+    assert scrubbed["x_api_key"] == "[REDACTED]"
+    assert gemini_key not in scrubbed["error"]
+    assert "[REDACTED]" in scrubbed["error"]
+
+

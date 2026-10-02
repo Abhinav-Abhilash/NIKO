@@ -25,8 +25,9 @@ BEARER_AUTH_REGEX = re.compile(r"\bBearer\s+[a-zA-Z0-9_\-\.]{16,}\b", re.IGNOREC
 HEADER_KEY_REGEX = re.compile(r"(?i)\b(x-goog-api-key|api[-_]?key):\s*([a-zA-Z0-9_\-\.]{8,})")
 
 SENSITIVE_FIELD_NAMES = re.compile(
-    r"(?i)(api[_-]?key|secret|password|auth|credential|gemini.*key|groq.*key|openrouter.*key|token)"
+    r"(?i)(^key$|api[_-]?key|secret|password|auth|credential|gemini.*key|groq.*key|openrouter.*key|token)"
 )
+
 
 _SENSITIVE_TOKENS: set[str] = set()
 _LOCK = threading.Lock()
@@ -175,6 +176,9 @@ def setup_logging(log_level: str = "INFO", app_env: str = "development") -> None
 
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
     logging.getLogger("aiosqlite").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+
 
 
 def get_logger(name: str = "niko") -> structlog.stdlib.BoundLogger:
