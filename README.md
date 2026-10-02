@@ -248,11 +248,20 @@ NIKO adheres to strict engineering standards for reproducible, auditable develop
 
 ---
 
+## 📬 Connect & Community
+
+Have feedback, questions, or want to contribute? Reach out directly:
+
+- **LinkedIn**: [Abhinav Abhilash](https://www.linkedin.com/in/abhinavabhilash/)
+- **Discord**: `blackflashh`
+
+---
+
 ## 📄 License & Credits
 
 - Distributed under the **MIT License**. See `LICENSE` for details.
 - Audio assets and sound synthesis are CC0 / MIT licensed. See [docs/CREDITS.md](docs/CREDITS.md) for full asset attribution.
 
 <div align="center">
-  <sub>Built with ❤️ by Abhinav Abhilash for private, sovereign personal computing.</sub>
+  <sub>Built with ❤️ by <a href="https://www.linkedin.com/in/abhinavabhilash/">Abhinav Abhilash</a> for private, sovereign personal computing.</sub>
 </div>
