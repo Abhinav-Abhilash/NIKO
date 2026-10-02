@@ -16,9 +16,13 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+import os
+
 settings = get_settings()
 settings.ensure_directories()
-db_url = config.get_main_option("sqlalchemy.url")
+
+x_args = context.get_x_argument(as_dictionary=True)
+db_url = x_args.get("db_url") or os.environ.get("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
 if not db_url or db_url == "sqlite:///storage/niko.db":
     db_url = settings.DATABASE_URL
 if db_url.startswith("sqlite:///") and not db_url.startswith("sqlite+aiosqlite:///"):
