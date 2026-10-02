@@ -79,17 +79,14 @@ async def test_first_boot_onboarding_and_barrier_e2e() -> None:
         assert login_resp.status_code == 200
         assert "niko_access_token" in login_resp.cookies
         access_cookie = login_resp.cookies["niko_access_token"]
-        auth_cookies = {"niko_access_token": access_cookie}
-
-
-
+        client.cookies.set("niko_access_token", access_cookie)
 
         # 5. Authenticated owner accesses /auth/me
-        me_auth = await client.get("/api/v1/auth/me", cookies=auth_cookies)
+        me_auth = await client.get("/api/v1/auth/me")
         assert me_auth.status_code == 200
         assert me_auth.json()["username"] == "first_boot_owner"
 
         # 6. Authenticated owner accesses storage status
-        storage_resp = await client.get("/api/v1/storage/status", cookies=auth_cookies)
+        storage_resp = await client.get("/api/v1/storage/status")
         assert storage_resp.status_code == 200
         assert "database" in storage_resp.json()

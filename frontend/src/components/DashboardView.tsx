@@ -297,7 +297,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
                         </span>
                       </div>
                       <div className="text-on-surface-variant text-[11px]">
-                        Model: {modelStatus.discovered?.gemini?.primary_model || 'gemini-2.0-flash'}
+                        Model:{' '}
+                        {Array.isArray(modelStatus.discovered?.gemini)
+                          ? modelStatus.discovered.gemini[0] || 'gemini-3.5-flash-lite'
+                          : modelStatus.discovered?.gemini?.primary_model || 'gemini-3.5-flash-lite'}
                       </div>
                       <div className="text-primary-container text-xs font-semibold mt-1">
                         Est. TTFT: ~280ms
@@ -318,7 +321,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
                         </span>
                       </div>
                       <div className="text-on-surface-variant text-[11px]">
-                        Model: {modelStatus.discovered?.groq?.primary_model || 'llama-3.3-70b-versatile'}
+                        Model:{' '}
+                        {Array.isArray(modelStatus.discovered?.groq)
+                          ? modelStatus.discovered.groq[0] || 'openai/gpt-oss-20b'
+                          : modelStatus.discovered?.groq?.primary_model || 'openai/gpt-oss-20b'}
                       </div>
                       <div className="text-primary-container text-xs font-semibold mt-1">
                         Est. TTFT: ~120ms (Ultra-Low Latency)
@@ -339,7 +345,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
                         </span>
                       </div>
                       <div className="text-on-surface-variant text-[11px]">
-                        Model: {modelStatus.discovered?.openrouter?.primary_model || 'qwen/qwen-2.5-coder-32b'}
+                        Model:{' '}
+                        {Array.isArray(modelStatus.discovered?.openrouter)
+                          ? modelStatus.discovered.openrouter[0] || 'openrouter/free'
+                          : modelStatus.discovered?.openrouter?.primary_model || 'openrouter/free'}
                       </div>
                       <div className="text-primary-container text-xs font-semibold mt-1">
                         Auto-Routing & Free Standby
