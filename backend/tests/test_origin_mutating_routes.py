@@ -64,15 +64,38 @@ async def test_approvals_respond_route_rejects_unauthorized_origin(
     assert evil_res.status_code == 403
     assert evil_res.json()["error"]["code"] == "INVALID_ORIGIN"
 
-    # 4. Post response with authorized localhost origin -> 200 OK
-    good_headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Origin": "http://localhost:5173",
-    }
-    good_res = await async_client.post(
-        f"/api/v1/approvals/{approval.id}/respond",
-        headers=good_headers,
-        json={"decision": "approve", "arguments": args},
-    )
-    assert good_res.status_code == 200
-    assert good_res.json()["status"] == "approved"
+    # 4. Post response with authorized localhost and desktop shell origins -> 200 OK
+    for authorized_origin in (
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "tauri://localhost",
+        "http://tauri.localhost",
+        "https://tauri.localhost",
+    ):
+        # Create a new approval for each test
+        sub_call = ToolCall(
+            skill_name="open_app",
+            arguments_json=json.dumps(args),
+            status="awaiting_approval",
+        )
+        db_session.add(sub_call)
+        await db_session.flush()
+        sub_approval = await service.create_approval(
+            tool_call_id=sub_call.id,
+            arguments=args,
+            skill_name="open_app",
+        )
+        await db_session.commit()
+
+        shell_headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Origin": authorized_origin,
+        }
+        res = await async_client.post(
+            f"/api/v1/approvals/{sub_approval.id}/respond",
+            headers=shell_headers,
+            json={"decision": "approve", "arguments": args},
+        )
+        assert res.status_code == 200, f"Expected 200 for origin {authorized_origin}, got {res.status_code}"
+        assert res.json()["status"] == "approved"
+

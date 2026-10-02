@@ -44,6 +44,15 @@ def test_settings() -> Settings:
     settings.SETUP_TOKEN = "test_setup_token_12345"
     settings.ENCRYPTION_KEY = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY="
     settings.TRUSTED_HOSTS = ["127.0.0.1", "localhost", "testserver"]
+    settings.CORS_ORIGINS = [
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+        "http://127.0.0.1:1420",
+        "http://localhost:1420",
+        "tauri://localhost",
+        "http://tauri.localhost",
+        "https://tauri.localhost",
+    ]
     settings.WS_ALLOWED_ORIGINS = [
         "http://127.0.0.1:5173",
         "http://localhost:5173",
@@ -55,6 +64,7 @@ def test_settings() -> Settings:
     ]
     settings.ensure_directories()
     return settings
+
 
 
 @pytest.fixture(scope="session")

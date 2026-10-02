@@ -44,24 +44,32 @@ def test_websocket_accepts_authorized_origin() -> None:
             assert response["type"] == "pong"
             assert response["timestamp"] == 123456
 
-        # Tauri desktop shell origin
-        with client.websocket_connect("/ws", headers={"origin": "http://tauri.localhost"}) as websocket:
-            websocket.send_json({"type": "ping", "timestamp": 654321})
-            response = websocket.receive_json()
-            assert response["type"] == "pong"
-            assert response["timestamp"] == 654321
+        # Tauri desktop shell origins (WebView2 / custom scheme)
+        for shell_origin in ("http://tauri.localhost", "https://tauri.localhost", "tauri://localhost"):
+            with client.websocket_connect("/ws", headers={"origin": shell_origin}) as websocket:
+                websocket.send_json({"type": "ping", "timestamp": 654321})
+                response = websocket.receive_json()
+                assert response["type"] == "pong"
+                assert response["timestamp"] == 654321
 
 
 def test_websocket_rejects_unauthorized_origin() -> None:
     app = create_app()
     with TestClient(app) as client:
-        with (
-            pytest.raises(WebSocketDisconnect) as exc_info,
-            client.websocket_connect("/ws", headers={"origin": "http://attacker-site.com"}),
+        for evil_origin in (
+            "http://attacker-site.com",
+            "https://malicious-domain.org",
+            "http://evil.localhost.com",
+            "null",
         ):
-            pass
+            with (
+                pytest.raises(WebSocketDisconnect) as exc_info,
+                client.websocket_connect("/ws", headers={"origin": evil_origin}),
+            ):
+                pass
 
-    # 1008 is WS_POLICY_VIOLATION
-    assert exc_info.value.code == 1008
+            # 1008 is WS_POLICY_VIOLATION
+            assert exc_info.value.code == 1008
+
 
 
