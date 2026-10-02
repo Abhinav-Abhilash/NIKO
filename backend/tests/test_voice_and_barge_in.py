@@ -91,7 +91,7 @@ async def test_voice_barge_in_engine() -> None:
     bus = EventBus()
     engine = VoiceBargeInEngine(event_bus=bus)
 
-    barge_in_called = False
+    barge_in_called: bool = False
 
     def on_barge() -> None:
         nonlocal barge_in_called
@@ -115,7 +115,7 @@ async def test_voice_barge_in_engine() -> None:
     res = await engine.handle_audio_frame(loud_pcm, request_id="req_test_123")
 
     assert res["barge_in_triggered"] is True
-    assert barge_in_called is True
+    assert barge_in_called
     assert bool(dummy_task.cancelling()) or dummy_task.cancelled()
     assert engine.is_assistant_speaking is False
 

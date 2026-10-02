@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -352,7 +352,7 @@ async def test_reminder_service_crud_and_background_firing(db_session: AsyncSess
 
     # Mock session factory for background worker method
     @asynccontextmanager
-    async def mock_session_factory() -> AsyncIterator[AsyncSession]:
+    async def mock_session_factory() -> AsyncGenerator[AsyncSession, None]:
         yield db_session
 
     service.session_factory = mock_session_factory
