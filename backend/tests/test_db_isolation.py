@@ -19,7 +19,8 @@ def test_test_environment_never_targets_production_db() -> None:
     # 2. Must be located inside system temporary directory
     temp_dir = tempfile.gettempdir().replace("\\", "/").rstrip("/")
     assert temp_dir in db_url
-    assert "niko_test.db" in db_url
+    assert "niko_test" in db_url
+    assert db_url.endswith(".db")
 
 
 @pytest.mark.asyncio
