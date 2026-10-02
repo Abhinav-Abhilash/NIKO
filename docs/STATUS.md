@@ -1,7 +1,40 @@
 # NIKO Project Status
 
 Current Architecture State: **Release v0.3.0: Extensibility, Shadow Undo, Local Document Q&A & Hardened Virtual Pet (COMPLETE)**
-Current Roadmap Phase: **EDITS ROUND (Phases A, B & C COMPLETE; Phase D Next)**
+Current Roadmap Phase: **MODEL UPDATE APPROVED & SECURITY HARDENING (COMPLETE - MAIN)**
+
+## Model Update Approved & Hardening (DONE - MAIN)
+
+- [x] **New Approved Model Lineup & Roles**:
+  - `fast` (light + chat): Groq `openai/gpt-oss-20b` (for short prompts <5k tokens), then `gemini-3.5-flash-lite`, `gemini-flash-lite-latest` (last-resort backup), and `openrouter/free`.
+  - `coder` (code): Groq `openai/gpt-oss-120b` (for short code <5k tokens), then `gemini-3.8-flash` (for long code), `gemini-flash-latest` (last-resort backup), `cohere/north-mini-code:free`, and `openrouter/free`.
+  - `vision_long` (search + image/long context): `gemini-3.5-flash-lite`, then `gemini-3.8-flash`, and `gemini-flash-latest`.
+  - Content & token routing heuristics: over ~5,000 estimated tokens or any image content automatically skips Groq targets.
+- [x] **Provider Key & Log Security Hardening**:
+  - Gemini API keys sent exclusively in the `x-goog-api-key` HTTP header (never exposed in URL queries).
+  - Added exact field `key` and query param `key` to regex log scrubber (`backend/app/core/logging.py`).
+  - Pinned `httpx` and `httpcore` loggers to `logging.WARNING`.
+  - Dedicated test suite `backend/tests/test_log_scrubbing.py` verifying no provider key appears in logs, event dicts, or error traces.
+- [x] **Live Health, 6-Hour Deprecation Gating & Bus Events**:
+  - Startup discovery uses `list-models` endpoints (zero generation calls).
+  - Runtime 404/410 errors mark the model temporarily unavailable for 6 hours, publish a `llm:model_unavailable` event on the bus, and promote the next candidate.
+  - Surface active discovered models and temporary unavailability status in `GET /api/v1/settings/models/status`.
+- [x] **Reasoning / Thinking Parameters & Limits**:
+  - `gemini-3.5-flash-lite` uses minimal thinking (`thinkingConfig: {"thinkingLevel": "low"}`).
+  - `gemini-3.8-flash` uses moderate thinking budget (`thinkingConfig: {"thinkingBudget": 1024}`).
+  - Documented UNVERIFIED limits, AI Studio quota source links, and 429 response backoff rules in `docs/MODELS.md`.
+- [x] **Database & Codebase Alignment**:
+  - Backed up `storage/niko.db` to `storage/niko.db.bak`.
+  - Applied schema migration `20261002_1238_a4e70743f04b_add_documents_and_notes_schema.py` (`alembic upgrade head` clean, 0 schema drift).
+  - Updated `backend/app/llm/defaults.py`, `backend/app/api/v1/auth.py`, `docs/MODELS.md`, `docs/decisions/0005-model-roles-and-fallback.md`, `docs/SPEC.md`, and `frontend/src/components/CommandPalette.tsx`.
+  - Created standalone live smoke script `scripts/smoke_models.py` (outside CI) with 100% SUCCESS across all live models.
+- [x] **Verification**:
+  - 220 backend pytest tests passing (`100%`).
+  - 77 frontend Vitest tests passing (`100%`).
+  - Mypy static analysis: 0 errors across 155 files.
+  - Ruff linter: 0 errors.
+  - TypeScript `tsc --noEmit`: 0 errors.
+  - Secret scan: 0 leaks detected.
 
 ## Phase C: Sound System, Ducking & Audio Unlock (DONE - MAIN)
 
