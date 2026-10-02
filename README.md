@@ -13,6 +13,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 <p align="center">
+  <img src="docs/assets/niko_banner.jpg" alt="NIKO Desktop AI Assistant Hero Banner" width="100%" style="border-radius: 12px; margin: 16px 0;" />
+</p>
+
+<p align="center">
   <strong>A private, local-first embodied AI desktop companion and autonomous orchestrator.</strong><br>
   Lives on your screen, automates your PC, talks with sub-second voice response, and respects your privacy with mathematical security guarantees.<br>
   <em>Zero paid subscriptions. Zero local GPU/torch bloat. 100% owner-controlled.</em>
