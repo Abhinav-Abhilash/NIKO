@@ -439,4 +439,56 @@ def test_midnight_pacific_daily_counter_reset() -> None:
     assert usage_after["daily_requests"] == 0
 
 
+def test_provider_tool_conversion_both_formats() -> None:
+    """Ensure Gemini, Groq, and OpenRouter providers handle OpenAI-wrapped and flat tool formats safely."""
+    from backend.app.llm.providers.gemini import GeminiProvider
+    from backend.app.llm.providers.groq import GroqProvider
+    from backend.app.llm.providers.openrouter import OpenRouterProvider
+
+    gemini = GeminiProvider("fake-key")
+    groq = GroqProvider("fake-key")
+    openrouter = OpenRouterProvider("fake-key")
+
+    openai_format_tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "open_app",
+                "description": "Launch an application",
+                "parameters": {"type": "object", "properties": {"app_name": {"type": "string"}}},
+            },
+        }
+    ]
+
+    flat_format_tools = [
+        {
+            "name": "take_screenshot",
+            "description": "Capture screen",
+            "parameters": {"type": "object", "properties": {}},
+        }
+    ]
+
+    # 1. Gemini
+    gem_body_wrapped = gemini._convert_messages_and_tools([], tools=openai_format_tools)
+    assert gem_body_wrapped["tools"][0]["functionDeclarations"][0]["name"] == "open_app"
+
+    gem_body_flat = gemini._convert_messages_and_tools([], tools=flat_format_tools)
+    assert gem_body_flat["tools"][0]["functionDeclarations"][0]["name"] == "take_screenshot"
+
+    # 2. Groq
+    groq_body_wrapped = groq._convert_messages_and_tools([], tools=openai_format_tools)
+    assert groq_body_wrapped["tools"][0]["function"]["name"] == "open_app"
+
+    groq_body_flat = groq._convert_messages_and_tools([], tools=flat_format_tools)
+    assert groq_body_flat["tools"][0]["function"]["name"] == "take_screenshot"
+
+    # 3. OpenRouter
+    openrouter_body_wrapped = openrouter._convert_messages_and_tools([], tools=openai_format_tools)
+    assert openrouter_body_wrapped["tools"][0]["function"]["name"] == "open_app"
+
+    openrouter_body_flat = openrouter._convert_messages_and_tools([], tools=flat_format_tools)
+    assert openrouter_body_flat["tools"][0]["function"]["name"] == "take_screenshot"
+
+
+
 

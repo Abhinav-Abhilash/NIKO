@@ -104,11 +104,17 @@ class GeminiProvider(BaseLLMProvider):
         if tools:
             func_decls = []
             for t in tools:
-                schema = t.get("parameters", {})
+                fn_obj = t.get("function")
+                fn: dict[str, Any] = fn_obj if isinstance(fn_obj, dict) else t
+                func_name = fn.get("name")
+                if not func_name or not isinstance(func_name, str):
+                    continue
+                schema = fn.get("parameters") or fn.get("parameters_schema") or {}
+                desc = fn.get("description", "")
                 func_decls.append(
                     {
-                        "name": t["name"],
-                        "description": t.get("description", ""),
+                        "name": str(func_name),
+                        "description": str(desc),
                         "parameters": schema,
                     }
                 )

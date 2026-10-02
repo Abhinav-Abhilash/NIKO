@@ -79,17 +79,26 @@ class OpenRouterProvider(BaseLLMProvider):
             body["max_tokens"] = max_output_tokens
 
         if tools:
-            body["tools"] = [
-                {
-                    "type": "function",
-                    "function": {
-                        "name": t["name"],
-                        "description": t.get("description", ""),
-                        "parameters": t.get("parameters", {}),
-                    },
-                }
-                for t in tools
-            ]
+            norm_tools: list[dict[str, Any]] = []
+            for t in tools:
+                if t.get("type") == "function" and isinstance(t.get("function"), dict):
+                    norm_tools.append(t)
+                else:
+                    name = t.get("name")
+                    if not name:
+                        continue
+                    norm_tools.append(
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": name,
+                                "description": t.get("description", ""),
+                                "parameters": t.get("parameters") or t.get("parameters_schema") or {},
+                            },
+                        }
+                    )
+            if norm_tools:
+                body["tools"] = norm_tools
 
         return body
 
