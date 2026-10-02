@@ -89,7 +89,13 @@ class VolumeBrightnessSkill(BaseSkill):
         try:
             import comtypes
             from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+        except ImportError as err:
+            logger.warning("Audio control unavailable: pycaw/comtypes missing", error=str(err))
+            return {
+                "error": "Audio control skill unavailable: required Windows audio libraries (pycaw, comtypes) are not installed."
+            }
 
+        try:
             # Initialize COM for current worker thread
             comtypes.CoInitialize()
             try:
@@ -142,7 +148,13 @@ class VolumeBrightnessSkill(BaseSkill):
     def _handle_brightness(self, action: str, level: int | None, display_index: int) -> dict[str, Any]:
         try:
             import screen_brightness_control as sbc
+        except ImportError as err:
+            logger.warning("Brightness control unavailable: screen-brightness-control missing", error=str(err))
+            return {
+                "error": "Brightness control skill unavailable: required library (screen-brightness-control) is not installed."
+            }
 
+        try:
             if action == "get_brightness":
                 brightness_list = sbc.get_brightness(display=display_index)
                 current = brightness_list[0] if isinstance(brightness_list, list) and brightness_list else brightness_list

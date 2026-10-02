@@ -284,6 +284,26 @@ async def test_volume_brightness_skill_audio_mock() -> None:
         assert result.data["volume_level"] == 75
 
 
+@pytest.mark.asyncio
+async def test_volume_brightness_skill_importerror_guards() -> None:
+    """Verify missing dependencies return clear skill unavailable errors without crashing."""
+    skill = VolumeBrightnessSkill()
+    ctx = SkillContext(request_id="req_vb_guard", provenance="direct")
+
+    with patch("sys.platform", "win32"):
+        # 1. Test audio missing pycaw/comtypes
+        with patch.dict("sys.modules", {"comtypes": None, "pycaw": None, "pycaw.pycaw": None}):
+            res_audio = await skill.execute({"action": "get_volume"}, ctx)
+            assert res_audio.success is False
+            assert "Audio control skill unavailable" in (res_audio.error or "")
+
+        # 2. Test brightness missing screen_brightness_control
+        with patch.dict("sys.modules", {"screen_brightness_control": None}):
+            res_bright = await skill.execute({"action": "get_brightness"}, ctx)
+            assert res_bright.success is False
+            assert "Brightness control skill unavailable" in (res_bright.error or "")
+
+
 # ---------------------------------------------------------------------------
 # 6. RemindersSkill & ReminderService Tests
 # ---------------------------------------------------------------------------

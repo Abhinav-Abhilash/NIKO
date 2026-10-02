@@ -826,15 +826,21 @@ dependencies = [
     { name = "aiosqlite" },
     { name = "alembic" },
     { name = "argon2-cffi" },
+    { name = "comtypes", marker = "sys_platform == 'win32'" },
     { name = "cryptography" },
     { name = "edge-tts" },
     { name = "fastapi" },
     { name = "greenlet" },
+    { name = "httpx" },
+    { name = "mss" },
+    { name = "pillow" },
     { name = "psutil" },
+    { name = "pycaw", marker = "sys_platform == 'win32'" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pyjwt" },
     { name = "python-multipart" },
+    { name = "screen-brightness-control", marker = "sys_platform == 'win32'" },
     { name = "slowapi" },
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "structlog" },
@@ -842,18 +848,9 @@ dependencies = [
     { name = "websockets" },
 ]
 
-[package.optional-dependencies]
-windows = [
-    { name = "mss" },
-    { name = "pillow" },
-    { name = "pycaw", marker = "sys_platform == 'win32'" },
-    { name = "screen-brightness-control" },
-]
-
 [package.dev-dependencies]
 dev = [
     { name = "detect-secrets" },
-    { name = "httpx" },
     { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -866,31 +863,31 @@ requires-dist = [
     { name = "aiosqlite", specifier = ">=0.20.0" },
     { name = "alembic", specifier = ">=1.13.2" },
     { name = "argon2-cffi", specifier = ">=23.1.0" },
+    { name = "comtypes", marker = "sys_platform == 'win32'", specifier = ">=1.4.0" },
     { name = "cryptography", specifier = ">=43.0.0" },
     { name = "edge-tts", specifier = ">=7.2.8" },
     { name = "fastapi", specifier = ">=0.115.0" },
     { name = "greenlet", specifier = ">=3.0.3" },
-    { name = "mss", marker = "extra == 'windows'", specifier = ">=9.0.2" },
-    { name = "pillow", marker = "extra == 'windows'", specifier = ">=10.4.0" },
+    { name = "httpx", specifier = ">=0.27.0" },
+    { name = "mss", specifier = ">=9.0.2" },
+    { name = "pillow", specifier = ">=10.4.0" },
     { name = "psutil", specifier = ">=6.0.0" },
-    { name = "pycaw", marker = "sys_platform == 'win32' and extra == 'windows'", specifier = ">=20240206" },
+    { name = "pycaw", marker = "sys_platform == 'win32'", specifier = ">=20240206" },
     { name = "pydantic", specifier = ">=2.8.0" },
     { name = "pydantic-settings", specifier = ">=2.4.0" },
     { name = "pyjwt", specifier = ">=2.9.0" },
     { name = "python-multipart", specifier = ">=0.0.9" },
-    { name = "screen-brightness-control", marker = "extra == 'windows'", specifier = ">=0.23.0" },
+    { name = "screen-brightness-control", marker = "sys_platform == 'win32'", specifier = ">=0.23.0" },
     { name = "slowapi", specifier = ">=0.1.9" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.32" },
     { name = "structlog", specifier = ">=24.4.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30.0" },
     { name = "websockets", specifier = ">=13.0" },
 ]
-provides-extras = ["windows"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "detect-secrets", specifier = ">=1.5.0" },
-    { name = "httpx", specifier = ">=0.27.0" },
     { name = "mypy", specifier = ">=1.11.0" },
     { name = "pytest", specifier = ">=8.3.0" },
     { name = "pytest-asyncio", specifier = ">=0.24.0" },
@@ -1290,9 +1287,9 @@ name = "screen-brightness-control"
 version = "0.27.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pypiwin32", marker = "sys_platform == 'win32'" },
-    { name = "pywin32", marker = "sys_platform == 'win32'" },
-    { name = "wmi", marker = "sys_platform == 'win32'" },
+    { name = "pypiwin32" },
+    { name = "pywin32" },
+    { name = "wmi" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/fe/14/63ecad8a54736a5955b6684a91f093e8e7c45207ad0a3be96a951d83d203/screen_brightness_control-0.27.2.tar.gz", hash = "sha256:7fd21a05025f644447ea267ef24b150bb1f5c9b47199c1e51e9aded3c6e918cc", size = 48262, upload-time = "2026-06-01T16:12:06.129Z" }
 wheels = [
