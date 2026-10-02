@@ -1,6 +1,7 @@
 from collections.abc import AsyncIterator
 from typing import Any
 
+from backend.app.core.events import get_event_bus
 from backend.app.core.logging import get_logger, register_sensitive_token
 from backend.app.llm.base import BaseLLMProvider
 from backend.app.llm.cooldown import cooldown_tracker
@@ -43,12 +44,49 @@ def prune_tool_output(content: str, max_tokens: int = 1200) -> str:
     return head + truncated_msg + tail
 
 
+def estimate_prompt_tokens_and_media(messages: list[LLMMessage]) -> tuple[int, bool]:
+    """
+    Cheap heuristic to estimate prompt tokens and detect image content.
+    Roughly 4 characters per token. Over ~5,000 tokens or any image skips Groq.
+    """
+    total_chars = 0
+    has_image = False
+    for msg in messages:
+        if msg.content:
+            total_chars += len(msg.content)
+            content_lower = msg.content.lower()
+            if "data:image/" in content_lower or any(
+                ext in content_lower for ext in [".png", ".jpg", ".jpeg", ".webp", ".gif", "image_url", "[image]"]
+            ):
+                has_image = True
+    return max(1, total_chars // 4), has_image
+
+
+async def _notify_model_unavailable(provider: str, model: str, reason: str = "HTTP 404/410") -> None:
+    model_discovery.mark_model_unavailable(provider, model, duration_hours=6.0, reason=reason)
+    try:
+        event_bus = get_event_bus()
+        await event_bus.publish(
+            "llm",
+            "model_unavailable",
+            {
+                "provider": provider,
+                "model": model,
+                "duration_hours": 6.0,
+                "reason": reason,
+            },
+        )
+    except Exception:
+        pass
+
+
 class LLMOrchestrator:
     """
     Manages multi-provider execution with:
-    - Role-based target sequencing (light, chat, code, search)
+    - Role-based target sequencing (fast, coder, vision_long)
+    - Token/image routing heuristics (>5000 tokens or image skips Groq)
     - Predictive rate-limit cooldown
-    - Dynamic discovery with missing-model skipping
+    - Dynamic discovery with missing-model skipping and 6h 404/410 gating
     - Mid-turn failover across providers
     - Tool call and context pruning
     """
@@ -116,17 +154,33 @@ class LLMOrchestrator:
     ) -> LLMResponse:
         """
         Execute chat completion with role-based sequential fallback across providers.
-        Skips missing models and models in predictive/429 cooldown.
+        Skips missing models, cooled down models, and routes based on token/media heuristics.
         """
         role_str = role.value if isinstance(role, ModelRole) else role.lower()
         targets = self.roles_config.get_role_targets(role)
         prepared_messages = self._prepare_messages_for_context(messages, max_tool_tokens)
+        estimated_tokens, has_image = estimate_prompt_tokens_and_media(prepared_messages)
         attempts: list[dict[str, str]] = []
 
         for target in targets:
             provider = self._get_provider_instance(target.provider)
             if not provider:
                 attempts.append({"target": f"{target.provider}/{target.model}", "status": "no_api_key"})
+                continue
+
+            # Heuristic routing: over ~5000 tokens or any image skips Groq
+            if target.provider == "groq" and (estimated_tokens > 5000 or has_image):
+                logger.info(
+                    "Skipping Groq target due to routing heuristics",
+                    provider=target.provider,
+                    model=target.model,
+                    estimated_tokens=estimated_tokens,
+                    has_image=has_image,
+                )
+                attempts.append({
+                    "target": f"{target.provider}/{target.model}",
+                    "status": f"skipped_heuristic (tokens={estimated_tokens}, has_image={has_image})"
+                })
                 continue
 
             # Check dynamic discovery
@@ -181,7 +235,7 @@ class LLMOrchestrator:
                 attempts.append({"target": f"{target.provider}/{target.model}", "status": f"429: {e}"})
                 continue
             except ProviderModelNotFoundError as e:
-                model_discovery.mark_model_missing(target.provider, target.model)
+                await _notify_model_unavailable(target.provider, target.model, reason=f"404/410: {e}")
                 attempts.append({"target": f"{target.provider}/{target.model}", "status": f"404: {e}"})
                 continue
             except ProviderAuthError as e:
@@ -204,7 +258,6 @@ class LLMOrchestrator:
     # Alias for non-streaming chat complete
     chat = chat_complete
 
-
     async def chat_stream(
         self,
         role: ModelRole | str,
@@ -218,12 +271,28 @@ class LLMOrchestrator:
         role_str = role.value if isinstance(role, ModelRole) else role.lower()
         targets = self.roles_config.get_role_targets(role)
         prepared_messages = self._prepare_messages_for_context(messages, max_tool_tokens)
+        estimated_tokens, has_image = estimate_prompt_tokens_and_media(prepared_messages)
         attempts: list[dict[str, str]] = []
 
         for target in targets:
             provider = self._get_provider_instance(target.provider)
             if not provider:
                 attempts.append({"target": f"{target.provider}/{target.model}", "status": "no_api_key"})
+                continue
+
+            # Heuristic routing: over ~5000 tokens or any image skips Groq
+            if target.provider == "groq" and (estimated_tokens > 5000 or has_image):
+                logger.info(
+                    "Skipping Groq target due to routing heuristics",
+                    provider=target.provider,
+                    model=target.model,
+                    estimated_tokens=estimated_tokens,
+                    has_image=has_image,
+                )
+                attempts.append({
+                    "target": f"{target.provider}/{target.model}",
+                    "status": f"skipped_heuristic (tokens={estimated_tokens}, has_image={has_image})"
+                })
                 continue
 
             if not model_discovery.is_model_available(target.provider, target.model):
@@ -268,7 +337,7 @@ class LLMOrchestrator:
                 attempts.append({"target": f"{target.provider}/{target.model}", "status": f"429: {e}"})
                 continue
             except ProviderModelNotFoundError as e:
-                model_discovery.mark_model_missing(target.provider, target.model)
+                await _notify_model_unavailable(target.provider, target.model, reason=f"404/410: {e}")
                 attempts.append({"target": f"{target.provider}/{target.model}", "status": f"404: {e}"})
                 continue
             except Exception as e:
@@ -276,6 +345,7 @@ class LLMOrchestrator:
                 continue
 
         raise AllProvidersExhaustedError(role=role_str, attempts=attempts)
+
 
 
 _orchestrator_instance: LLMOrchestrator | None = None

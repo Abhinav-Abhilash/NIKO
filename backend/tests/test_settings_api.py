@@ -48,8 +48,8 @@ async def test_get_and_put_model_roles(
     assert "chat" in data
     assert "code" in data
     assert "search" in data
-    assert len(data["light"]) >= 2
-    assert data["light"][0]["provider"] == "gemini"
+    assert data["light"][0]["provider"] == "groq"
+    assert data["light"][0]["model"] == "openai/gpt-oss-20b"
 
     # 2. Update model roles
     custom_config = ModelRolesConfig(

@@ -252,3 +252,44 @@ async def test_discovery_skips_unreachable() -> None:
 
         openrouter_models = await service.discover_openrouter()
         assert openrouter_models == ["openrouter/free"]
+
+
+@pytest.mark.asyncio
+async def test_groq_heuristic_skipping_for_long_prompts_or_images() -> None:
+    """Verify Groq targets are skipped when prompt >5000 tokens or contains image content."""
+    config = ModelRolesConfig(
+        chat=[
+            RoleModelTarget(provider="groq", model="openai/gpt-oss-20b"),
+            RoleModelTarget(provider="gemini", model="gemini-3.5-flash-lite"),
+        ]
+    )
+
+    groq_mock = MockProvider("groq", behavior="success")
+    gemini_mock = MockProvider("gemini", behavior="success")
+
+    orchestrator = LLMOrchestrator(
+        provider_keys={"groq": "k1", "gemini": "k2"},
+        roles_config=config,
+    )
+    orchestrator._providers["groq"] = groq_mock
+    orchestrator._providers["gemini"] = gemini_mock
+
+    # 1. Long prompt (>5000 tokens -> >20,000 characters)
+    long_msg = [LLMMessage(role="user", content="A" * 25000)]
+    resp = await orchestrator.chat_complete(role=ModelRole.CHAT, messages=long_msg)
+    assert resp.provider_used == "gemini"
+    assert resp.model_used == "gemini-3.5-flash-lite"
+    assert len(groq_mock.calls) == 0
+    assert len(gemini_mock.calls) == 1
+
+    # Reset calls
+    gemini_mock.calls.clear()
+
+    # 2. Prompt with image content
+    img_msg = [LLMMessage(role="user", content="Here is my photo: data:image/png;base64,iVBORw0KGgoAAAANS...")]
+    resp2 = await orchestrator.chat_complete(role=ModelRole.CHAT, messages=img_msg)
+    assert resp2.provider_used == "gemini"
+    assert resp2.model_used == "gemini-3.5-flash-lite"
+    assert len(groq_mock.calls) == 0
+    assert len(gemini_mock.calls) == 1
+

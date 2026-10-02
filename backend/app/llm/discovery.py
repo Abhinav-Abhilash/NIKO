@@ -1,4 +1,6 @@
 import asyncio
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import httpx
 
@@ -10,8 +12,8 @@ logger = get_logger("niko.llm.discovery")
 class ModelDiscoveryService:
     """
     Discovers live available models from Gemini, Groq, and OpenRouter endpoints.
-    Catches and logs warnings if any endpoint 404s, times out, or fails,
-    ensuring startup and runtime are never blocked.
+    Tracks runtime 404/410 model deprecations with 6-hour temporary unavailability gating.
+    Catches and logs warnings if any endpoint fails, ensuring startup and runtime are never blocked.
     """
 
     def __init__(self) -> None:
@@ -21,36 +23,60 @@ class ModelDiscoveryService:
             "openrouter": set(),
         }
         self._provider_checked: set[str] = set()
+        self._temporarily_unavailable: dict[tuple[str, str], datetime] = {}
 
     def is_model_available(self, provider: str, model: str) -> bool:
         prov = provider.lower()
+        mod = model.lower()
+        now = datetime.now(UTC)
+
+        # 1. Check if model is in 6-hour unavailable cooldown
+        key = (prov, mod)
+        if key in self._temporarily_unavailable:
+            expires_at = self._temporarily_unavailable[key]
+            if now < expires_at:
+                return False
+            del self._temporarily_unavailable[key]
+
+        # 2. Check discovery list
         if prov not in self._provider_checked:
-            # Not yet checked, permit execution so startup isn't blocked
             return True
         known = self._discovered.get(prov, set())
         if not known:
-            # Endpoint returned empty or failed to connect, allow fallback attempt
             return True
-        return model.lower() in known or model in known
+        return mod in known or model in known
 
-    def mark_model_missing(self, provider: str, model: str, reason: str = "404 or disappeared") -> None:
+    def mark_model_unavailable(
+        self, provider: str, model: str, duration_hours: float = 6.0, reason: str = "404 or 410 at runtime"
+    ) -> None:
         prov = provider.lower()
-        if prov in self._discovered and model.lower() in self._discovered[prov]:
-            self._discovered[prov].discard(model.lower())
+        mod = model.lower()
+        expires_at = datetime.now(UTC) + timedelta(hours=duration_hours)
+        self._temporarily_unavailable[(prov, mod)] = expires_at
+
+        if prov in self._discovered and mod in self._discovered[prov]:
+            self._discovered[prov].discard(mod)
+
         logger.warning(
-            "Model marked unavailable/missing",
+            "Model marked temporarily unavailable for fallback routing",
             provider=provider,
             model=model,
+            duration_hours=duration_hours,
+            expires_at=expires_at.isoformat(),
             reason=reason,
         )
+
+    def mark_model_missing(self, provider: str, model: str, reason: str = "404 or disappeared") -> None:
+        self.mark_model_unavailable(provider, model, duration_hours=6.0, reason=reason)
 
     async def discover_gemini(self, api_key: str | None) -> list[str]:
         if not api_key:
             return []
-        url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
+        url = "https://generativelanguage.googleapis.com/v1beta/models"
+        headers = {"x-goog-api-key": api_key}
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
-                res = await client.get(url)
+                res = await client.get(url, headers=headers)
                 if res.status_code == 200:
                     data = res.json()
                     models = [
@@ -72,6 +98,7 @@ class ModelDiscoveryService:
             logger.warning("Failed to discover Gemini models", error=str(e))
         self._provider_checked.add("gemini")
         return []
+
 
     async def discover_groq(self, api_key: str | None) -> list[str]:
         if not api_key:
@@ -151,9 +178,26 @@ class ModelDiscoveryService:
             "openrouter": list(self._discovered.get("openrouter", set())),
         }
 
-    def get_discovered_summary(self) -> dict[str, list[str]]:
-        return {k: sorted(v) for k, v in self._discovered.items()}
+    def get_discovered_summary(self) -> dict[str, Any]:
+        now = datetime.now(UTC)
+        unavailable = [
+            {
+                "provider": prov,
+                "model": mod,
+                "expires_at": expires.isoformat(),
+                "remaining_seconds": max(0, int((expires - now).total_seconds())),
+            }
+            for (prov, mod), expires in self._temporarily_unavailable.items()
+            if now < expires
+        ]
+        return {
+            "gemini": sorted(self._discovered.get("gemini", set())),
+            "groq": sorted(self._discovered.get("groq", set())),
+            "openrouter": sorted(self._discovered.get("openrouter", set())),
+            "unavailable": unavailable,
+        }
 
 
 # Global discovery instance
 model_discovery = ModelDiscoveryService()
+

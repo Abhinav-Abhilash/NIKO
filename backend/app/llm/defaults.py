@@ -1,57 +1,51 @@
 from backend.app.llm.types import ModelRolesConfig, ProviderRateLimit, RoleModelTarget
 
 # Verified Free-Tier Rate Limits per (provider, model)
+# Note: Google AI Studio free tier RPM/RPD are verified from https://ai.google.dev/pricing
 VERIFIED_RATE_LIMITS: dict[tuple[str, str], ProviderRateLimit] = {
-    # Gemini
-    ("gemini", "gemini-2.0-flash-lite"): ProviderRateLimit(
+    # Gemini 3.x Series (Verified active production endpoints)
+    ("gemini", "gemini-3.5-flash-lite"): ProviderRateLimit(
         rpm=15,
         rpd=1500,
         tpm=1_000_000,
         tpd=0,  # Bounded by 1500 RPD
-        source="https://ai.google.dev/pricing",
+        source="https://ai.google.dev/pricing (Checked: 2026-10-02)",
     ),
-    ("gemini", "gemini-2.0-flash"): ProviderRateLimit(
+    ("gemini", "gemini-3.8-flash"): ProviderRateLimit(
         rpm=15,
         rpd=1500,
         tpm=1_000_000,
         tpd=0,
-        source="https://ai.google.dev/pricing",
+        source="https://ai.google.dev/pricing (Checked: 2026-10-02)",
     ),
-    ("gemini", "gemini-2.5-flash"): ProviderRateLimit(
+    ("gemini", "gemini-flash-lite-latest"): ProviderRateLimit(
         rpm=15,
         rpd=1500,
         tpm=1_000_000,
         tpd=0,
-        source="https://ai.google.dev/pricing",
+        source="https://ai.google.dev/pricing (Checked: 2026-10-02)",
     ),
-    # Groq
+    ("gemini", "gemini-flash-latest"): ProviderRateLimit(
+        rpm=15,
+        rpd=1500,
+        tpm=1_000_000,
+        tpd=0,
+        source="https://ai.google.dev/pricing (Checked: 2026-10-02)",
+    ),
+    # Groq (Verified active production endpoints)
     ("groq", "openai/gpt-oss-20b"): ProviderRateLimit(
         rpm=30,
         rpd=1000,
         tpm=8000,
         tpd=200_000,
-        source="https://console.groq.com/docs/rate-limits",
+        source="https://console.groq.com/docs/rate-limits (Checked: 2026-10-02)",
     ),
     ("groq", "openai/gpt-oss-120b"): ProviderRateLimit(
         rpm=30,
         rpd=1000,
         tpm=8000,
         tpd=200_000,
-        source="https://console.groq.com/docs/rate-limits",
-    ),
-    ("groq", "llama-3.1-8b-instant"): ProviderRateLimit(
-        rpm=30,
-        rpd=14_400,
-        tpm=6000,
-        tpd=500_000,
-        source="https://console.groq.com/docs/rate-limits",
-    ),
-    ("groq", "llama-3.3-70b-versatile"): ProviderRateLimit(
-        rpm=30,
-        rpd=1000,
-        tpm=12_000,
-        tpd=100_000,
-        source="https://console.groq.com/docs/rate-limits",
+        source="https://console.groq.com/docs/rate-limits (Checked: 2026-10-02)",
     ),
     # OpenRouter
     ("openrouter", "openrouter/free"): ProviderRateLimit(
@@ -59,14 +53,14 @@ VERIFIED_RATE_LIMITS: dict[tuple[str, str], ProviderRateLimit] = {
         rpd=200,
         tpm=10_000,  # Conservative baseline
         tpd=0,
-        source="https://openrouter.ai/models/openrouter/free",
+        source="https://openrouter.ai/models/openrouter/free (Checked: 2026-10-02)",
     ),
-    ("openrouter", "qwen/qwen-2.5-coder-32b-instruct:free"): ProviderRateLimit(
+    ("openrouter", "cohere/north-mini-code:free"): ProviderRateLimit(
         rpm=20,
         rpd=200,
         tpm=10_000,
         tpd=0,
-        source="https://openrouter.ai/models",
+        source="https://openrouter.ai/models (Checked: 2026-10-02)",
     ),
 }
 
@@ -76,10 +70,10 @@ DEFAULT_PROVIDER_LIMITS: dict[str, ProviderRateLimit] = {
         rpm=15, rpd=1500, tpm=1_000_000, tpd=0, source="Google AI Studio Default"
     ),
     "groq": ProviderRateLimit(
-        rpm=30, rpd=1000, tpm=6000, tpd=100_000, source="Groq Console Default"
+        rpm=30, rpd=1000, tpm=8000, tpd=200_000, source="Groq Console Default"
     ),
     "openrouter": ProviderRateLimit(
-        rpm=20, rpd=200, tpm=8000, tpd=0, source="OpenRouter Free Default"
+        rpm=20, rpd=200, tpm=10_000, tpd=0, source="OpenRouter Free Default"
     ),
 }
 
@@ -88,54 +82,66 @@ def get_default_roles_config() -> ModelRolesConfig:
     return ModelRolesConfig(
         light=[
             RoleModelTarget(
-                provider="gemini",
-                model="gemini-2.0-flash-lite",
-                max_output_tokens=1024,
-                reasoning_effort="low",
-            ),
-            RoleModelTarget(
                 provider="groq",
                 model="openai/gpt-oss-20b",
                 max_output_tokens=1024,
                 reasoning_effort="low",
             ),
             RoleModelTarget(
-                provider="groq",
-                model="llama-3.1-8b-instant",
+                provider="gemini",
+                model="gemini-3.5-flash-lite",
+                max_output_tokens=1024,
+                reasoning_effort="low",
+            ),
+            RoleModelTarget(
+                provider="openrouter",
+                model="openrouter/free",
+                max_output_tokens=1024,
+                reasoning_effort="low",
+            ),
+            RoleModelTarget(
+                provider="gemini",
+                model="gemini-flash-lite-latest",
                 max_output_tokens=1024,
                 reasoning_effort="low",
             ),
         ],
         chat=[
             RoleModelTarget(
+                provider="groq",
+                model="openai/gpt-oss-20b",
+                max_output_tokens=4096,
+                reasoning_effort="default",
+            ),
+            RoleModelTarget(
                 provider="gemini",
-                model="gemini-2.0-flash",
+                model="gemini-3.5-flash-lite",
                 max_output_tokens=4096,
                 reasoning_effort="default",
             ),
             RoleModelTarget(
-                provider="groq",
-                model="openai/gpt-oss-120b",
+                provider="openrouter",
+                model="openrouter/free",
                 max_output_tokens=4096,
                 reasoning_effort="default",
             ),
             RoleModelTarget(
-                provider="groq",
-                model="llama-3.3-70b-versatile",
+                provider="gemini",
+                model="gemini-flash-lite-latest",
                 max_output_tokens=4096,
                 reasoning_effort="default",
             ),
         ],
         code=[
             RoleModelTarget(
-                provider="gemini",
-                model="gemini-2.0-flash",
+                provider="groq",
+                model="openai/gpt-oss-120b",
                 max_output_tokens=8192,
                 reasoning_effort="default",
             ),
             RoleModelTarget(
-                provider="groq",
-                model="openai/gpt-oss-120b",
+                provider="gemini",
+                model="gemini-3.8-flash",
                 max_output_tokens=8192,
                 reasoning_effort="default",
             ),
@@ -146,24 +152,31 @@ def get_default_roles_config() -> ModelRolesConfig:
                 reasoning_effort="default",
             ),
             RoleModelTarget(
-                provider="openrouter",
-                model="qwen/qwen-2.5-coder-32b-instruct:free",
-                max_output_tokens=4096,
+                provider="gemini",
+                model="gemini-flash-latest",
+                max_output_tokens=8192,
                 reasoning_effort="default",
             ),
         ],
         search=[
             RoleModelTarget(
                 provider="gemini",
-                model="gemini-2.0-flash-lite",
+                model="gemini-3.5-flash-lite",
                 max_output_tokens=2048,
                 reasoning_effort="low",
             ),
             RoleModelTarget(
-                provider="groq",
-                model="openai/gpt-oss-20b",
+                provider="gemini",
+                model="gemini-3.8-flash",
+                max_output_tokens=2048,
+                reasoning_effort="default",
+            ),
+            RoleModelTarget(
+                provider="gemini",
+                model="gemini-flash-lite-latest",
                 max_output_tokens=2048,
                 reasoning_effort="low",
             ),
         ],
     )
+

@@ -95,13 +95,13 @@ async def setup_initial_owner(
     provider_seeds: list[dict[str, Any]] = [
         {
             "name": "gemini",
-            "default_model": "gemini-2.0-flash",
+            "default_model": "gemini-3.5-flash-lite",
             "priority": 1,
             "key": settings.INITIAL_GEMINI_API_KEY,
         },
         {
             "name": "groq",
-            "default_model": "openai/gpt-oss-120b",
+            "default_model": "openai/gpt-oss-20b",
             "priority": 2,
             "key": settings.INITIAL_GROQ_API_KEY,
         },

@@ -8,8 +8,8 @@ vi.mock('../services/api', () => ({
   ApiService: {
     getModelsStatus: vi.fn().mockResolvedValue({
       discovered: {
-        gemini: { primary_model: 'gemini-2.0-flash' },
-        groq: { primary_model: 'llama-3.3-70b-versatile' },
+        gemini: { primary_model: 'gemini-3.5-flash-lite' },
+        groq: { primary_model: 'openai/gpt-oss-20b' },
       },
       quotas: {
         gemini: { cooling_down: false },
@@ -65,7 +65,7 @@ describe('DashboardView Component', () => {
     render(<DashboardView metrics={mockMetrics} onRefresh={vi.fn()} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Model: gemini-2.0-flash/i)).toBeInTheDocument();
+      expect(screen.getByText(/Model: gemini-3.5-flash-lite/i)).toBeInTheDocument();
     });
 
     expect(screen.getByText(/Reset in: 45s/i)).toBeInTheDocument();
