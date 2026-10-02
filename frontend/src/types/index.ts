@@ -107,3 +107,11 @@ export interface ModelStatusSummary {
   quotas: Record<string, unknown>;
 }
 
+export type DisplayMode = 'pet-only' | 'pet-overlay' | 'overlay-only';
+
+export interface PersonaSettings {
+  name: string;
+  persona: string;
+}
+
+

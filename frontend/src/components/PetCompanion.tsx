@@ -22,6 +22,8 @@ export interface PetCompanionProps {
   cooldownMessage?: string | null;
   error?: string | null;
   activeToolCallsCount?: number;
+  petName?: string;
+  onSendMessage?: (content: string) => void;
   onExpand: () => void;
   onToggleVoice: () => void;
   onBargeIn?: () => void;
@@ -43,9 +45,15 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
   cooldownMessage,
   error = null,
   activeToolCallsCount = 0,
+  petName = 'NIKO',
+  onSendMessage,
   onExpand,
   onToggleVoice,
 }) => {
+  const [isInputOpen, setIsInputOpen] = React.useState(false);
+  const [inputText, setInputText] = React.useState('');
+  const inlineInputRef = useRef<HTMLInputElement | null>(null);
+
   // Graceful fallback to shared useApprovals if props are not explicitly supplied
   const fallbackApprovals = useApprovals();
   const hasPendingApproval =
@@ -89,9 +97,28 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
     }
   }, [hasPendingApproval, pendingApproval, isListening, isSpeaking]);
 
+  useEffect(() => {
+    if (isInputOpen) {
+      const timer = setTimeout(() => {
+        inlineInputRef.current?.focus();
+      }, 20);
+      return () => clearTimeout(timer);
+    }
+  }, [isInputOpen]);
+
   const handlePetClick = () => {
     soundService.playSound('click', { isListening, isSpeaking });
+    setIsInputOpen((prev) => !prev);
     onExpand();
+  };
+
+  const handleSendInline = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputText.trim()) return;
+    if (onSendMessage) {
+      onSendMessage(inputText.trim());
+    }
+    setInputText('');
   };
 
   const handleApproveWithSound = (persistence: ApprovalPersistence = 'once') => {
@@ -103,6 +130,31 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
     soundService.playSound('click', { isListening, isSpeaking });
     handleDeny(reason);
   };
+
+  // Human-friendly description for approval prompt
+  const formatApprovalQuestion = () => {
+    if (!pendingApproval) return 'Can I perform this action?';
+    const skill = pendingApproval.skillName;
+    const args = pendingApproval.arguments || {};
+    if (skill === 'open_app' && args.app_name) {
+      return `Can I open ${args.app_name}?`;
+    }
+    if (skill === 'web_search' && args.query) {
+      return `Can I search the web for "${args.query}"?`;
+    }
+    if (skill === 'read_file' && args.file_path) {
+      return `Can I read file ${args.file_path}?`;
+    }
+    if (skill === 'write_file' && args.file_path) {
+      return `Can I write to file ${args.file_path}?`;
+    }
+    return `Can I execute ${skill}?`;
+  };
+
+  const inputLeft =
+    charState.position.x + 140 > (typeof window !== 'undefined' ? window.innerWidth - 260 : 800)
+      ? Math.max(16, charState.position.x - 260)
+      : charState.position.x + 140;
 
   return (
     <div
@@ -135,7 +187,74 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
         onOpenCardHUD={handlePetClick}
       />
 
-      {/* Unreachable-Proof Approval Card Prompt (clickable, auto-focused, Enter/Esc keyboard accessible) */}
+      {/* Click-to-Type Inline Text Input beside Pet Avatar */}
+      {isInputOpen && (
+        <form
+          data-testid="pet-inline-input-wrapper"
+          onSubmit={handleSendInline}
+          style={{
+            position: 'fixed',
+            left: `${inputLeft}px`,
+            top: `${charState.position.y + 50}px`,
+            width: '240px',
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1.5px solid rgba(56, 189, 248, 0.4)',
+            borderRadius: '16px',
+            padding: '8px 10px',
+            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(56, 189, 248, 0.2)',
+            pointerEvents: 'auto',
+            zIndex: 100001,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          <input
+            ref={inlineInputRef}
+            data-testid="pet-inline-input"
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                setIsInputOpen(false);
+              }
+            }}
+            placeholder={`Ask ${petName}...`}
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              color: '#F8FAFC',
+              fontSize: '12px',
+              fontFamily: 'Inter, system-ui, sans-serif',
+            }}
+          />
+          <button
+            type="submit"
+            data-testid="pet-send-btn"
+            disabled={!inputText.trim()}
+            style={{
+              padding: '4px 10px',
+              backgroundColor: inputText.trim() ? '#38BDF8' : 'rgba(255, 255, 255, 0.1)',
+              color: inputText.trim() ? '#0F172A' : '#64748B',
+              border: 'none',
+              borderRadius: '10px',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: inputText.trim() ? 'pointer' : 'default',
+            }}
+          >
+            Send
+          </button>
+        </form>
+      )}
+
+      {/* Unreachable-Proof Approval Card Prompt Through the Pet */}
       {hasPendingApproval && pendingApproval && (
         <div
           id="niko-pet-approval-card"
@@ -199,9 +318,9 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
             </span>
           </div>
 
-          {/* Skill Name */}
-          <div style={{ fontSize: '13px', marginBottom: '8px', color: '#E2E8F0' }}>
-            Request to execute: <strong style={{ color: '#FDE047', fontFamily: 'monospace' }}>{pendingApproval.skillName}</strong>
+          {/* Friendly Question through Pet Persona */}
+          <div style={{ fontSize: '13px', marginBottom: '8px', color: '#E2E8F0', fontWeight: 600 }}>
+            {formatApprovalQuestion()}
           </div>
 
           {/* Arguments details */}
@@ -224,7 +343,7 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
             </div>
           )}
 
-          {/* Actions */}
+          {/* Actions: Yes / No buttons */}
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '6px' }}>
             <button
               type="button"
@@ -241,7 +360,7 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
                 cursor: 'pointer',
               }}
             >
-              Deny (Esc)
+              No (Esc)
             </button>
             <button
               type="button"
@@ -259,7 +378,7 @@ export const PetCompanion: React.FC<PetCompanionProps> = ({
                 boxShadow: '0 0 12px rgba(217, 119, 6, 0.5)',
               }}
             >
-              Approve (Enter)
+              Yes (Enter)
             </button>
           </div>
         </div>

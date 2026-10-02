@@ -195,12 +195,30 @@ Design files imported into `frontend/design-import/` must consume these hooks ra
 
 ---
 
-## 7. Virtual Pet Companion & Real Character Telemetry Contract
+## 7. The Pet IS the AI & Embodied Telemetry Contract
 
-The virtual pet companion (`PetCompanion` and `CharacterAvatar`) reflects NIKO's live operational states derived strictly from real event bus topics and UI hooks.
+The virtual pet companion (`PetCompanion` and `CharacterAvatar`) is **NIKO itself**—the primary embodied interface for the AI assistant. The hovering acrylic card overlay is an optional secondary HUD mode.
+
+### Core Interaction Architecture
+1. **The Pet is the Primary AI Interface**:
+   - Clicking the pet avatar opens a compact inline text input directly beside it.
+   - Text inputs submitted via the inline field (or voice transcripts from the mic button) stream responses directly into the pet's speech bubble above its head.
+   - The microphone button toggles full-duplex voice recognition with local VAD and barge-in.
+2. **Approvals Asked Through the Pet**:
+   - Security-sensitive actions present human-in-the-loop (HITL) confirmation dialogs directly through the pet persona (e.g., *"Can I open Notepad?"* or *"Can I execute open_app?"*).
+   - Clear **Yes (Enter)** and **No (Esc)** actions with live 30-second countdown.
+   - Auto-focused and reachable (`pointer-events: auto;`) even when the desktop window is click-through.
+3. **Display Modes**:
+   - `pet-only` (**Default**): Embodied desktop companion with click-to-type inline input, voice mic, and speech bubble.
+   - `pet-overlay`: Embodied companion and hovering acrylic card HUD displayed simultaneously, sharing identical state hooks and event feeds without duplicate logic.
+   - `overlay-only`: Hovering card HUD only.
+4. **Zero-Token Local Idle Telemetry**:
+   - All idle animations (blinking, breathing, posture changes, eye gaze tracking) and audio effects (chimes, clicks, alerts) run strictly locally. Zero LLM tokens or API calls are consumed for idle behaviors. Model quota is spent only when the user explicitly chats or commands action.
+5. **Pet Identity & Persona Settings**:
+   - Pet name (default: `NIKO`) and persona are configurable in settings (`/api/v1/settings/persona`) and dynamically integrated into the system prompt.
 
 ### Real State Machine & Emotion Mapping (Zero Fake Timers)
-Artificial inactivity timers that simulated boredom or sleep without real runtime events are prohibited. The pet transitions only in response to genuine backend and audio pipeline events:
+The pet transitions only in response to genuine backend and audio pipeline events:
 
 | Real State | Semantic State (`AssistantSemanticState`) | Posture (`CharacterPosture`) | Emotion (`CharacterEmotion`) | Telemetry Trigger / Event Topic | Payload Format |
 |---|---|---|---|---|---|
@@ -215,11 +233,12 @@ Artificial inactivity timers that simulated boredom or sleep without real runtim
 ### Click-Through & Unreachable-Proof Approval Specification
 1. **Click-Through Desktop Layering**:
    - The desktop pet overlay root container (`#niko-pet-companion-wrapper`) is styled with `pointer-events: none;` and fixed inset bounds `0`, allowing clicks on transparent screen areas to pass through to underlying OS windows.
-   - The interactive pet character (`#niko-embodied-character`) is styled with `pointer-events: auto;`, enabling dragging, position persistence, clicking to open HUD, and microphone toggle.
+   - The interactive pet character (`#niko-embodied-character`) and inline input (`#pet-inline-input-wrapper`) are styled with `pointer-events: auto;`, enabling dragging, position persistence, clicking to open inline input, and microphone toggle.
 2. **Approval Accessibility & Auto-Focus**:
    - When an approval request arrives, `#niko-pet-approval-card` mounts with `pointer-events: auto;` and automatically receives focus (`tabIndex={0}`).
    - An active 30-second countdown decrements live (`30s` -> `0s`).
    - Pressing **`Enter`** immediately approves execution (`approve('once')`).
    - Pressing **`Escape`** immediately cancels execution (`deny('denied_by_user')`).
    - Clickable action buttons for Approve and Deny are permanently reachable on top of any click-through desktop geometry.
+
 

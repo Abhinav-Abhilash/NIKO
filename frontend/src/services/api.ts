@@ -204,5 +204,27 @@ export class ApiService {
       method: 'DELETE',
     });
   }
+
+  // -------------------------------------------------------------------
+  // Pet Persona & Identity Settings
+  // -------------------------------------------------------------------
+
+  public static async getPersona(): Promise<{ name: string; persona: string }> {
+    try {
+      return await this.request<{ name: string; persona: string }>('/settings/persona');
+    } catch {
+      return {
+        name: 'NIKO',
+        persona: 'A friendly, embodied, and highly capable desktop AI companion.',
+      };
+    }
+  }
+
+  public static async updatePersona(name: string, persona: string): Promise<{ name: string; persona: string }> {
+    return this.request<{ name: string; persona: string }>('/settings/persona', {
+      method: 'PUT',
+      body: JSON.stringify({ name, persona }),
+    });
+  }
 }
 

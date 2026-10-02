@@ -127,3 +127,37 @@ async def update_shell_hotkey(
     await db.commit()
     return payload
 
+
+class PersonaConfig(BaseModel):
+    name: str = Field(default="NIKO", min_length=1, max_length=50)
+    persona: str = Field(
+        default="A friendly, embodied, and highly capable desktop AI companion.",
+        max_length=2000,
+    )
+
+
+@router.get("/persona", response_model=PersonaConfig)
+async def get_persona(
+    _current_owner: User = Depends(get_current_owner),
+    db: AsyncSession = Depends(get_db),
+) -> PersonaConfig:
+    """Retrieve the pet's name and persona configuration."""
+    repo = SettingsRepository(db)
+    data = await repo.get_persona_config()
+    return PersonaConfig(name=data["name"], persona=data["persona"])
+
+
+@router.put("/persona", response_model=PersonaConfig)
+async def update_persona(
+    payload: PersonaConfig,
+    _request: Request,
+    _current_owner: User = Depends(get_current_owner),
+    db: AsyncSession = Depends(get_db),
+) -> PersonaConfig:
+    """Update the pet's name and persona configuration."""
+    repo = SettingsRepository(db)
+    await repo.save_persona_config(name=payload.name, persona=payload.persona)
+    await db.commit()
+    return payload
+
+

@@ -9,6 +9,7 @@ import {
 } from '../hooks';
 import { tokens } from '../tokens';
 import { PetCompanion } from './PetCompanion';
+import type { DisplayMode } from '../types';
 
 /**
  * Cyberpunk / Windows 11 Acrylic HUD Overlay.
@@ -35,7 +36,16 @@ export const PlaceholderOverlay: React.FC = () => {
   });
   const providers = useProviderStatus();
 
+  const [displayMode, setDisplayMode] = useState<DisplayMode>(() => {
+    return (localStorage.getItem('niko_display_mode') as DisplayMode) || 'pet-only';
+  });
+
   const [inputVal, setInputVal] = useState('');
+
+  const changeDisplayMode = (mode: DisplayMode) => {
+    setDisplayMode(mode);
+    localStorage.setItem('niko_display_mode', mode);
+  };
 
   if (!overlay.isVisible) {
     return (
@@ -45,30 +55,39 @@ export const PlaceholderOverlay: React.FC = () => {
     );
   }
 
-  if (overlay.mode === 'pet') {
-    return (
-      <PetCompanion
-        orbState={orb.orbState}
-        isListening={voice.isListening}
-        isSpeaking={voice.isSpeaking}
-        isStreaming={chat.isStreaming}
-        isBargeInActive={voice.isBargeInActive}
-        audioLevel={voice.audioLevel}
-        activeSpeechSnippet={voice.currentSentence || chat.streamingContent || chat.messages[chat.messages.length - 1]?.content || undefined}
-        hasPendingApproval={approvals.hasPendingApproval}
-        pendingApproval={approvals.pendingApproval}
-        remainingSeconds={approvals.remainingSeconds}
-        onApprove={approvals.approve}
-        onDeny={approvals.deny}
-        activeToolCallsCount={chat.activeToolCalls.length}
-        isCoolingDown={providers.isCoolingDown}
-        cooldownMessage={providers.cooldownMessage}
-        error={chat.error}
-        onExpand={() => overlay.setMode('compact')}
-        onToggleVoice={voice.toggleListening}
-        onBargeIn={voice.triggerBargeIn}
-      />
-    );
+  const renderPet = (
+    <PetCompanion
+      orbState={orb.orbState}
+      isListening={voice.isListening}
+      isSpeaking={voice.isSpeaking}
+      isStreaming={chat.isStreaming}
+      isBargeInActive={voice.isBargeInActive}
+      audioLevel={voice.audioLevel}
+      activeSpeechSnippet={voice.currentSentence || chat.streamingContent || chat.messages[chat.messages.length - 1]?.content || undefined}
+      hasPendingApproval={approvals.hasPendingApproval}
+      pendingApproval={approvals.pendingApproval}
+      remainingSeconds={approvals.remainingSeconds}
+      onApprove={approvals.approve}
+      onDeny={approvals.deny}
+      activeToolCallsCount={chat.activeToolCalls.length}
+      isCoolingDown={providers.isCoolingDown}
+      cooldownMessage={providers.cooldownMessage}
+      error={chat.error}
+      onSendMessage={(msg) => chat.sendMessage(msg)}
+      onExpand={() => {
+        if (displayMode === 'pet-only') {
+          changeDisplayMode('pet-overlay');
+        } else {
+          overlay.setMode(overlay.mode === 'compact' ? 'expanded' : 'compact');
+        }
+      }}
+      onToggleVoice={voice.toggleListening}
+      onBargeIn={voice.triggerBargeIn}
+    />
+  );
+
+  if (displayMode === 'pet-only') {
+    return renderPet;
   }
 
   const handleSend = (e: React.FormEvent) => {
@@ -97,13 +116,15 @@ export const PlaceholderOverlay: React.FC = () => {
   const coreColor = getCoreColor();
 
   return (
-    <div
-      id="niko-overlay-container"
-      style={{
-        width: 'calc(100% - 32px)',
-        maxWidth: overlay.mode === 'expanded' ? '820px' : '560px',
-        margin: '24px auto',
-        backgroundColor: 'rgba(11, 14, 18, 0.88)',
+    <>
+      {displayMode === 'pet-overlay' && renderPet}
+      <div
+        id="niko-overlay-container"
+        style={{
+          width: 'calc(100% - 32px)',
+          maxWidth: overlay.mode === 'expanded' ? '820px' : '560px',
+          margin: '24px auto',
+          backgroundColor: 'rgba(11, 14, 18, 0.88)',
         backdropFilter: 'blur(24px) saturate(180%)',
         WebkitBackdropFilter: 'blur(24px) saturate(180%)',
         color: tokens.colors.textPrimary,
@@ -235,10 +256,15 @@ export const PlaceholderOverlay: React.FC = () => {
             {voice.isListening ? 'Voice ON' : 'Voice'}
           </button>
 
-          {/* Floating Pet Mode Toggle */}
+          {/* Display Mode Switcher */}
           <button
             type="button"
-            onClick={() => overlay.setMode('pet')}
+            data-testid="mode-toggle-btn"
+            onClick={() => {
+              const nextMode: DisplayMode =
+                displayMode === 'pet-overlay' ? 'overlay-only' : 'pet-only';
+              changeDisplayMode(nextMode);
+            }}
             style={{
               background: 'rgba(168, 85, 247, 0.12)',
               color: '#c084fc',
@@ -250,9 +276,9 @@ export const PlaceholderOverlay: React.FC = () => {
               cursor: 'pointer',
               transition: 'all 0.15s ease',
             }}
-            title="Switch to Floating Desktop Pet Companion Mode"
+            title="Switch display mode: Pet Only, Pet + Overlay, or Overlay Only"
           >
-            Pet HUD
+            Mode: {displayMode === 'pet-overlay' ? 'Pet+HUD' : 'HUD Only'}
           </button>
 
           <button
@@ -637,6 +663,7 @@ export const PlaceholderOverlay: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

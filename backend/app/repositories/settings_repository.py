@@ -76,3 +76,28 @@ class SettingsRepository:
         except Exception:
             pass
         return setting
+
+    async def get_persona_config(self) -> dict[str, str]:
+        setting = await self.get_setting("pet_persona_config")
+        if setting and setting.value_json:
+            try:
+                data = json.loads(setting.value_json)
+                return {
+                    "name": str(data.get("name", "NIKO")),
+                    "persona": str(
+                        data.get(
+                            "persona",
+                            "A friendly, embodied, and highly capable desktop AI companion.",
+                        )
+                    ),
+                }
+            except Exception:
+                pass
+        return {
+            "name": "NIKO",
+            "persona": "A friendly, embodied, and highly capable desktop AI companion.",
+        }
+
+    async def save_persona_config(self, name: str, persona: str) -> Setting:
+        json_val = json.dumps({"name": name.strip() or "NIKO", "persona": persona.strip()})
+        return await self.set_setting("pet_persona_config", json_val, category="persona")

@@ -12,6 +12,8 @@ vi.mock('../services/api', () => ({
 
 describe('PlaceholderOverlay component', () => {
   beforeEach(() => {
+    localStorage.clear();
+    localStorage.setItem('niko_display_mode', 'overlay-only');
     vi.clearAllMocks();
   });
 
@@ -83,6 +85,17 @@ describe('PlaceholderOverlay component', () => {
 
     fireEvent.click(toggleBtn);
     expect(screen.getByRole('button', { name: /Compact/i })).toBeInTheDocument();
+  });
+
+  it('cycles display modes between pet-only, pet-overlay, and overlay-only', () => {
+    render(<PlaceholderOverlay />);
+
+    const modeBtn = screen.getByTestId('mode-toggle-btn');
+    expect(modeBtn.textContent).toContain('HUD Only');
+
+    // Click to cycle to Pet Only
+    fireEvent.click(modeBtn);
+    expect(screen.getByTestId('niko-embodied-character')).toBeInTheDocument();
   });
 });
 

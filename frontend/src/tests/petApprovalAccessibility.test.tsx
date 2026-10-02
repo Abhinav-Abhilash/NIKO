@@ -1,9 +1,7 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, renderHook } from '@testing-library/react';
 import { PetCompanion } from '../components/PetCompanion';
 import { useCharacterState } from '../hooks/useCharacterState';
-import { renderHook } from '@testing-library/react';
 
 describe('Pet Companion & Approval Accessibility', () => {
   beforeEach(() => {
@@ -70,7 +68,7 @@ describe('Pet Companion & Approval Accessibility', () => {
     expect(countdown.textContent).toBe('30s');
 
     // Skill name is displayed
-    expect(screen.getByText('file_delete_skill')).toBeDefined();
+    expect(screen.getByText(/file_delete_skill/)).toBeDefined();
 
     // Keyboard controls: Enter to approve
     fireEvent.keyDown(prompt, { key: 'Enter', code: 'Enter' });

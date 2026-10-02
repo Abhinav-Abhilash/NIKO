@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ApiService } from '../services/api';
 import { toastService } from '../services/toast';
-import type { ModelRoleMapping, ModelTarget } from '../types';
+import type { DisplayMode, ModelRoleMapping, ModelTarget } from '../types';
 
 export const SettingsView: React.FC = () => {
   const [roleMappings, setRoleMappings] = useState<Record<string, ModelTarget[]>>({
@@ -19,6 +19,12 @@ export const SettingsView: React.FC = () => {
       { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 2 },
       { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct:free', priority: 3 },
     ],
+  });
+
+  const [petName, setPetName] = useState('NIKO');
+  const [petPersona, setPetPersona] = useState('A friendly, embodied, and highly capable desktop AI companion.');
+  const [displayMode, setDisplayMode] = useState<DisplayMode>(() => {
+    return (localStorage.getItem('niko_display_mode') as DisplayMode) || 'pet-only';
   });
 
   const [isSaved, setIsSaved] = useState(false);
@@ -43,6 +49,16 @@ export const SettingsView: React.FC = () => {
         console.warn('Could not load custom model roles from backend:', err);
       });
 
+    ApiService.getPersona()
+      .then((data) => {
+        if (!active || !data) return;
+        if (data.name) setPetName(data.name);
+        if (data.persona) setPetPersona(data.persona);
+      })
+      .catch((err) => {
+        console.warn('Could not load pet persona from backend:', err);
+      });
+
     return () => {
       active = false;
     };
@@ -50,12 +66,16 @@ export const SettingsView: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      await ApiService.updateModelRoles(roleMappings);
+      await Promise.all([
+        ApiService.updateModelRoles(roleMappings),
+        ApiService.updatePersona(petName, petPersona),
+      ]);
+      localStorage.setItem('niko_display_mode', displayMode);
       setIsSaved(true);
-      toastService.success('Configuration Saved', 'Model role fallbacks updated successfully.');
+      toastService.success('Configuration Saved', 'Settings updated successfully.');
       setTimeout(() => setIsSaved(false), 3000);
     } catch (err: any) {
-      toastService.error('Save Failed', err.message || 'Could not save model roles.');
+      toastService.error('Save Failed', err.message || 'Could not save settings.');
     }
   };
 
@@ -135,6 +155,64 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Pet AI Identity & Display Mode Section */}
+      <div className="flex flex-col gap-4 border-t border-surface-variant/40 pt-6">
+        <div>
+          <h2 className="font-mono text-base font-bold text-on-surface">
+            PET AI IDENTITY & INTERACTION MODE
+          </h2>
+          <p className="font-mono text-xs text-on-surface-variant">
+            NIKO's desktop pet is the primary embodied AI interface. Configure its identity and display modes below.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Pet Name */}
+          <div className="flex flex-col gap-1.5">
+            <label className="font-mono text-xs font-semibold text-on-surface-variant">
+              Pet Assistant Name
+            </label>
+            <input
+              type="text"
+              value={petName}
+              onChange={(e) => setPetName(e.target.value)}
+              placeholder="e.g. NIKO"
+              className="px-3 py-2 bg-surface-container-low border border-surface-variant/60 rounded-lg font-mono text-xs text-on-surface outline-none focus:border-primary"
+            />
+          </div>
+
+          {/* Display Mode */}
+          <div className="flex flex-col gap-1.5">
+            <label className="font-mono text-xs font-semibold text-on-surface-variant">
+              Desktop Display Mode
+            </label>
+            <select
+              value={displayMode}
+              onChange={(e) => setDisplayMode(e.target.value as DisplayMode)}
+              className="px-3 py-2 bg-surface-container-low border border-surface-variant/60 rounded-lg font-mono text-xs text-on-surface outline-none focus:border-primary"
+            >
+              <option value="pet-only">Pet Only (Default: Embodied companion with click-to-type & speech bubble)</option>
+              <option value="pet-overlay">Pet + Overlay (Embodied companion + hovering card HUD)</option>
+              <option value="overlay-only">Overlay Only (Hovering card HUD without character)</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Pet Persona */}
+        <div className="flex flex-col gap-1.5">
+          <label className="font-mono text-xs font-semibold text-on-surface-variant">
+            Pet Persona & System Instructions
+          </label>
+          <textarea
+            rows={3}
+            value={petPersona}
+            onChange={(e) => setPetPersona(e.target.value)}
+            placeholder="Describe the pet's persona, tone, and traits..."
+            className="px-3 py-2 bg-surface-container-low border border-surface-variant/60 rounded-lg font-mono text-xs text-on-surface outline-none focus:border-primary resize-y"
+          />
+        </div>
       </div>
     </div>
   );

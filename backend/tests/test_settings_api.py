@@ -168,3 +168,32 @@ async def test_put_shell_hotkey_validation_and_security(
     res_unauth = await async_client.get("/api/v1/settings/hotkey")
     assert res_unauth.status_code in (401, 403)
 
+
+@pytest.mark.asyncio
+async def test_get_and_put_pet_persona(
+    async_client: AsyncClient, owner_token_and_headers: dict[str, str]
+) -> None:
+    # 1. Get default persona
+    res = await async_client.get("/api/v1/settings/persona", headers=owner_token_and_headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["name"] == "NIKO"
+    assert "companion" in data["persona"].lower()
+
+    # 2. Update persona
+    put_res = await async_client.put(
+        "/api/v1/settings/persona",
+        headers=owner_token_and_headers,
+        json={"name": "NIKO PRO", "persona": "A super intelligent AI sidekick."},
+    )
+    assert put_res.status_code == 200
+    put_data = put_res.json()
+    assert put_data["name"] == "NIKO PRO"
+    assert put_data["persona"] == "A super intelligent AI sidekick."
+
+    # 3. Verify persistence
+    get_res2 = await async_client.get("/api/v1/settings/persona", headers=owner_token_and_headers)
+    assert get_res2.status_code == 200
+    assert get_res2.json()["name"] == "NIKO PRO"
+
+
