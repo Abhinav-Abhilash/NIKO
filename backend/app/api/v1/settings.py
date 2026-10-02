@@ -75,11 +75,15 @@ async def refresh_models(
 @router.get("/models/status")
 async def get_models_status(
     _current_owner: User = Depends(get_current_owner),
+    db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
-    """Return predictive cooldown and rate-limit consumption status."""
+    """Return predictive cooldown, rate-limit consumption status, and active role-to-model map."""
+    repo = SettingsRepository(db)
+    roles = await repo.get_model_roles_config()
     return {
         "discovered": model_discovery.get_discovered_summary(),
         "quotas": cooldown_tracker.get_status(),
+        "roles": roles.model_dump() if roles else {},
     }
 
 class HotkeyConfig(BaseModel):

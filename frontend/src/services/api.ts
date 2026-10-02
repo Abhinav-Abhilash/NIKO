@@ -163,9 +163,17 @@ export class ApiService {
   // Model Status & Quotas
   // -------------------------------------------------------------------
 
-  public static async getModelsStatus(): Promise<{ discovered: Record<string, unknown>; quotas: Record<string, unknown> }> {
+  public static async getModelsStatus(): Promise<{
+    discovered: Record<string, unknown>;
+    quotas: Record<string, unknown> | any[];
+    roles?: Record<string, any>;
+  }> {
     try {
-      return await this.request<{ discovered: Record<string, unknown>; quotas: Record<string, unknown> }>('/settings/models/status');
+      return await this.request<{
+        discovered: Record<string, unknown>;
+        quotas: Record<string, unknown> | any[];
+        roles?: Record<string, any>;
+      }>('/settings/models/status');
     } catch {
       return { discovered: {}, quotas: {} };
     }

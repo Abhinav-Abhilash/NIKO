@@ -25,6 +25,14 @@ from backend.app.llm.types import (
 )
 
 
+@pytest.fixture(autouse=True)
+def reset_global_cooldown_tracker() -> Any:
+    from backend.app.llm.cooldown import cooldown_tracker
+    cooldown_tracker.reset()
+    yield
+    cooldown_tracker.reset()
+
+
 class MockProvider(BaseLLMProvider):
     def __init__(self, name: str, behavior: str = "success"):
         self.name = name
@@ -85,7 +93,7 @@ async def test_role_fallback_order() -> None:
     """Verify orchestrator tries targets in exact role order on failure/429."""
     config = ModelRolesConfig(
         chat=[
-            RoleModelTarget(provider="gemini", model="gemini-2.0-flash"),
+            RoleModelTarget(provider="gemini", model="gemini-3.5-flash-lite"),
             RoleModelTarget(provider="groq", model="openai/gpt-oss-120b"),
             RoleModelTarget(provider="openrouter", model="openrouter/free"),
         ]
@@ -146,7 +154,7 @@ async def test_all_providers_exhausted_raises() -> None:
     """Verify AllProvidersExhaustedError is raised if all candidates in sequence fail."""
     config = ModelRolesConfig(
         code=[
-            RoleModelTarget(provider="gemini", model="gemini-2.0-flash"),
+            RoleModelTarget(provider="gemini", model="gemini-3.5-flash-lite"),
             RoleModelTarget(provider="groq", model="openai/gpt-oss-120b"),
         ]
     )
@@ -173,15 +181,16 @@ def test_predictive_cooldown_tracker() -> None:
     """Verify predictive cooldown triggers BEFORE reaching the limit (at 90% quota)."""
     tracker = PredictiveCooldownTracker(predictive_threshold_ratio=0.90)
 
-    # Gemini has rpm=15, 90% is 13 requests
+    # Gemini 3.5 Flash-Lite has rpm=15. 90% of 15 is 13.5 (14 requests trips threshold).
     now = time.time()
     for _ in range(13):
-        is_cool, _, _ = tracker.is_cooled_down("gemini", "gemini-2.0-flash", now=now)
+        is_cool, _, _ = tracker.is_cooled_down("gemini", "gemini-3.5-flash-lite", now=now)
         assert not is_cool
-        tracker.record_success("gemini", "gemini-2.0-flash", input_tokens=10, output_tokens=10, now=now)
+        tracker.record_success("gemini", "gemini-3.5-flash-lite", input_tokens=10, output_tokens=10, now=now)
 
-    # 14th request should trip predictive RPM cooldown
-    is_cool, reason, remaining = tracker.is_cooled_down("gemini", "gemini-2.0-flash", now=now)
+    # 14th request should trip predictive RPM cooldown (14/15 >= 0.90)
+    tracker.record_success("gemini", "gemini-3.5-flash-lite", input_tokens=10, output_tokens=10, now=now)
+    is_cool, reason, remaining = tracker.is_cooled_down("gemini", "gemini-3.5-flash-lite", now=now)
     assert is_cool
     assert "Predictive RPM threshold reached" in (reason or "")
     assert remaining > 0
@@ -292,4 +301,142 @@ async def test_groq_heuristic_skipping_for_long_prompts_or_images() -> None:
     assert resp2.model_used == "gemini-3.5-flash-lite"
     assert len(groq_mock.calls) == 0
     assert len(gemini_mock.calls) == 1
+
+
+@pytest.mark.asyncio
+async def test_flash_ladder_order_and_fallback_to_flash_lite() -> None:
+    """Verify Flash ladder order (3.8 -> 3.7 -> 3.5 -> Flash-Lite) when earlier Flash targets fail/exhaust."""
+    config = ModelRolesConfig(
+        code=[
+            RoleModelTarget(provider="gemini", model="gemini-3.8-flash"),
+            RoleModelTarget(provider="gemini", model="gemini-3.7-flash"),
+            RoleModelTarget(provider="gemini", model="gemini-3.5-flash"),
+            RoleModelTarget(provider="gemini", model="gemini-3.5-flash-lite"),
+        ]
+    )
+
+    class LadderMockProvider(BaseLLMProvider):
+        @property
+        def provider_name(self) -> str:
+            return "gemini"
+
+        async def chat_complete(
+            self,
+            messages: list[LLMMessage],
+            model: str,
+            tools: list[dict[str, Any]] | None = None,
+            max_output_tokens: int | None = None,
+            reasoning_effort: str | None = None,
+            temperature: float = 0.7,
+        ) -> LLMResponse:
+            if model == "gemini-3.8-flash":
+                raise ProviderRateLimitError("gemini", model, retry_after=30.0)
+            if model == "gemini-3.7-flash":
+                raise ProviderModelNotFoundError("gemini", model)
+            if model == "gemini-3.5-flash":
+                raise ProviderRateLimitError("gemini", model, retry_after=30.0)
+            if model == "gemini-3.5-flash-lite":
+                return LLMResponse(
+                    content="Success from Flash-Lite fallback",
+                    tool_calls=[],
+                    model_used=model,
+                    provider_used="gemini",
+                    input_tokens=100,
+                    output_tokens=50,
+                    finish_reason="stop",
+                )
+            raise RuntimeError(f"Unexpected model {model}")
+
+        async def chat_stream(
+            self,
+            messages: list[LLMMessage],
+            model: str,
+            tools: list[dict[str, Any]] | None = None,
+            max_output_tokens: int | None = None,
+            reasoning_effort: str | None = None,
+            temperature: float = 0.7,
+        ) -> AsyncIterator[StreamChunk]:
+            yield StreamChunk(content="stream")
+
+    orchestrator = LLMOrchestrator(
+        provider_keys={"gemini": "k1"},
+        roles_config=config,
+    )
+    orchestrator._providers["gemini"] = LadderMockProvider()
+
+    hard_code_msg = [LLMMessage(role="user", content="```python\ndef complex_algorithm(): pass\n```")]
+    resp = await orchestrator.chat_complete(role=ModelRole.CODE, messages=hard_code_msg)
+
+    # Verifies that it stepped down the ladder and successfully resolved on gemini-3.5-flash-lite
+    assert resp.provider_used == "gemini"
+    assert resp.model_used == "gemini-3.5-flash-lite"
+    assert "Flash-Lite fallback" in resp.content
+
+
+def test_hard_task_reserve_behavior() -> None:
+    """Verify that when 20-RPD models reach 16/20 requests, non-hard tasks are gated while hard tasks proceed."""
+    from datetime import datetime
+
+    from backend.app.llm.cooldown import PACIFIC_TZ
+
+    tracker = PredictiveCooldownTracker()
+    base_dt = datetime(2026, 10, 2, 12, 0, 0, tzinfo=PACIFIC_TZ)
+    base_ts = base_dt.timestamp()
+
+    # Fill usage to 16 requests spread out across earlier hours of the same Pacific day (so RPM=5 is not tripped)
+    for i in range(16):
+        ts = base_ts - 3600 + (i * 10)  # 11:00 AM - 11:02 AM
+        tracker.record_success("gemini", "gemini-3.8-flash", input_tokens=10, output_tokens=10, now=ts)
+
+    # 1. Non-hard task should be gated (in cooldown for non-hard tasks)
+    is_cool, reason, remaining = tracker.is_cooled_down("gemini", "gemini-3.8-flash", is_hard_task=False, now=base_ts)
+    assert is_cool
+    assert "Daily reserve threshold reached" in (reason or "")
+    assert remaining > 0
+
+    # 2. Hard task should NOT be gated (permitted to use the 4 reserved requests)
+    is_cool_hard, reason_hard, remaining_hard = tracker.is_cooled_down(
+        "gemini", "gemini-3.8-flash", is_hard_task=True, now=base_ts
+    )
+    assert not is_cool_hard
+    assert reason_hard is None
+    assert remaining_hard == 0.0
+
+    # Consume the remaining 4 reserved requests (also earlier in the same hour)
+    for i in range(4):
+        ts = base_ts - 1800 + (i * 10)  # 11:30 AM
+        tracker.record_success("gemini", "gemini-3.8-flash", input_tokens=10, output_tokens=10, now=ts)
+
+    # 3. Once all 20 are consumed, hard tasks are also gated
+    is_cool_all, reason_all, _ = tracker.is_cooled_down(
+        "gemini", "gemini-3.8-flash", is_hard_task=True, now=base_ts
+    )
+    assert is_cool_all
+    assert "Daily RPD limit reached" in (reason_all or "")
+
+
+def test_midnight_pacific_daily_counter_reset() -> None:
+    """Verify daily request counters reset across midnight Pacific Time."""
+    from datetime import datetime
+
+    from backend.app.llm.cooldown import PACIFIC_TZ
+    tracker = PredictiveCooldownTracker()
+
+    # Simulate 11:59 PM Pacific
+    dt_before = datetime(2026, 10, 2, 23, 59, 0, tzinfo=PACIFIC_TZ)
+    ts_before = dt_before.timestamp()
+
+    tracker.record_success("gemini", "gemini-3.5-flash-lite", input_tokens=10, output_tokens=10, now=ts_before)
+    window = tracker._get_window("gemini", "gemini-3.5-flash-lite")
+    usage_before = window.get_current_usage(ts_before)
+    assert usage_before["daily_requests"] == 1
+
+    # Simulate 12:01 AM Pacific next day
+    dt_after = datetime(2026, 10, 3, 0, 1, 0, tzinfo=PACIFIC_TZ)
+    ts_after = dt_after.timestamp()
+
+    usage_after = window.get_current_usage(ts_after)
+    assert usage_after["daily_requests"] == 0
+
+
 

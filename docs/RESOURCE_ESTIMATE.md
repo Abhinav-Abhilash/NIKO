@@ -108,10 +108,11 @@
 ### B. Daily Free-Tier Capacity Before Chain Exhaustion
 | Provider | Free Tier Allotment | Daily Capacity in NIKO Turns |
 | :--- | :--- | :--- |
-| **1. Google Gemini (Primary)** | 15 RPM / 1,500 Requests Per Day | **~1,500 turns / day** |
-| **2. Groq (Fast Fallback)** | 30 RPM / ~14,400 RPD (500k tokens/day) | **~500 – 700 turns / day** |
-| **3. OpenRouter (Tertiary)** | Variable per `:free` model (~50 RPD) | **~50 turns / day** |
-| **Combined Chain Capacity** | **~2,000+ turns per day completely free** | Exceeds single-user daily use by $\mathbf{40\times}$ |
+| **1. Google Gemini Flash-Lite (Primary)** | 15 RPM / 500 RPD / 250K TPM | **~500 turns / day** |
+| **2. Google Gemini Flash Ladder (Hard Tasks)** | 5 RPM / 20 RPD (3.8, 3.7, 3.5 pools) | **~60 turns / day total (4 reserved/pool)** |
+| **3. Groq (Fast / Short Code)** | 30 RPM / 1,000 RPD / 8K TPM | **~1,000 turns / day** |
+| **4. OpenRouter (Tertiary Standby)** | 20 RPM / 200 RPD | **~200 turns / day** |
+| **Combined Chain Capacity** | **~1,700+ turns per day completely free** | Source: AI Studio rate-limit page, read by owner, 2026-10-02 |
 
 ---
 

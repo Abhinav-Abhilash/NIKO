@@ -2,7 +2,7 @@ import contextlib
 import threading
 import time
 from collections import deque
-from datetime import UTC, datetime
+from datetime import datetime, timedelta, timezone, tzinfo
 from typing import Any
 
 from backend.app.core.logging import get_logger
@@ -11,17 +11,41 @@ from backend.app.llm.types import ProviderRateLimit
 
 logger = get_logger("niko.llm.cooldown")
 
+PACIFIC_TZ: tzinfo
+try:
+    from zoneinfo import ZoneInfo
+    PACIFIC_TZ = ZoneInfo("America/Los_Angeles")
+except Exception:
+    # Safe timezone fallback on Windows environments without tzdata package
+    PACIFIC_TZ = timezone(timedelta(hours=-7), name="Pacific")
+
+# Models with low daily quota that maintain a reserved pool for hard tasks
+DEFAULT_RESERVE_PER_MODEL: dict[tuple[str, str], int] = {
+    ("gemini", "gemini-3.8-flash"): 4,
+    ("gemini", "gemini-3.7-flash"): 4,
+    ("gemini", "gemini-3.5-flash"): 4,
+    ("gemini", "gemini-flash-latest"): 4,
+}
+
+
+def get_pacific_now(ts: float | None = None) -> datetime:
+    """Return datetime in America/Los_Angeles timezone (Midnight Pacific resets)."""
+    if ts is not None:
+        return datetime.fromtimestamp(ts, tz=PACIFIC_TZ)
+    return datetime.now(PACIFIC_TZ)
+
 
 class QuotaWindow:
     """Tracks rolling minute and daily quota metrics in memory with thread safety."""
 
-    def __init__(self, key: tuple[str, str]):
+    def __init__(self, key: tuple[str, str], reserve_requests: int = 0):
         self.key = key  # (provider, model)
         # Store tuples of (timestamp, token_count) for the rolling 60-second window
         self.minute_records: deque[tuple[float, int]] = deque()
-        self.current_day_str: str = datetime.now(UTC).strftime("%Y-%m-%d")
+        self.current_day_str: str = get_pacific_now().strftime("%Y-%m-%d")
         self.daily_requests: int = 0
         self.daily_tokens: int = 0
+        self.reserve_requests: int = reserve_requests
         # Active forced cooldown (e.g. from upstream 429 or predictive exhaustion)
         self.cooldown_until: float = 0.0
         self.cooldown_reason: str | None = None
@@ -31,16 +55,20 @@ class QuotaWindow:
         while self.minute_records and self.minute_records[0][0] < threshold:
             self.minute_records.popleft()
 
-    def _check_day_rollover(self, now_dt: datetime) -> None:
-        day_str = now_dt.strftime("%Y-%m-%d")
+    def _check_day_rollover(self, now_dt_pacific: datetime) -> None:
+        day_str = now_dt_pacific.strftime("%Y-%m-%d")
         if day_str != self.current_day_str:
             self.current_day_str = day_str
             self.daily_requests = 0
             self.daily_tokens = 0
+            # Reset daily exhaustion cooldown if active
+            if self.cooldown_reason and "Daily" in self.cooldown_reason:
+                self.cooldown_until = 0.0
+                self.cooldown_reason = None
 
     def record_usage(self, now: float, tokens: int) -> None:
         self._prune_minute(now)
-        now_dt = datetime.fromtimestamp(now, tz=UTC)
+        now_dt = get_pacific_now(now)
         self._check_day_rollover(now_dt)
 
         self.minute_records.append((now, tokens))
@@ -49,7 +77,7 @@ class QuotaWindow:
 
     def get_current_usage(self, now: float) -> dict[str, int]:
         self._prune_minute(now)
-        now_dt = datetime.fromtimestamp(now, tz=UTC)
+        now_dt = get_pacific_now(now)
         self._check_day_rollover(now_dt)
 
         minute_reqs = len(self.minute_records)
@@ -66,18 +94,34 @@ class PredictiveCooldownTracker:
     """
     Monitors usage and upstream response codes to initiate cooldowns BEFORE
     rate limits are exceeded, or when 429 errors are received.
+    Enforces per-model daily counters (Midnight Pacific reset) and reserved pools for hard tasks.
     """
 
     def __init__(self, predictive_threshold_ratio: float = 0.90):
         self.predictive_threshold_ratio = predictive_threshold_ratio
         self._lock = threading.RLock()
         self._windows: dict[tuple[str, str], QuotaWindow] = {}
+        self._custom_reserves: dict[tuple[str, str], int] = {}
+
+    def reset(self) -> None:
+        """Reset all tracking state across all windows."""
+        with self._lock:
+            self._windows.clear()
+            self._custom_reserves.clear()
 
     def _get_window(self, provider: str, model: str) -> QuotaWindow:
         key = (provider.lower(), model.lower())
         if key not in self._windows:
-            self._windows[key] = QuotaWindow(key)
+            reserve = self._custom_reserves.get(key, DEFAULT_RESERVE_PER_MODEL.get(key, 0))
+            self._windows[key] = QuotaWindow(key, reserve_requests=reserve)
         return self._windows[key]
+
+    def set_model_reserve(self, provider: str, model: str, reserve_requests: int) -> None:
+        key = (provider.lower(), model.lower())
+        with self._lock:
+            self._custom_reserves[key] = reserve_requests
+            if key in self._windows:
+                self._windows[key].reserve_requests = reserve_requests
 
     def get_limits(self, provider: str, model: str) -> ProviderRateLimit:
         key = (provider.lower(), model.lower())
@@ -86,14 +130,24 @@ class PredictiveCooldownTracker:
         if provider.lower() in DEFAULT_PROVIDER_LIMITS:
             return DEFAULT_PROVIDER_LIMITS[provider.lower()]
         return ProviderRateLimit(
-            rpm=15, rpd=1000, tpm=6000, tpd=100_000, source="Fallback Default"
+            rpm=15, rpd=500, tpm=250_000, tpd=0, source="Fallback Default"
         )
 
+    def _seconds_until_pacific_midnight(self, now: float) -> float:
+        now_dt = get_pacific_now(now)
+        next_midnight = (now_dt + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        return max(1.0, (next_midnight - now_dt).total_seconds())
+
     def is_cooled_down(
-        self, provider: str, model: str, now: float | None = None
+        self,
+        provider: str,
+        model: str,
+        is_hard_task: bool = False,
+        now: float | None = None,
     ) -> tuple[bool, str | None, float]:
         """
         Check if a provider/model is currently in cooldown (either predictive or from a 429).
+        If daily usage enters the reserve pool, non-hard tasks are gated while hard tasks proceed.
         Returns: (is_cooled_down, reason_str, seconds_remaining)
         """
         if now is None:
@@ -102,7 +156,7 @@ class PredictiveCooldownTracker:
         with self._lock:
             window = self._get_window(provider, model)
 
-            # 1. Check existing forced cooldown
+            # 1. Check existing forced cooldown (e.g. 429 or previous exhaustion)
             if now < window.cooldown_until:
                 remaining = window.cooldown_until - now
                 return True, window.cooldown_reason, remaining
@@ -110,6 +164,37 @@ class PredictiveCooldownTracker:
             # 2. Check predictive limits
             limits = self.get_limits(provider, model)
             usage = window.get_current_usage(now)
+
+            # Check dead models (0 RPM/RPD)
+            if limits.rpm == 0 or limits.rpd == 0:
+                return True, f"Model {model} is deprecated/dead (0 quota)", 86400.0
+
+            # Daily Limit and Reserve Checks (Midnight Pacific reset)
+            if limits.rpd > 0:
+                # Full RPD exhaustion
+                if usage["daily_requests"] >= limits.rpd:
+                    remaining = self._seconds_until_pacific_midnight(now)
+                    reason = f"Daily RPD limit reached ({usage['daily_requests']}/{limits.rpd})"
+                    window.cooldown_until = now + remaining
+                    window.cooldown_reason = reason
+                    logger.warning(
+                        "Daily RPD limit reached",
+                        provider=provider,
+                        model=model,
+                        usage=usage["daily_requests"],
+                        limit=limits.rpd,
+                    )
+                    return True, reason, remaining
+
+                # Reserve check for non-hard tasks
+                effective_limit = max(1, limits.rpd - window.reserve_requests)
+                if not is_hard_task and window.reserve_requests > 0 and usage["daily_requests"] >= effective_limit:
+                    remaining = self._seconds_until_pacific_midnight(now)
+                    reason = (
+                        f"Daily reserve threshold reached ({usage['daily_requests']}/{limits.rpd}, "
+                        f"reserve={window.reserve_requests}) reserved strictly for hard tasks"
+                    )
+                    return True, reason, remaining
 
             # Predictive check for RPM
             if limits.rpm > 0 and usage["minute_requests"] >= int(
@@ -145,43 +230,6 @@ class PredictiveCooldownTracker:
                 )
                 return True, reason, remaining
 
-            # Predictive check for RPD
-            if limits.rpd > 0 and usage["daily_requests"] >= int(
-                limits.rpd * self.predictive_threshold_ratio
-            ):
-                # Cooldown until UTC midnight
-                now_dt = datetime.fromtimestamp(now, tz=UTC)
-                remaining = max(1.0, 86400.0 - (now_dt.hour * 3600 + now_dt.minute * 60 + now_dt.second))
-                reason = f"Predictive RPD threshold reached ({usage['daily_requests']}/{limits.rpd})"
-                window.cooldown_until = now + remaining
-                window.cooldown_reason = reason
-                logger.warning(
-                    "Predictive cooldown engaged for RPD",
-                    provider=provider,
-                    model=model,
-                    usage=usage["daily_requests"],
-                    limit=limits.rpd,
-                )
-                return True, reason, remaining
-
-            # Predictive check for TPD
-            if limits.tpd > 0 and usage["daily_tokens"] >= int(
-                limits.tpd * self.predictive_threshold_ratio
-            ):
-                now_dt = datetime.fromtimestamp(now, tz=UTC)
-                remaining = max(1.0, 86400.0 - (now_dt.hour * 3600 + now_dt.minute * 60 + now_dt.second))
-                reason = f"Predictive TPD threshold reached ({usage['daily_tokens']}/{limits.tpd})"
-                window.cooldown_until = now + remaining
-                window.cooldown_reason = reason
-                logger.warning(
-                    "Predictive cooldown engaged for TPD",
-                    provider=provider,
-                    model=model,
-                    usage=usage["daily_tokens"],
-                    limit=limits.tpd,
-                )
-                return True, reason, remaining
-
             return False, None, 0.0
 
     def record_success(
@@ -205,14 +253,13 @@ class PredictiveCooldownTracker:
     ) -> float:
         """
         Record real upstream 429 Too Many Requests response, extracting retry-after
-        headers or using default fallback backoff.
+        headers or using default fallback backoff. Always trusted over local counters.
         """
         if now is None:
             now = time.time()
 
         cooldown_secs = retry_after_seconds
         if headers:
-            # Check standard Retry-After header
             retry_header = headers.get("retry-after") or headers.get("Retry-After")
             if retry_header:
                 with contextlib.suppress(ValueError):
@@ -232,12 +279,15 @@ class PredictiveCooldownTracker:
         return cooldown_secs
 
     def get_status(self, now: float | None = None) -> list[dict[str, Any]]:
-        """Get summary status of all tracked models and quotas."""
+        """Get summary status of all tracked models and quotas including daily counters and reserves."""
         if now is None:
             now = time.time()
         results: list[dict[str, Any]] = []
         with self._lock:
-            for (provider, model), window in self._windows.items():
+            # Include all verified rate limits so uncalled models still display quotas
+            all_keys = set(self._windows.keys()).union(VERIFIED_RATE_LIMITS.keys())
+            for provider, model in sorted(all_keys):
+                window = self._get_window(provider, model)
                 usage = window.get_current_usage(now)
                 limits = self.get_limits(provider, model)
                 is_cooled = now < window.cooldown_until
@@ -249,6 +299,9 @@ class PredictiveCooldownTracker:
                         "cooldown_reason": window.cooldown_reason if is_cooled else None,
                         "cooldown_remaining_seconds": max(0.0, window.cooldown_until - now) if is_cooled else 0.0,
                         "usage": usage,
+                        "daily_requests": usage["daily_requests"],
+                        "daily_limit": limits.rpd,
+                        "reserve_requests": window.reserve_requests,
                         "limits": {
                             "rpm": limits.rpm,
                             "rpd": limits.rpd,
@@ -260,7 +313,7 @@ class PredictiveCooldownTracker:
         return results
 
     def get_shortest_cooldown_for_targets(
-        self, targets: list[Any], now: float | None = None
+        self, targets: list[Any], is_hard_task: bool = False, now: float | None = None
     ) -> float:
         """Calculate the shortest remaining cooldown in seconds across a list of targets."""
         if now is None:
@@ -270,7 +323,7 @@ class PredictiveCooldownTracker:
             provider = getattr(t, "provider", None) if not isinstance(t, dict) else t.get("provider")
             model = getattr(t, "model", None) if not isinstance(t, dict) else t.get("model")
             if provider and model:
-                is_cooled, _, remaining = self.is_cooled_down(str(provider), str(model), now=now)
+                is_cooled, _, remaining = self.is_cooled_down(str(provider), str(model), is_hard_task=is_hard_task, now=now)
                 if is_cooled and remaining > 0:
                     remaining_times.append(remaining)
         if remaining_times:
@@ -280,4 +333,3 @@ class PredictiveCooldownTracker:
 
 # Global singleton tracker
 cooldown_tracker = PredictiveCooldownTracker()
-

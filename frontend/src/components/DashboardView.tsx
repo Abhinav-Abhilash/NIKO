@@ -46,9 +46,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
 
   // Live state for widgets
-  const [modelStatus, setModelStatus] = useState<{ discovered: Record<string, any>; quotas: Record<string, any> }>({
+  const [modelStatus, setModelStatus] = useState<{
+    discovered: Record<string, any>;
+    quotas: Record<string, any> | any[];
+    roles?: Record<string, any>;
+  }>({
     discovered: {},
     quotas: {},
+    roles: {},
   });
   const [scheduledTasks, setScheduledTasks] = useState<ScheduledTaskItem[]>([]);
   const [healthStatus, setHealthStatus] = useState<{ status: string; uptime_seconds: number }>({
@@ -56,6 +61,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
     uptime_seconds: 0,
   });
 
+  const legacyQuotas: Record<string, any> = !Array.isArray(modelStatus.quotas) ? (modelStatus.quotas || {}) : {};
 
   // Fetch live widget data
   const fetchLiveData = useCallback(async () => {
@@ -284,7 +290,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
                 </div>
               )}
 
-              {/* Widget 2: Provider Latency Matrix */}
+              {/* Widget 2: Provider Latency Matrix & Configured Roles */}
               {widget.id === 'provider_matrix' && (
                 <div className="bg-surface-container-low p-5 rounded-xl border border-surface-variant/40 flex flex-col gap-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -293,7 +299,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-bold text-on-surface">Google Gemini</span>
                         <span className="text-secondary font-bold text-[10px] px-1.5 py-0.5 bg-secondary/10 rounded">
-                          {modelStatus.quotas?.gemini?.cooling_down ? 'COOLDOWN' : 'ACTIVE / PRIMARY'}
+                          {legacyQuotas?.gemini?.cooling_down ? 'COOLDOWN' : 'ACTIVE / PRIMARY'}
                         </span>
                       </div>
                       <div className="text-on-surface-variant text-[11px]">
@@ -305,9 +311,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
                       <div className="text-primary-container text-xs font-semibold mt-1">
                         Est. TTFT: ~280ms
                       </div>
-                      {modelStatus.quotas?.gemini?.cooling_down && (
+                      {legacyQuotas?.gemini?.cooling_down && (
                         <div className="text-[10px] text-warning mt-0.5">
-                          Reset in: {modelStatus.quotas.gemini.remaining_seconds}s
+                          Reset in: {legacyQuotas.gemini.remaining_seconds}s
                         </div>
                       )}
                     </div>
@@ -317,7 +323,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-bold text-on-surface">Groq Cloud</span>
                         <span className="text-secondary font-bold text-[10px] px-1.5 py-0.5 bg-secondary/10 rounded">
-                          {modelStatus.quotas?.groq?.cooling_down ? 'COOLDOWN' : 'STANDBY / LPU'}
+                          {legacyQuotas?.groq?.cooling_down ? 'COOLDOWN' : 'STANDBY / LPU'}
                         </span>
                       </div>
                       <div className="text-on-surface-variant text-[11px]">
@@ -329,9 +335,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
                       <div className="text-primary-container text-xs font-semibold mt-1">
                         Est. TTFT: ~120ms (Ultra-Low Latency)
                       </div>
-                      {modelStatus.quotas?.groq?.cooling_down && (
+                      {legacyQuotas?.groq?.cooling_down && (
                         <div className="text-[10px] text-warning mt-0.5">
-                          Reset in: {modelStatus.quotas.groq.remaining_seconds}s
+                          Reset in: {legacyQuotas.groq.remaining_seconds}s
                         </div>
                       )}
                     </div>
@@ -341,7 +347,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-bold text-on-surface">OpenRouter</span>
                         <span className="text-secondary font-bold text-[10px] px-1.5 py-0.5 bg-secondary/10 rounded">
-                          {modelStatus.quotas?.openrouter?.cooling_down ? 'COOLDOWN' : 'MULTI-ROUTER'}
+                          {legacyQuotas?.openrouter?.cooling_down ? 'COOLDOWN' : 'MULTI-ROUTER'}
                         </span>
                       </div>
                       <div className="text-on-surface-variant text-[11px]">
@@ -353,13 +359,77 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ metrics, onRefresh
                       <div className="text-primary-container text-xs font-semibold mt-1">
                         Auto-Routing & Free Standby
                       </div>
-                      {modelStatus.quotas?.openrouter?.cooling_down && (
+                      {legacyQuotas?.openrouter?.cooling_down && (
                         <div className="text-[10px] text-warning mt-0.5">
-                          Reset in: {modelStatus.quotas.openrouter.remaining_seconds}s
+                          Reset in: {legacyQuotas.openrouter.remaining_seconds}s
                         </div>
                       )}
                     </div>
                   </div>
+
+                  {/* Configured Role-to-Model Routing Map */}
+                  {modelStatus.roles && Object.keys(modelStatus.roles).length > 0 && (
+                    <div className="p-3 bg-surface-container rounded-lg border border-surface-variant/30 flex flex-col gap-2">
+                      <div className="flex items-center justify-between text-[11px] text-on-surface-variant">
+                        <span className="font-bold text-primary">CONFIGURED ROLE-TO-MODEL ROUTING MAP</span>
+                        <span className="text-[10px] text-on-surface-variant">Resets midnight Pacific</span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
+                        {Object.entries(modelStatus.roles).map(([roleKey, targets]) => (
+                          <div key={roleKey} className="p-2 bg-surface-container-high/50 rounded border border-surface-variant/20 flex flex-col gap-1">
+                            <span className="font-bold uppercase text-on-surface text-[10px] text-primary-container">{roleKey}</span>
+                            <div className="flex flex-col gap-0.5 text-[10px] text-on-surface-variant font-mono">
+                              {Array.isArray(targets) && targets.map((t: any, tidx: number) => (
+                                <div key={tidx} className="truncate">
+                                  {tidx + 1}. <span className="text-on-surface">{t.provider}/{t.model}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Per-Model Live Daily Quota & Cooldowns */}
+                  {Array.isArray(modelStatus.quotas) && modelStatus.quotas.length > 0 && (
+                    <div className="p-3 bg-surface-container rounded-lg border border-surface-variant/30 flex flex-col gap-2">
+                      <div className="flex items-center justify-between text-[11px] text-on-surface-variant">
+                        <span className="font-bold text-secondary">ACTIVE MODEL DAILY USAGE & LIMITS</span>
+                        <span className="text-[10px] text-on-surface-variant">Pacific Rollover</span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
+                        {modelStatus.quotas.map((q: any, qidx: number) => (
+                          <div key={qidx} className="p-2 bg-surface-container-high/50 rounded border border-surface-variant/20 flex flex-col gap-1">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-on-surface truncate">{q.provider}/{q.model}</span>
+                              <span className={`text-[9px] px-1 py-0.5 rounded font-bold uppercase ${
+                                q.is_cooled_down ? 'bg-warning/20 text-warning' : 'bg-secondary/15 text-secondary'
+                              }`}>
+                                {q.is_cooled_down ? 'Cooldown' : 'Available'}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-[10px] text-on-surface-variant">
+                              <span>RPD: {q.daily_requests} / {q.daily_limit || '∞'}</span>
+                              {q.reserve_requests > 0 && (
+                                <span className="text-primary-container text-[9px]">({q.reserve_requests} reserved for hard tasks)</span>
+                              )}
+                            </div>
+                            {q.daily_limit > 0 && (
+                              <div className="w-full bg-surface-container h-1 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full transition-all duration-300 ${
+                                    (q.daily_requests / q.daily_limit) > 0.8 ? 'bg-warning' : 'bg-secondary'
+                                  }`}
+                                  style={{ width: `${Math.min(100, (q.daily_requests / q.daily_limit) * 100)}%` }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

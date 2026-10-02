@@ -100,6 +100,7 @@ async def test_models_status_and_refresh(
     status_data = status_res.json()
     assert "discovered" in status_data
     assert "quotas" in status_data
+    assert "roles" in status_data
 
     # Refresh with mocked discovery to prevent external network calls
     with patch(

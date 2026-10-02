@@ -26,6 +26,13 @@ from backend.app.llm.types import (
 
 logger = get_logger("niko.llm.orchestrator")
 
+FULL_FLASH_MODELS = {
+    "gemini-3.8-flash",
+    "gemini-3.7-flash",
+    "gemini-3.5-flash",
+    "gemini-flash-latest",
+}
+
 
 def prune_tool_output(content: str, max_tokens: int = 1200) -> str:
     """
@@ -62,6 +69,35 @@ def estimate_prompt_tokens_and_media(messages: list[LLMMessage]) -> tuple[int, b
     return max(1, total_chars // 4), has_image
 
 
+def detect_hard_task(
+    role: ModelRole | str,
+    messages: list[LLMMessage],
+    estimated_tokens: int,
+    has_image: bool,
+) -> bool:
+    """
+    Determines if a task warrants full Flash model usage (20 RPD) or reserve consumption.
+    Never uses 20-RPD Flash models for simple small talk or basic queries.
+    """
+    role_str = role.value if isinstance(role, ModelRole) else str(role).lower()
+    if role_str in ("code", "search", "vision_long"):
+        return True
+    if has_image or estimated_tokens > 1500:
+        return True
+
+    last_content = ""
+    for msg in reversed(messages):
+        if msg.role == "user" and msg.content:
+            last_content = msg.content.lower()
+            break
+
+    complex_markers = {
+        "complex", "debug", "architect", "algorithm", "solve", "hard", "refactor",
+        "diagnose", "optimize", "benchmark", "analysis", "compare", "implement"
+    }
+    return any(marker in last_content for marker in complex_markers)
+
+
 async def _notify_model_unavailable(provider: str, model: str, reason: str = "HTTP 404/410") -> None:
     model_discovery.mark_model_unavailable(provider, model, duration_hours=6.0, reason=reason)
     try:
@@ -85,7 +121,9 @@ class LLMOrchestrator:
     Manages multi-provider execution with:
     - Role-based target sequencing (fast, coder, vision_long)
     - Token/image routing heuristics (>5000 tokens or image skips Groq)
-    - Predictive rate-limit cooldown
+    - Flash ladder sequencing (3.8 -> 3.7 -> 3.5 -> Flash-Lite)
+    - Gated full Flash models preserving 20 RPD quotas strictly for hard tasks
+    - Predictive rate-limit cooldown with Midnight Pacific resets and reserves
     - Dynamic discovery with missing-model skipping and 6h 404/410 gating
     - Mid-turn failover across providers
     - Tool call and context pruning
@@ -160,6 +198,7 @@ class LLMOrchestrator:
         targets = self.roles_config.get_role_targets(role)
         prepared_messages = self._prepare_messages_for_context(messages, max_tool_tokens)
         estimated_tokens, has_image = estimate_prompt_tokens_and_media(prepared_messages)
+        is_hard = detect_hard_task(role, prepared_messages, estimated_tokens, has_image)
         attempts: list[dict[str, str]] = []
 
         for target in targets:
@@ -183,6 +222,19 @@ class LLMOrchestrator:
                 })
                 continue
 
+            # Full Flash preservation: only use full Flash for hard tasks, never for small talk
+            if target.provider == "gemini" and target.model in FULL_FLASH_MODELS and not is_hard:
+                logger.info(
+                    "Preserving full Flash model for hard tasks; skipping for standard chat",
+                    provider=target.provider,
+                    model=target.model,
+                )
+                attempts.append({
+                    "target": f"{target.provider}/{target.model}",
+                    "status": "skipped_not_hard_task (full Flash preserved for code/vision/complex tasks)"
+                })
+                continue
+
             # Check dynamic discovery
             if not model_discovery.is_model_available(target.provider, target.model):
                 logger.warning(
@@ -193,8 +245,10 @@ class LLMOrchestrator:
                 attempts.append({"target": f"{target.provider}/{target.model}", "status": "missing_or_404"})
                 continue
 
-            # Check predictive cooldown
-            is_cooled, reason, remaining = cooldown_tracker.is_cooled_down(target.provider, target.model)
+            # Check predictive cooldown & hard-task reserve
+            is_cooled, reason, remaining = cooldown_tracker.is_cooled_down(
+                target.provider, target.model, is_hard_task=is_hard
+            )
             if is_cooled:
                 logger.warning(
                     "Skipping cooled down model in fallback sequence",
@@ -272,6 +326,7 @@ class LLMOrchestrator:
         targets = self.roles_config.get_role_targets(role)
         prepared_messages = self._prepare_messages_for_context(messages, max_tool_tokens)
         estimated_tokens, has_image = estimate_prompt_tokens_and_media(prepared_messages)
+        is_hard = detect_hard_task(role, prepared_messages, estimated_tokens, has_image)
         attempts: list[dict[str, str]] = []
 
         for target in targets:
@@ -295,11 +350,26 @@ class LLMOrchestrator:
                 })
                 continue
 
+            # Full Flash preservation: only use full Flash for hard tasks, never for small talk
+            if target.provider == "gemini" and target.model in FULL_FLASH_MODELS and not is_hard:
+                logger.info(
+                    "Preserving full Flash model for hard tasks; skipping for standard chat",
+                    provider=target.provider,
+                    model=target.model,
+                )
+                attempts.append({
+                    "target": f"{target.provider}/{target.model}",
+                    "status": "skipped_not_hard_task (full Flash preserved for code/vision/complex tasks)"
+                })
+                continue
+
             if not model_discovery.is_model_available(target.provider, target.model):
                 attempts.append({"target": f"{target.provider}/{target.model}", "status": "missing_or_404"})
                 continue
 
-            is_cooled, reason, remaining = cooldown_tracker.is_cooled_down(target.provider, target.model)
+            is_cooled, reason, remaining = cooldown_tracker.is_cooled_down(
+                target.provider, target.model, is_hard_task=is_hard
+            )
             if is_cooled:
                 attempts.append({"target": f"{target.provider}/{target.model}", "status": f"cooldown: {reason}"})
                 continue
@@ -347,7 +417,6 @@ class LLMOrchestrator:
         raise AllProvidersExhaustedError(role=role_str, attempts=attempts)
 
 
-
 _orchestrator_instance: LLMOrchestrator | None = None
 
 
@@ -368,4 +437,3 @@ def get_llm_orchestrator(
         if roles_config:
             _orchestrator_instance.set_roles_config(roles_config)
     return _orchestrator_instance
-
