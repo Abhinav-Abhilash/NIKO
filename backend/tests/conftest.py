@@ -4,10 +4,10 @@ import tempfile
 from collections.abc import AsyncGenerator
 
 # Set safe test defaults before importing backend.app so tests run without .env
-_test_db_file = os.path.join(tempfile.gettempdir(), "niko_test.db").replace("\\", "/")
+_test_db_file = os.path.join(tempfile.gettempdir(), f"niko_test_{os.getpid()}.db").replace("\\", "/")
 TEST_DB_URL = f"sqlite+aiosqlite:///{_test_db_file}"
 
-os.environ.setdefault("DATABASE_URL", TEST_DB_URL)
+os.environ["DATABASE_URL"] = TEST_DB_URL
 os.environ.setdefault("ENCRYPTION_KEY", "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY=")
 os.environ.setdefault("JWT_SECRET_KEY", "ci_test_jwt_secret_key_1234567890_abcdefghijklmnop")
 os.environ.setdefault("SETUP_TOKEN", "test_setup_token_12345")
