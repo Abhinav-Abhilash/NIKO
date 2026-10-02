@@ -1,5 +1,7 @@
 import asyncio
 import contextlib
+from collections.abc import AsyncIterator, Callable
+from contextlib import AbstractAsyncContextManager
 from datetime import UTC, datetime
 
 from sqlalchemy import select
@@ -24,14 +26,32 @@ class ReminderService:
     def __init__(
         self,
         db_session: AsyncSession | None = None,
-        session_factory: async_sessionmaker[AsyncSession] | None = None,
+        session_factory: async_sessionmaker[AsyncSession]
+        | Callable[[], AbstractAsyncContextManager[AsyncSession]]
+        | None = None,
         poll_interval_seconds: float = 5.0,
     ) -> None:
         self.db_session = db_session
-        self.session_factory = session_factory or get_session_maker()
+        self.session_factory: (
+            async_sessionmaker[AsyncSession]
+            | Callable[[], AbstractAsyncContextManager[AsyncSession]]
+        ) = session_factory or get_session_maker()
         self.poll_interval = poll_interval_seconds
         self._worker_task: asyncio.Task[None] | None = None
         self._running = False
+
+    @contextlib.asynccontextmanager
+    async def _get_session(
+        self, session: AsyncSession | None = None
+    ) -> AsyncIterator[tuple[AsyncSession, bool]]:
+        """Yield an active session and a flag indicating whether to commit/close it."""
+        if session is not None:
+            yield session, False
+        elif self.db_session is not None:
+            yield self.db_session, False
+        else:
+            async with self.session_factory() as sess:
+                yield sess, True
 
     async def create_reminder(
         self,
@@ -54,14 +74,7 @@ class ReminderService:
                 f"Reminder trigger time ({trigger_at.isoformat()}) must be in the future (current: {now.isoformat()})."
             )
 
-        target_session = session or self.db_session
-        should_commit = False
-
-        if not target_session:
-            target_session = self.session_factory()
-            should_commit = True
-
-        try:
+        async with self._get_session(session) as (target_session, should_commit):
             # If user_id is not specified, resolve first owner user
             if not user_id:
                 user_res = await target_session.execute(select(User).limit(1))
@@ -101,10 +114,6 @@ class ReminderService:
             )
             return reminder
 
-        finally:
-            if should_commit and target_session:
-                await target_session.close()
-
     async def list_reminders(
         self,
         user_id: str | None = None,
@@ -112,14 +121,7 @@ class ReminderService:
         session: AsyncSession | None = None,
     ) -> list[Reminder]:
         """List reminders filtered by status."""
-        target_session = session or self.db_session
-        should_close = False
-
-        if not target_session:
-            target_session = self.session_factory()
-            should_close = True
-
-        try:
+        async with self._get_session(session) as (target_session, _):
             query = select(Reminder)
             if user_id:
                 query = query.where(Reminder.user_id == user_id)
@@ -130,10 +132,6 @@ class ReminderService:
             res = await target_session.execute(query)
             return list(res.scalars().all())
 
-        finally:
-            if should_close and target_session:
-                await target_session.close()
-
     async def cancel_reminder(
         self,
         reminder_id: str,
@@ -141,14 +139,7 @@ class ReminderService:
         session: AsyncSession | None = None,
     ) -> Reminder:
         """Cancel an existing reminder."""
-        target_session = session or self.db_session
-        should_commit = False
-
-        if not target_session:
-            target_session = self.session_factory()
-            should_commit = True
-
-        try:
+        async with self._get_session(session) as (target_session, should_commit):
             query = select(Reminder).where(Reminder.id == reminder_id)
             if user_id:
                 query = query.where(Reminder.user_id == user_id)
@@ -168,34 +159,19 @@ class ReminderService:
             logger.info("Cancelled reminder", reminder_id=reminder_id)
             return reminder
 
-        finally:
-            if should_commit and target_session:
-                await target_session.close()
-
     async def get_reminder(
         self,
         reminder_id: str,
         session: AsyncSession | None = None,
     ) -> Reminder:
         """Get reminder by ID."""
-        target_session = session or self.db_session
-        should_close = False
-
-        if not target_session:
-            target_session = self.session_factory()
-            should_close = True
-
-        try:
+        async with self._get_session(session) as (target_session, _):
             query = select(Reminder).where(Reminder.id == reminder_id)
             res = await target_session.execute(query)
             reminder = res.scalar_one_or_none()
             if not reminder:
                 raise NotFoundError(f"Reminder '{reminder_id}' not found.")
             return reminder
-
-        finally:
-            if should_close and target_session:
-                await target_session.close()
 
     # ---------------------------------------------------------
     # Background Scheduling & Firing Loop

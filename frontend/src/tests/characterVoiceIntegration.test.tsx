@@ -1,10 +1,8 @@
-import React from 'react';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, renderHook } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { PetCompanion } from '../components/PetCompanion';
 import { CharacterAvatar } from '../components/CharacterAvatar';
 import { useCharacterState } from '../hooks/useCharacterState';
-import { renderHook } from '@testing-library/react';
 
 describe('Character & Voice Engine Integration', () => {
   it('synchronizes speaking state, emotion, and speech bubble when voice speaks', () => {

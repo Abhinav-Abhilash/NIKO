@@ -75,5 +75,7 @@ target/
 frontend/dist/
 frontend/.turbo/
 src-tauri/target/
+*.tsbuildinfo
+
 
 

@@ -355,7 +355,7 @@ async def test_reminder_service_crud_and_background_firing(db_session: AsyncSess
     async def mock_session_factory() -> AsyncIterator[AsyncSession]:
         yield db_session
 
-    service.session_factory = mock_session_factory  # type: ignore[assignment]
+    service.session_factory = mock_session_factory
 
     fired_count = await service.check_and_fire_pending_reminders()
     assert fired_count == 1

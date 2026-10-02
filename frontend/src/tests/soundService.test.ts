@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { SoundService, type SoundEvent } from '../services/soundService';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { SoundService } from '../services/soundService';
 
 describe('SoundService - Settings, Ducking & Audio Unlock', () => {
   let service: SoundService;
