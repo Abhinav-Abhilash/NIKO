@@ -183,6 +183,40 @@
         { "name": "success_dancing", "crop": [85, 835, 144, 937] },
         { "name": "success_spinning", "crop": [151, 835, 207, 937] }
       ]
+    },
+    "running": {
+      "fps": 8,
+      "loop": true,
+      "description": "High-speed running sprint cycle (mirrored for right direction)",
+      "frames": [
+        { "name": "run_1", "crop": [882, 172, 938, 268] },
+        { "name": "run_2", "crop": [936, 172, 992, 268] },
+        { "name": "run_3", "crop": [990, 172, 1046, 268] },
+        { "name": "run_4", "crop": [1044, 172, 1102, 268] }
+      ]
+    },
+    "mouse_interaction": {
+      "fps": 3,
+      "loop": false,
+      "description": "Interactive desktop reactions: notices cursor, happy click, startled click, and annoyed click",
+      "frames": [
+        { "name": "notices_cursor", "crop": [468, 672, 545, 770] },
+        { "name": "happy_click", "crop": [634, 672, 708, 770] },
+        { "name": "startled_click", "crop": [712, 672, 788, 770] },
+        { "name": "annoyed_click", "crop": [792, 672, 870, 770] }
+      ]
+    },
+    "playing": {
+      "fps": 4,
+      "loop": true,
+      "description": "Playful animations: chasing ball, dancing, spinning, and celebration",
+      "frames": [
+        { "name": "playing_with_ball", "crop": [18, 830, 84, 936] },
+        { "name": "playing_chasing", "crop": [82, 830, 146, 936] },
+        { "name": "playing_dancing", "crop": [146, 830, 206, 936] },
+        { "name": "playing_spinning", "crop": [206, 830, 270, 936] },
+        { "name": "playing_celebrating", "crop": [270, 830, 344, 936] }
+      ]
     }
   }
 }

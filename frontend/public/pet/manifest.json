@@ -182,6 +182,40 @@
         "frame_3.png"
       ],
       "description": "Joyful celebration when a goal or tool run completes successfully"
+    },
+    "running": {
+      "fps": 8,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png"
+      ],
+      "description": "High-speed running sprint cycle (mirrored for right direction)"
+    },
+    "mouse_interaction": {
+      "fps": 3,
+      "loop": false,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png"
+      ],
+      "description": "Interactive desktop reactions: notices cursor, happy click, startled click, and annoyed click"
+    },
+    "playing": {
+      "fps": 4,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png",
+        "frame_4.png"
+      ],
+      "description": "Playful animations: chasing ball, dancing, spinning, and celebration"
     }
   }
 }
