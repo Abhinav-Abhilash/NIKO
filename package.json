@@ -1,0 +1,12 @@
+{
+  "name": "niko-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "desktop": "tauri dev",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.1"
+  }
+}

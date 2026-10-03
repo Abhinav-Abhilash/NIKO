@@ -2,7 +2,7 @@ use std::process::{Child, Command};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use tauri::menu::{Menu, MenuItem};
-use tauri::tray::TrayIconBuilder;
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::Manager;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
@@ -86,6 +86,11 @@ fn stop_backend() {
     }
 }
 
+#[tauri::command]
+fn set_click_through(window: tauri::WebviewWindow, ignore: bool) -> Result<(), String> {
+    window.set_ignore_cursor_events(ignore).map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     ensure_backend_running();
@@ -99,52 +104,45 @@ pub fn run() {
             }
         }))
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .invoke_handler(tauri::generate_handler![set_click_through])
         .setup(|app| {
             let hotkey = get_configured_hotkey();
 
-            // Apply Windows 11 Acrylic / Mica if available
+            // Sized to the pet only, position at bottom right above taskbar
             if let Some(window) = app.get_webview_window("overlay") {
-                #[cfg(target_os = "windows")]
-                {
-                    use window_vibrancy::{apply_acrylic, apply_mica};
-                    // Try Mica first (Windows 11 22H2+), fall back to Acrylic
-                    if apply_mica(&window, None).is_err() {
-                        let _ = apply_acrylic(&window, Some((20, 20, 20, 180)));
-                    }
+                if let Ok(Some(monitor)) = window.primary_monitor() {
+                    let screen_size = monitor.size();
+                    let scale_factor = monitor.scale_factor();
+                    let win_w = (220.0 * scale_factor) as i32;
+                    let win_h = (260.0 * scale_factor) as i32;
+                    let margin_x = (32.0 * scale_factor) as i32;
+                    let margin_y = (72.0 * scale_factor) as i32;
+                    let pos_x = (screen_size.width as i32) - win_w - margin_x;
+                    let pos_y = (screen_size.height as i32) - win_h - margin_y;
+                    let _ = window.set_position(tauri::Position::Physical(tauri::PhysicalPosition::new(pos_x, pos_y)));
                 }
             }
 
-            // Create System Tray Menu with configured hotkey in label
-            let open_label = format!("Open Overlay ({})", hotkey);
-            let open_item = MenuItem::with_id(app, "open", &open_label, true, None::<&str>)?;
-            let dashboard_item = MenuItem::with_id(app, "dashboard", "Dashboard Window", true, None::<&str>)?;
-            let settings_item = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
+            // Create System Tray Menu with Show / Hide / Quit
+            let show_item = MenuItem::with_id(app, "show", "Show Pet", true, None::<&str>)?;
+            let hide_item = MenuItem::with_id(app, "hide", "Hide Pet", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Quit NIKO", true, None::<&str>)?;
 
-            let tray_menu = Menu::with_items(app, &[&open_item, &dashboard_item, &settings_item, &quit_item])?;
+            let tray_menu = Menu::with_items(app, &[&show_item, &hide_item, &quit_item])?;
 
             let tray = TrayIconBuilder::new()
                 .menu(&tray_menu)
-                .show_menu_on_left_click(true)
+                .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
-                    "open" => {
+                    "show" => {
                         if let Some(win) = app.get_webview_window("overlay") {
                             let _ = win.show();
                             let _ = win.set_focus();
                         }
                     }
-                    "dashboard" => {
+                    "hide" => {
                         if let Some(win) = app.get_webview_window("overlay") {
-                            let _ = win.show();
-                            let _ = win.set_focus();
-                            let _ = win.eval("window.location.search = '?view=dashboard';");
-                        }
-                    }
-                    "settings" => {
-                        if let Some(win) = app.get_webview_window("overlay") {
-                            let _ = win.show();
-                            let _ = win.set_focus();
-                            let _ = win.eval("window.location.search = '?view=dashboard#settings';");
+                            let _ = win.hide();
                         }
                     }
                     "quit" => {
@@ -152,6 +150,24 @@ pub fn run() {
                         app.exit(0);
                     }
                     _ => {}
+                })
+                .on_tray_icon_event(|tray, event| {
+                    if let TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } = event
+                    {
+                        let app = tray.app_handle();
+                        if let Some(win) = app.get_webview_window("overlay") {
+                            if win.is_visible().unwrap_or(false) {
+                                let _ = win.hide();
+                            } else {
+                                let _ = win.show();
+                                let _ = win.set_focus();
+                            }
+                        }
+                    }
                 })
                 .build(app)?;
 
@@ -173,7 +189,7 @@ pub fn run() {
             match reg_res {
                 Ok(_) => {
                     log::info!("Registered global shortcut '{}' successfully", hotkey);
-                    let _ = tray.set_tooltip(Some("NIKO - Personal AI Assistant"));
+                    let _ = tray.set_tooltip(Some("NIKO Desktop Pet"));
                 }
                 Err(e) => {
                     log::warn!(
@@ -196,4 +212,3 @@ pub fn run() {
             }
         });
 }
-

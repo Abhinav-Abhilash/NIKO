@@ -13,16 +13,16 @@
     "windows": [
       {
         "label": "overlay",
-        "title": "NIKO Overlay",
-        "width": 640,
-        "height": 720,
+        "title": "NIKO",
+        "width": 220,
+        "height": 260,
         "resizable": false,
         "fullscreen": false,
         "transparent": true,
         "decorations": false,
         "alwaysOnTop": true,
         "skipTaskbar": true,
-        "center": true,
+        "center": false,
         "shadow": false
       }
     ],

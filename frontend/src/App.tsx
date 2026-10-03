@@ -15,11 +15,11 @@ import { ToastContainer } from './components/ToastContainer';
 import { ApiService } from './services/api';
 import { toastService } from './services/toast';
 import { wsClient } from './services/websocket';
-import { PlaceholderOverlay } from './components/PlaceholderOverlay';
+import { DesktopPet } from './components/DesktopPet';
 import type { ApprovalRequestItem, ChatMessage, CooldownBannerState, SystemMetrics } from './types';
 
 export const App: React.FC = () => {
-  const [viewMode, setViewMode] = useState<'overlay' | 'dashboard'>(() => {
+  const [viewMode] = useState<'overlay' | 'dashboard'>(() => {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('view') === 'dashboard' ? 'dashboard' : 'overlay';
   });
@@ -370,21 +370,7 @@ export const App: React.FC = () => {
   };
 
   if (viewMode === 'overlay') {
-    return (
-      <div className="relative min-h-screen w-screen bg-transparent">
-        <PlaceholderOverlay />
-        <div style={{ position: 'fixed', bottom: '8px', right: '8px', opacity: 0.5, fontSize: '10px' }}>
-          <button
-            type="button"
-            onClick={() => setViewMode('dashboard')}
-            style={{ background: 'transparent', color: '#888', border: '1px solid #444', borderRadius: '4px', padding: '2px 6px' }}
-          >
-            Dashboard Window
-          </button>
-        </div>
-        <ToastContainer />
-      </div>
-    );
+    return <DesktopPet />;
   }
 
   return (
