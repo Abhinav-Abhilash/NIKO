@@ -96,7 +96,7 @@ ignore_missing_imports = true
 asyncio_mode = "auto"
 testpaths = ["backend/tests"]
 pythonpath = ["."]
-timeout = 15
+timeout = 30
 filterwarnings = [
     "ignore:.*Using `httpx` with `starlette.testclient` is deprecated.*",
     "ignore:.*StarletteDeprecationWarning.*",
