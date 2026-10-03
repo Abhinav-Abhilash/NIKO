@@ -7,7 +7,7 @@ Sends a test message over WebSocket or REST and prints the exact reply or error.
 import asyncio
 import json
 import os
-import sys
+
 import httpx
 from dotenv import load_dotenv
 
