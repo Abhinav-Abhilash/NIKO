@@ -13,7 +13,7 @@
       "loop": true,
       "description": "Natural standing idle with head turn, blinking, and hair sway",
       "frames": [
-        { "name": "idle_neutral", "crop": [21, 170, 90, 268] },
+        { "name": "idle_neutral", "crop": [21, 170, 90, 268], "protect": [[24, 34, 46, 62]] },
         { "name": "idle_look_left", "crop": [98, 170, 166, 268] },
         { "name": "idle_look_right", "crop": [169, 170, 238, 268] },
         { "name": "idle_blink", "crop": [240, 170, 308, 268] },
