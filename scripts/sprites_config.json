@@ -4,7 +4,7 @@
   "canvas": {
     "width": 200,
     "height": 240,
-    "anchor_y": 224,
+    "anchor_y": 216,
     "scale": 2.0
   },
   "states": {
@@ -13,12 +13,12 @@
       "loop": true,
       "description": "Natural standing idle with head turn, blinking, and hair sway",
       "frames": [
-        { "name": "idle_neutral", "crop": [22, 165, 90, 268] },
-        { "name": "idle_look_left", "crop": [98, 165, 166, 268] },
-        { "name": "idle_look_right", "crop": [169, 165, 237, 268] },
-        { "name": "idle_blink", "crop": [240, 165, 308, 268] },
-        { "name": "idle_hair_move", "crop": [310, 165, 377, 268] },
-        { "name": "idle_breathing", "crop": [378, 165, 445, 268] }
+        { "name": "idle_neutral", "crop": [21, 170, 90, 268] },
+        { "name": "idle_look_left", "crop": [98, 170, 166, 268] },
+        { "name": "idle_look_right", "crop": [169, 170, 238, 268] },
+        { "name": "idle_blink", "crop": [240, 170, 308, 268] },
+        { "name": "idle_hair_move", "crop": [310, 170, 377, 268] },
+        { "name": "idle_breathing", "crop": [378, 170, 445, 268] }
       ]
     },
     "walking": {
@@ -26,14 +26,14 @@
       "loop": true,
       "description": "Full-body walking stride cycle",
       "frames": [
-        { "name": "walk_left_1", "crop": [476, 165, 521, 268] },
-        { "name": "walk_left_2", "crop": [522, 165, 565, 268] },
-        { "name": "walk_left_3", "crop": [566, 165, 608, 268] },
-        { "name": "walk_left_4", "crop": [609, 165, 654, 268] },
-        { "name": "walk_right_1", "crop": [676, 165, 720, 268] },
-        { "name": "walk_right_2", "crop": [722, 165, 766, 268] },
-        { "name": "walk_right_3", "crop": [767, 165, 809, 268] },
-        { "name": "walk_right_4", "crop": [810, 165, 853, 268] }
+        { "name": "walk_left_1", "crop": [474, 170, 521, 268] },
+        { "name": "walk_left_2", "crop": [521, 170, 565, 268] },
+        { "name": "walk_left_3", "crop": [565, 170, 608, 268] },
+        { "name": "walk_left_4", "crop": [608, 170, 654, 268] },
+        { "name": "walk_right_1", "crop": [674, 170, 720, 268] },
+        { "name": "walk_right_2", "crop": [720, 170, 765, 268] },
+        { "name": "walk_right_3", "crop": [765, 170, 808, 268] },
+        { "name": "walk_right_4", "crop": [808, 170, 854, 268] }
       ]
     },
     "sitting": {
@@ -41,23 +41,23 @@
       "loop": false,
       "description": "Seated posture transition and resting on ground",
       "frames": [
-        { "name": "sit_down", "crop": [380, 335, 456, 442] },
-        { "name": "sit_idle", "crop": [470, 335, 550, 442] },
-        { "name": "sit_stand_up", "crop": [560, 335, 630, 442] },
-        { "name": "sit_to_sleep", "crop": [645, 335, 740, 442] }
+        { "name": "sit_down", "crop": [378, 340, 455, 442] },
+        { "name": "sit_idle", "crop": [468, 335, 548, 442] },
+        { "name": "sit_stand_up", "crop": [555, 335, 628, 442] },
+        { "name": "sit_to_sleep", "crop": [645, 335, 744, 442] }
       ]
     },
     "sleeping": {
       "fps": 2,
       "loop": true,
-      "description": "Resting, deep sleep breathing, and waking up",
+      "description": "Resting on futon, deep sleep breathing, and waking up",
       "frames": [
-        { "name": "sleep_back", "crop": [780, 335, 860, 442] },
-        { "name": "sleep_side", "crop": [868, 335, 946, 442] },
-        { "name": "sleep_face_down", "crop": [956, 335, 1033, 442] },
-        { "name": "sleep_deep", "crop": [1042, 335, 1120, 442] },
-        { "name": "sleep_dreaming", "crop": [1128, 335, 1210, 442] },
-        { "name": "sleep_waking", "crop": [1220, 335, 1296, 442] }
+        { "name": "sleep_back", "crop": [780, 340, 860, 442] },
+        { "name": "sleep_side", "crop": [865, 335, 946, 442] },
+        { "name": "sleep_face_down", "crop": [954, 335, 1034, 442] },
+        { "name": "sleep_deep", "crop": [1040, 335, 1120, 442] },
+        { "name": "sleep_dreaming", "crop": [1126, 312, 1210, 442] },
+        { "name": "sleep_waking", "crop": [1214, 335, 1296, 442] }
       ]
     },
     "happy": {
@@ -65,11 +65,11 @@
       "loop": true,
       "description": "Smiling, cheerful expression and blushing celebration",
       "frames": [
-        { "name": "happy_smiling", "crop": [20, 508, 92, 615] },
-        { "name": "happy_laughing", "crop": [102, 508, 172, 615] },
-        { "name": "happy_excited", "crop": [178, 508, 251, 615] },
-        { "name": "happy_celebrating", "crop": [257, 508, 330, 615] },
-        { "name": "happy_blushing", "crop": [338, 508, 412, 615] }
+        { "name": "happy_smiling", "crop": [20, 512, 92, 624] },
+        { "name": "happy_laughing", "crop": [98, 508, 172, 624] },
+        { "name": "happy_excited", "crop": [177, 506, 251, 624] },
+        { "name": "happy_celebrating", "crop": [256, 506, 330, 624] },
+        { "name": "happy_blushing", "crop": [336, 506, 411, 624] }
       ]
     },
     "surprised": {
@@ -77,12 +77,12 @@
       "loop": false,
       "description": "Shocked, wide eyes, jump reaction, and curiosity tilt",
       "frames": [
-        { "name": "surprised_shocked", "crop": [21, 675, 90, 780] },
-        { "name": "surprised_wide_eyes", "crop": [99, 675, 167, 780] },
-        { "name": "surprised_jump_scare", "crop": [179, 675, 245, 780] },
-        { "name": "surprised_head_tilt", "crop": [249, 675, 312, 780] },
-        { "name": "surprised_thinking", "crop": [327, 675, 388, 780] },
-        { "name": "surprised_curious", "crop": [390, 675, 444, 780] }
+        { "name": "surprised_shocked", "crop": [20, 676, 90, 772] },
+        { "name": "surprised_wide_eyes", "crop": [96, 676, 167, 772] },
+        { "name": "surprised_jump_scare", "crop": [174, 670, 246, 772] },
+        { "name": "surprised_head_tilt", "crop": [248, 676, 320, 772] },
+        { "name": "surprised_thinking", "crop": [324, 660, 388, 772] },
+        { "name": "surprised_curious", "crop": [390, 658, 445, 772] }
       ]
     },
     "curious": {
@@ -90,10 +90,10 @@
       "loop": true,
       "description": "Investigating, leaning in, pointing, and following",
       "frames": [
-        { "name": "curious_investigate", "crop": [1030, 840, 1085, 945] },
-        { "name": "curious_look_close", "crop": [1094, 840, 1152, 945] },
-        { "name": "curious_point", "crop": [1158, 840, 1215, 945] },
-        { "name": "curious_follow", "crop": [1239, 840, 1293, 945] }
+        { "name": "curious_investigate", "crop": [1028, 848, 1087, 937] },
+        { "name": "curious_look_close", "crop": [1092, 860, 1153, 937] },
+        { "name": "curious_point", "crop": [1156, 838, 1215, 937] },
+        { "name": "curious_follow", "crop": [1220, 844, 1296, 937] }
       ]
     },
     "bored": {
@@ -101,21 +101,21 @@
       "loop": true,
       "description": "Looking around aimlessly, yawning, and twirling hair",
       "frames": [
-        { "name": "bored_look_around", "crop": [667, 840, 725, 945] },
-        { "name": "bored_lying_down", "crop": [732, 840, 794, 945] },
-        { "name": "bored_yawn", "crop": [799, 840, 861, 945] },
-        { "name": "bored_play_hair", "crop": [864, 840, 923, 945] },
-        { "name": "bored_fall_asleep", "crop": [930, 840, 997, 945] }
+        { "name": "bored_look_around", "crop": [665, 845, 725, 937] },
+        { "name": "bored_lying_down", "crop": [730, 860, 795, 937] },
+        { "name": "bored_yawn", "crop": [798, 845, 860, 937] },
+        { "name": "bored_play_hair", "crop": [862, 845, 924, 937] },
+        { "name": "bored_fall_asleep", "crop": [928, 830, 998, 937] }
       ]
     },
     "thinking": {
       "fps": 3,
       "loop": true,
-      "description": "Cognitive pondering and analysis pose",
+      "description": "Cognitive pondering, thought cloud, and laptop evaluation",
       "frames": [
-        { "name": "thinking_head_tilt", "crop": [249, 675, 312, 780] },
-        { "name": "thinking_bubble", "crop": [327, 675, 388, 780] },
-        { "name": "thinking_desk", "crop": [215, 990, 264, 1068] }
+        { "name": "thinking_head_tilt", "crop": [248, 676, 320, 772] },
+        { "name": "thinking_bubble", "crop": [324, 660, 388, 772] },
+        { "name": "thinking_desk", "crop": [214, 975, 266, 1061] }
       ]
     },
     "speaking": {
@@ -123,10 +123,10 @@
       "loop": true,
       "description": "Active conversational articulation and talking mouth motion",
       "frames": [
-        { "name": "speaking_neutral", "crop": [22, 165, 90, 268] },
-        { "name": "speaking_open_talk", "crop": [378, 165, 445, 268] },
-        { "name": "speaking_laugh_talk", "crop": [102, 508, 172, 615] },
-        { "name": "speaking_smile_talk", "crop": [20, 508, 92, 615] }
+        { "name": "speaking_neutral", "crop": [21, 170, 90, 268] },
+        { "name": "speaking_open_talk", "crop": [378, 170, 445, 268] },
+        { "name": "speaking_laugh_talk", "crop": [98, 508, 172, 624] },
+        { "name": "speaking_smile_talk", "crop": [20, 512, 92, 624] }
       ]
     },
     "acting": {
@@ -134,21 +134,21 @@
       "loop": true,
       "description": "Autonomous tool execution: typing on laptop and writing notes",
       "frames": [
-        { "name": "acting_reading", "crop": [25, 990, 83, 1068] },
-        { "name": "acting_writing", "crop": [91, 990, 147, 1068] },
-        { "name": "acting_typing", "crop": [151, 990, 210, 1068] },
-        { "name": "acting_finished", "crop": [326, 990, 379, 1068] }
+        { "name": "acting_reading", "crop": [24, 989, 84, 1061] },
+        { "name": "acting_writing", "crop": [88, 994, 146, 1061] },
+        { "name": "acting_typing", "crop": [150, 994, 210, 1061] },
+        { "name": "acting_finished", "crop": [324, 995, 378, 1061] }
       ]
     },
     "waiting_approval": {
       "fps": 3,
       "loop": true,
-      "description": "Alert reaction waiting for operator permission",
+      "description": "Alert notification reaction waiting for operator permission",
       "frames": [
-        { "name": "approval_alert", "crop": [403, 990, 460, 1068] },
-        { "name": "approval_looks_at_it", "crop": [466, 990, 517, 1068] },
-        { "name": "approval_curious", "crop": [523, 990, 573, 1068] },
-        { "name": "approval_surprised", "crop": [577, 990, 626, 1068] }
+        { "name": "approval_alert", "crop": [400, 989, 462, 1061] },
+        { "name": "approval_looks_at_it", "crop": [464, 994, 518, 1061] },
+        { "name": "approval_excited", "crop": [520, 990, 574, 1061] },
+        { "name": "approval_surprised", "crop": [576, 990, 628, 1061] }
       ]
     },
     "error": {
@@ -156,10 +156,10 @@
       "loop": true,
       "description": "Sad, dejected posture when inference fails or action is rejected",
       "frames": [
-        { "name": "error_quiet_sad", "crop": [442, 508, 512, 615] },
-        { "name": "error_crying", "crop": [527, 508, 596, 615] },
-        { "name": "error_look_down", "crop": [614, 508, 686, 615] },
-        { "name": "error_sitting_sad", "crop": [700, 508, 780, 615] }
+        { "name": "error_quiet_sad", "crop": [440, 514, 514, 608] },
+        { "name": "error_crying", "crop": [524, 515, 600, 608] },
+        { "name": "error_look_down", "crop": [610, 512, 686, 608] },
+        { "name": "error_sitting_sad", "crop": [698, 506, 778, 608] }
       ]
     },
     "cooldown": {
@@ -167,10 +167,10 @@
       "loop": true,
       "description": "Sleepy, resting downtime during rate limits or cooling down",
       "frames": [
-        { "name": "cooldown_bored", "crop": [1030, 990, 1082, 1068] },
-        { "name": "cooldown_sleepy", "crop": [1092, 990, 1152, 1068] },
-        { "name": "cooldown_falls_asleep", "crop": [1159, 990, 1219, 1068] },
-        { "name": "cooldown_wakes_up", "crop": [1227, 990, 1281, 1068] }
+        { "name": "cooldown_bored", "crop": [1026, 990, 1085, 1061] },
+        { "name": "cooldown_sleepy", "crop": [1090, 1008, 1154, 1061] },
+        { "name": "cooldown_falls_asleep", "crop": [1156, 988, 1220, 1061] },
+        { "name": "cooldown_wakes_up", "crop": [1224, 985, 1282, 1061] }
       ]
     },
     "success": {
@@ -178,10 +178,10 @@
       "loop": false,
       "description": "Joyful celebration when a goal or tool run completes successfully",
       "frames": [
-        { "name": "success_celebrate", "crop": [257, 508, 330, 615] },
-        { "name": "success_excited", "crop": [178, 508, 251, 615] },
-        { "name": "success_dancing", "crop": [85, 840, 144, 945] },
-        { "name": "success_spinning", "crop": [151, 840, 207, 945] }
+        { "name": "success_celebrate", "crop": [256, 506, 330, 624] },
+        { "name": "success_excited", "crop": [177, 506, 251, 624] },
+        { "name": "success_dancing", "crop": [85, 835, 144, 937] },
+        { "name": "success_spinning", "crop": [151, 835, 207, 937] }
       ]
     }
   }

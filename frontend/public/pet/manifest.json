@@ -1,9 +1,9 @@
 {
   "source": "frontend/design-import/character-sheet=2.png",
   "canvas": {
-    "width": 400,
-    "height": 480,
-    "anchor_y": 448,
+    "width": 200,
+    "height": 240,
+    "anchor_y": 216,
     "scale": 2.0
   },
   "states": {
@@ -57,7 +57,7 @@
         "frame_4.png",
         "frame_5.png"
       ],
-      "description": "Resting, deep sleep breathing, and waking up"
+      "description": "Resting on futon, deep sleep breathing, and waking up"
     },
     "happy": {
       "fps": 4,
@@ -115,7 +115,7 @@
         "frame_1.png",
         "frame_2.png"
       ],
-      "description": "Cognitive pondering and analysis pose"
+      "description": "Cognitive pondering, thought cloud, and laptop evaluation"
     },
     "speaking": {
       "fps": 6,
@@ -148,7 +148,7 @@
         "frame_2.png",
         "frame_3.png"
       ],
-      "description": "Alert reaction waiting for operator permission"
+      "description": "Alert notification reaction waiting for operator permission"
     },
     "error": {
       "fps": 3,
