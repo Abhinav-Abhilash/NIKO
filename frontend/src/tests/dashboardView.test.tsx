@@ -66,9 +66,8 @@ describe('DashboardView Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Model: gemini-3.5-flash-lite/i)).toBeInTheDocument();
+      expect(screen.getByText(/Reset in: 45s/i)).toBeInTheDocument();
     });
-
-    expect(screen.getByText(/Reset in: 45s/i)).toBeInTheDocument();
   });
 
   it('renders task queue and handles toggle and delete actions', async () => {
