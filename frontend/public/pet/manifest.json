@@ -1,0 +1,187 @@
+{
+  "source": "frontend/design-import/character-sheet=2.png",
+  "canvas": {
+    "width": 400,
+    "height": 480,
+    "anchor_y": 448,
+    "scale": 2.0
+  },
+  "states": {
+    "idle": {
+      "fps": 4,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png",
+        "frame_4.png",
+        "frame_5.png"
+      ],
+      "description": "Natural standing idle with head turn, blinking, and hair sway"
+    },
+    "walking": {
+      "fps": 6,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png",
+        "frame_4.png",
+        "frame_5.png",
+        "frame_6.png",
+        "frame_7.png"
+      ],
+      "description": "Full-body walking stride cycle"
+    },
+    "sitting": {
+      "fps": 3,
+      "loop": false,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png"
+      ],
+      "description": "Seated posture transition and resting on ground"
+    },
+    "sleeping": {
+      "fps": 2,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png",
+        "frame_4.png",
+        "frame_5.png"
+      ],
+      "description": "Resting, deep sleep breathing, and waking up"
+    },
+    "happy": {
+      "fps": 4,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png",
+        "frame_4.png"
+      ],
+      "description": "Smiling, cheerful expression and blushing celebration"
+    },
+    "surprised": {
+      "fps": 4,
+      "loop": false,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png",
+        "frame_4.png",
+        "frame_5.png"
+      ],
+      "description": "Shocked, wide eyes, jump reaction, and curiosity tilt"
+    },
+    "curious": {
+      "fps": 3,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png"
+      ],
+      "description": "Investigating, leaning in, pointing, and following"
+    },
+    "bored": {
+      "fps": 3,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png",
+        "frame_4.png"
+      ],
+      "description": "Looking around aimlessly, yawning, and twirling hair"
+    },
+    "thinking": {
+      "fps": 3,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png"
+      ],
+      "description": "Cognitive pondering and analysis pose"
+    },
+    "speaking": {
+      "fps": 6,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png"
+      ],
+      "description": "Active conversational articulation and talking mouth motion"
+    },
+    "acting": {
+      "fps": 4,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png"
+      ],
+      "description": "Autonomous tool execution: typing on laptop and writing notes"
+    },
+    "waiting_approval": {
+      "fps": 3,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png"
+      ],
+      "description": "Alert reaction waiting for operator permission"
+    },
+    "error": {
+      "fps": 3,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png"
+      ],
+      "description": "Sad, dejected posture when inference fails or action is rejected"
+    },
+    "cooldown": {
+      "fps": 2,
+      "loop": true,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png"
+      ],
+      "description": "Sleepy, resting downtime during rate limits or cooling down"
+    },
+    "success": {
+      "fps": 4,
+      "loop": false,
+      "frames": [
+        "frame_0.png",
+        "frame_1.png",
+        "frame_2.png",
+        "frame_3.png"
+      ],
+      "description": "Joyful celebration when a goal or tool run completes successfully"
+    }
+  }
+}
