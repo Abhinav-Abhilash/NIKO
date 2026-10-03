@@ -6,10 +6,12 @@ removes cream background with edge color decontamination, normalizes to a common
 feet anchor, exports at 2x HiDPI resolution, and generates manifest & contact sheet.
 """
 
-import os
 import json
 import math
-from PIL import Image, ImageDraw, ImageFont
+import os
+
+from PIL import Image, ImageDraw
+
 
 def color_distance(c1, c2):
     return math.sqrt((c1[0] - c2[0])**2 + (c1[1] - c2[1])**2 + (c1[2] - c2[2])**2)
@@ -92,7 +94,7 @@ def main():
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Config not found at {config_path}")
 
-    with open(config_path, 'r', encoding='utf-8') as f:
+    with open(config_path, encoding='utf-8') as f:
         config = json.load(f)
 
     source_path = os.path.join(root_dir, config.get('source_image', 'frontend/design-import/character-sheet=2.png'))
@@ -155,10 +157,7 @@ def main():
 
             # 3. Trim transparent boundaries
             bbox = clean_rgba.getbbox()
-            if bbox:
-                trimmed = clean_rgba.crop(bbox)
-            else:
-                trimmed = clean_rgba
+            trimmed = clean_rgba.crop(bbox) if bbox else clean_rgba
 
             # 4. Scale at 2x for sharp rendering
             scaled_w = int(trimmed.width * export_scale)
@@ -241,7 +240,7 @@ def generate_contact_sheet(frames, output_dir):
 
     # Calculate total height
     total_rows = 0
-    for state, state_frames in by_state.items():
+    for _state, state_frames in by_state.items():
         rows_for_state = math.ceil(len(state_frames) / cols)
         total_rows += rows_for_state
 

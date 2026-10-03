@@ -1,8 +1,7 @@
+import json
 import subprocess
 import time
-import json
-import os
-import signal
+
 
 def get_current_processes():
     cmd = [
@@ -11,7 +10,7 @@ def get_current_processes():
         "-Command",
         "Get-Process | Select-Object Id, ProcessName, WorkingSet64, CPU | ConvertTo-Json"
     ]
-    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    res = subprocess.run(cmd, capture_output=True, text=True)
     try:
         data = json.loads(res.stdout)
         if isinstance(data, dict):
@@ -45,7 +44,6 @@ def main():
     records = []
     for pid in new_pids:
         p = current[pid]
-        pname = p.get("ProcessName", "").lower()
         ws_mb = (p.get("WorkingSet64") or 0) / (1024 * 1024)
         cpu = p.get("CPU") or 0.0
         records.append({
@@ -101,12 +99,12 @@ def main():
     print("-" * 58)
     print(f"{'TOTAL FOOTPRINT':<25} {'':<8} {total_ram:<12.1f} {total_cpu:<10.1f}%\n")
 
-    print(f"Summary Breakdown:")
+    print("Summary Breakdown:")
     print(f"  • Tauri Rust Shell (app.exe):                  {tauri_ram:.1f} MB")
     print(f"  • Edge WebView2 Runtime (Pet Window):          {webview_ram:.1f} MB")
     print(f"  • Python Backend Service (Uvicorn / FastAPI):  {backend_ram:.1f} MB")
     print(f"  • Vite Frontend Dev Server (Node.js):          {vite_ram:.1f} MB")
-    print(f"  -------------------------------------------------------------")
+    print("  -------------------------------------------------------------")
     print(f"  • Desktop Pet Client Alone (Rust + WebView2):  {tauri_ram + webview_ram:.1f} MB")
     print(f"  • Complete Stack (Client + Backend + Vite):    {total_ram:.1f} MB")
 
